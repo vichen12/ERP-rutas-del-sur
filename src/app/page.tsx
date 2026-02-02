@@ -1,87 +1,58 @@
-'use client'
-import { useState, useEffect } from 'react'
-import { Truck, Users, DollarSign, ClipboardList, Loader2 } from 'lucide-react'
-import { getSupabase } from '@/lib/supabase'
+import Link from 'next/link'
+import { Truck, ArrowRight, ShieldCheck, Activity } from 'lucide-react'
 
-export default function Dashboard() {
-  const [loading, setLoading] = useState(true)
-  const [time, setTime] = useState(new Date())
-  const [data, setData] = useState({ activos: 0, clientes: 0, saldo: 0, remitos: 0 })
-  const supabase = getSupabase()
-
-  // 1. Reloj en tiempo real (Formato Argentina)
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  // 2. Fetch de datos reales desde Supabase
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const [viajes, clientes, pagos] = await Promise.all([
-          supabase.from('viajes').select('monto, estado'),
-          supabase.from('clientes').select('id', { count: 'exact' }),
-          supabase.from('pagos').select('monto')
-        ])
-
-        // Lógica de cálculo (Saldo = Σ Debe - Σ Haber)
-        const totalDebe = viajes.data?.reduce((acc, v) => acc + (v.monto || 0), 0) || 0
-        const totalHaber = pagos.data?.reduce((acc, p) => acc + (p.monto || 0), 0) || 0
-        const viajesActivos = viajes.data?.filter(v => v.estado === 'En Viaje').length || 0
-
-        setData({
-          activos: viajesActivos,
-          clientes: clientes.count || 0,
-          saldo: totalDebe - totalHaber,
-          remitos: viajes.data?.filter(v => v.estado === 'Pendiente').length || 0
-        })
-      } catch (err) {
-        console.error("Error en Dashboard:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchStats()
-  }, [])
-
-  const stats = [
-    { label: 'Viajes Activos', value: data.activos, icon: Truck, color: 'text-sky-500', bg: 'bg-sky-500/10' },
-    { label: 'Clientes Totales', value: data.clientes, icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { label: 'Saldo a Cobrar', value: `$${data.saldo.toLocaleString('es-AR')}`, icon: DollarSign, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { label: 'Remitos Pendientes', value: data.remitos, icon: ClipboardList, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-  ]
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#020617]"><Loader2 className="animate-spin text-sky-500 w-10 h-10" /></div>
-
+export default function LandingPage() {
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto font-[family-name:var(--font-geist-sans)]">
-      <header className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-black text-white italic tracking-tighter">DASHBOARD</h1>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">Rutas del Sur ERP</p>
-        </div>
-        <div className="text-right">
-          <p className="text-slate-500 text-xs font-bold uppercase">
-            {time.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
-          <p className="text-sky-500 font-black text-2xl tabular-nums">
-            {time.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-          </p>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <div key={i} className="bg-slate-900/40 border border-white/5 p-6 rounded-3xl backdrop-blur-xl transition-all hover:bg-slate-900/60">
-            <div className={`p-3 w-fit rounded-2xl ${stat.bg} ${stat.color} mb-4`}>
-              <stat.icon size={24} />
-            </div>
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{stat.label}</p>
-            <p className="text-3xl font-black text-white mt-1">{stat.value}</p>
-          </div>
-        ))}
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
+      
+      {/* Background Glows (Identidad Rutas del Sur) */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-sky-500/5 blur-[120px] rounded-full" />
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full" />
       </div>
+
+      <div className="max-w-4xl relative z-10 space-y-10">
+        
+        {/* Badge de Seguridad */}
+        <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-slate-900/50 border border-white/10 text-cyan-500 text-[10px] font-black uppercase tracking-[0.4em] backdrop-blur-md">
+          <Activity size={14} className="animate-pulse" /> Operaciones Activas
+        </div>
+        
+        <div className="space-y-4">
+          <h1 className="text-7xl md:text-9xl font-black italic tracking-tighter text-white uppercase leading-[0.8]">
+            RUTAS <br />
+            <span className="text-cyan-500">DEL SUR</span>
+          </h1>
+          <p className="text-slate-500 font-bold text-sm md:text-lg max-w-xl mx-auto leading-relaxed uppercase tracking-[0.1em]">
+            Ecosistema de gestión logística de alta precisión para transporte y control contable de flota.
+          </p>
+        </div>
+
+        {/* Acceso Táctico */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
+          <Link 
+            href="/login" 
+            className="group relative px-10 py-5 bg-cyan-600 text-white font-black uppercase text-xs tracking-[0.3em] rounded-2xl overflow-hidden transition-all hover:bg-cyan-500 hover:scale-105 active:scale-95 shadow-2xl shadow-cyan-600/20"
+          >
+            <span className="relative z-10 flex items-center gap-3">
+              Entrar al Command Center <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
+          
+          <div className="flex items-center gap-4 text-slate-600">
+             <div className="w-12 h-px bg-white/5" />
+             <span className="text-[10px] font-black uppercase tracking-widest">v1.0.4 Security Link</span>
+             <div className="w-12 h-px bg-white/5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Minimalista */}
+      <footer className="absolute bottom-10 left-0 right-0 text-center">
+        <p className="text-[9px] text-slate-700 font-black uppercase tracking-[0.5em]">
+          Mendoza • Argentina • 2026
+        </p>
+      </footer>
     </div>
   )
 }

@@ -114,7 +114,7 @@ export default function ClientesPage() {
           <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
             
             {/* Header Profile */}
-            <div className="flex justify-between items-start bg-slate-900/60 p-10 rounded-[2.5rem] border border-white/5 shadow-2xl backdrop-blur-sm">
+            <div className="mt-18 flex justify-between items-start bg-slate-900/60 p-10 rounded-[2.5rem] border border-white/5 shadow-2xl backdrop-blur-sm">
               <div className="flex items-center gap-6">
                 <div className="p-5 bg-sky-500/10 text-sky-400 rounded-2xl"><Landmark size={36}/></div>
                 <div>
