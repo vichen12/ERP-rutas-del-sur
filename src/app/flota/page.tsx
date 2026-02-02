@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { Truck, UserCircle, AlertTriangle, Plus, PenLine, Settings2, Gauge, Calendar } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'

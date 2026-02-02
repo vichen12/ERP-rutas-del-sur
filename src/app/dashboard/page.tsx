@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo } from 'react'
 import { Truck, Users, DollarSign, ClipboardList, Loader2, Activity, ArrowUpRight, TrendingUp } from 'lucide-react'
 import { 
