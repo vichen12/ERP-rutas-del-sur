@@ -30,7 +30,7 @@ export function ClienteSidebar({
         pt-10 lg:pt-28 
       `}>
         
-        <div className="p-6 border-b border-white/5 space-y-5">
+        <div className="mt-10 p-6 border-b border-white/5 space-y-5 ">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-black tracking-tighter uppercase italic text-white flex items-center gap-2">
               <User size={20} className="text-sky-500" /> Clientes
