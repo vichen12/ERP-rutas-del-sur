@@ -16,7 +16,6 @@ export default function FlotaPage() {
   const [gastos, setGastos] = useState<any[]>([]) 
   const [search, setSearch] = useState('')
   
-  // Estados de Modales
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isGastoModalOpen, setIsGastoModalOpen] = useState(false)
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
@@ -25,7 +24,6 @@ export default function FlotaPage() {
   const [selectedCamion, setSelectedCamion] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Estado del Formulario de Camión (Incluye chofer_id)
   const [formData, setFormData] = useState({ 
     patente: '', 
     modelo: '', 
@@ -34,7 +32,6 @@ export default function FlotaPage() {
     chofer_id: '' 
   })
 
-  // Estado del Formulario de Gastos (Ahora incluye fecha por defecto)
   const [gastoData, setGastoData] = useState({ 
     descripcion: '', 
     monto: '', 
@@ -58,7 +55,21 @@ export default function FlotaPage() {
     setLoading(false)
   }
 
-  // --- GESTIÓN DE UNIDADES ---
+  const handleDelete = async (id: string, patente: string) => {
+    if (!confirm(`¿Estás seguro de eliminar el camión ${patente}? Se borrarán también todos sus viajes y gastos asociados.`)) return
+    
+    setIsSubmitting(true)
+    const { error } = await supabase.from('camiones').delete().eq('id', id)
+    
+    if (error) {
+      alert("Error al eliminar: " + error.message)
+    } else {
+      await fetchData()
+    }
+    setIsSubmitting(false)
+  }
+
+  // --- RESTO DE FUNCIONES (Edit, Create, Submit Gasto) IGUAL QUE TENÍAS ---
   const handleEdit = (camion: any) => {
     setFormData({
       patente: camion.patente,
@@ -88,7 +99,6 @@ export default function FlotaPage() {
         ultimo_cambio_aceite: Number(formData.ultimo_cambio_aceite),
         chofer_id: formData.chofer_id || null 
       }
-
       if (editingId) {
         await supabase.from('camiones').update(payload).eq('id', editingId)
       } else {
@@ -100,14 +110,9 @@ export default function FlotaPage() {
     finally { setIsSubmitting(false) }
   }
 
-  // --- GESTIÓN DE GASTOS ---
   const handleOpenGasto = (camion: any) => {
     setSelectedCamion(camion)
-    setGastoData({ 
-      descripcion: '', 
-      monto: '', 
-      fecha: new Date().toISOString().split('T')[0] 
-    })
+    setGastoData({ descripcion: '', monto: '', fecha: new Date().toISOString().split('T')[0] })
     setIsGastoModalOpen(true)
   }
 
@@ -138,7 +143,7 @@ export default function FlotaPage() {
   if (loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center"><Loader2 className="animate-spin text-cyan-500 w-10 h-10" /></div>
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-20 pt-32 relative font-sans">
+    <div className="min-h-screen bg-[#020617] text-slate-200 pb-20 pt-32 relative font-sans italic">
       <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
 
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10 space-y-12 relative z-10">
@@ -160,47 +165,24 @@ export default function FlotaPage() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {filtered.map(c => {
-            const chofer = choferes.find(ch => ch.id === c.chofer_id)
-            const unidadGastos = gastos.filter(g => g.camion_id === c.id)
-            const total = unidadGastos.reduce((acc, curr) => acc + Number(curr.monto), 0)
-
-            return (
-              <CamionCard 
-                key={c.id} 
-                camion={c} 
-                chofer={chofer} 
-                totalGastos={total} 
-                onEdit={handleEdit} 
-                onDelete={(id: string, pat: string) => { if(confirm(`¿Eliminar ${pat}?`)) supabase.from('camiones').delete().eq('id', id).then(() => fetchData()) }}
-                onAddGasto={handleOpenGasto}
-                onShowHistory={handleOpenHistory}
-              />
-            )
-          })}
+          {filtered.map(c => (
+            <CamionCard 
+              key={c.id} 
+              camion={c} 
+              chofer={choferes.find(ch => ch.id === c.chofer_id)} 
+              totalGastos={gastos.filter(g => g.camion_id === c.id).reduce((acc, curr) => acc + Number(curr.monto), 0)} 
+              onEdit={handleEdit} 
+              onDelete={() => handleDelete(c.id, c.patente)} 
+              onAddGasto={handleOpenGasto}
+              onShowHistory={handleOpenHistory}
+            />
+          ))}
         </div>
 
-        {/* MODAL PRINCIPAL UNIDAD (Incluye choferes) */}
-        <CamionModal 
-          isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} 
-          onSubmit={handleSubmit} isSubmitting={isSubmitting} 
-          editingId={editingId} formData={formData} setFormData={setFormData}
-          choferes={choferes} 
-        />
-
-        {/* MODAL CARGA GASTO (Incluye nueva lógica de fecha) */}
-        <GastoModal 
-          isOpen={isGastoModalOpen} onClose={() => setIsGastoModalOpen(false)}
-          onSubmit={handleSubmitGasto} formData={gastoData} setFormData={setGastoData}
-          camionPatente={selectedCamion?.patente}
-        />
-
-        {/* MODAL HISTORIAL GASTOS (Filtros por fecha) */}
-        <GastoHistoryModal 
-          isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}
-          gastos={gastos.filter(g => g.camion_id === selectedCamion?.id)}
-          camionPatente={selectedCamion?.patente}
-        />
+        {/* --- MODALES --- */}
+        <CamionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleSubmit} isSubmitting={isSubmitting} editingId={editingId} formData={formData} setFormData={setFormData} choferes={choferes} />
+        <GastoModal isOpen={isGastoModalOpen} onClose={() => setIsGastoModalOpen(false)} onSubmit={handleSubmitGasto} formData={gastoData} setFormData={setGastoData} camionPatente={selectedCamion?.patente} />
+        <GastoHistoryModal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} gastos={gastos.filter(g => g.camion_id === selectedCamion?.id)} camionPatente={selectedCamion?.patente} />
       </div>
     </div>
   )

@@ -68,8 +68,8 @@ export function Navbar() {
       ca.data?.forEach(truck => {
         const kmRecorridos = (truck.km_actual || 0) - (truck.ultimo_cambio_aceite || 0)
         // Usamos el límite de 20.000 KM que charlamos para Rutas del Sur
-        if (kmRecorridos >= 20000) {
-          const exceso = kmRecorridos - 20000
+        if (kmRecorridos >= 32000) {
+          const exceso = kmRecorridos - 32000
           newAlerts.push({ 
             type: 'maintenance', 
             title: 'Mantenimiento Crítico', 

@@ -45,7 +45,7 @@ export default function DashboardPage() {
           if (kmDesdeService >= 18000) {
             alertas.push({ 
               tipo: 'MANTENIMIENTO', 
-              msg: `${c.patente}: Service en ${20000 - kmDesdeService}km`, 
+              msg: `${c.patente}: Service en ${32000 - kmDesdeService}km`, 
               color: 'text-amber-500',
               icon: Gauge
             })

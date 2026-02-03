@@ -21,8 +21,8 @@ export function CamionCard({
   onShowHistory 
 }: CamionCardProps) {
   
-  // CONFIGURACIÓN: Service cada 20.000km
-  const intervaloService = 20000;
+  // CONFIGURACIÓN: Service cada 32.000km
+  const intervaloService = 32000;
   const kmDesdeUltimoService = (camion.km_actual || 0) - (camion.ultimo_cambio_aceite || 0);
   const kmRestantes = intervaloService - kmDesdeUltimoService;
   
