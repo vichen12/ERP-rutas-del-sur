@@ -144,14 +144,20 @@ export default function ClientesPage() {
     <div className="flex h-screen bg-[#020617] text-slate-100 overflow-hidden font-sans italic selection:bg-sky-500/30">
       
       {/* SIDEBAR - Responsive: Se oculta en móviles si no está abierto */}
-      <div className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static z-50 transition-transform duration-300 h-full`}>
-        <ClienteSidebar 
-          clientes={clientes.filter(c => c.razon_social.toLowerCase().includes(searchTerm.toLowerCase()))}
-          selectedId={selected?.id} onSelect={(c) => { setSelected(c); setIsSidebarOpen(false); }} loading={loading}
-          searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-          onAdd={() => setIsClientModalOpen(true)} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen}
-        />
-      </div>
+    <ClienteSidebar 
+  clientes={clientes.filter((c: any) => c.razon_social.toLowerCase().includes(searchTerm.toLowerCase()))}
+  selectedId={selected?.id} 
+  onSelect={(c: any) => { 
+    setSelected(c); 
+    setIsSidebarOpen(false); 
+  }} 
+  loading={loading}
+  searchTerm={searchTerm} 
+  setSearchTerm={setSearchTerm}
+  onAdd={() => setIsClientModalOpen(true)} 
+  isOpen={isSidebarOpen} 
+  setIsOpen={setIsSidebarOpen}
+/>
 
       <main className="flex-1 overflow-y-auto relative z-10">
         <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff01_1px,transparent_1px),linear-gradient(to_bottom,#ffffff01_1px,transparent_1px)] bg-[size:60px_60px]" />
