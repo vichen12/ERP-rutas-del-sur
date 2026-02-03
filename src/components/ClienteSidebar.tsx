@@ -1,12 +1,12 @@
 'use client'
-import { Plus, Search, Loader2, Menu, X as CloseIcon, User, Users } from 'lucide-react'
+import { Plus, Search, Loader2, Menu, X as CloseIcon, User, Users, Phone } from 'lucide-react'
 
 export function ClienteSidebar({ 
   clientes, selectedId, onSelect, loading, searchTerm, setSearchTerm, onAdd, isOpen, setIsOpen 
 }: any) {
   return (
     <>
-      {/* Botón flotante para móvil - Posicionado para evitar el Navbar del celular */}
+      {/* Botón flotante para móvil */}
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
@@ -16,12 +16,9 @@ export function ClienteSidebar({
         </button>
       )}
 
-      {/* Backdrop para móvil */}
+      {/* Backdrop */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] lg:hidden" onClick={() => setIsOpen(false)} />
       )}
 
       <aside className={`
@@ -36,16 +33,10 @@ export function ClienteSidebar({
               <User size={20} className="text-sky-500" /> Clientes
             </h1>
             <div className="flex gap-2">
-                <button 
-                  onClick={onAdd} 
-                  className="p-2.5 bg-sky-600 text-white rounded-xl hover:bg-sky-500 shadow-lg active:scale-95 transition-all border border-sky-400/20"
-                >
+                <button onClick={onAdd} className="p-2.5 bg-sky-600 text-white rounded-xl hover:bg-sky-500 shadow-lg active:scale-95 transition-all border border-sky-400/20">
                   <Plus size={18} strokeWidth={3} />
                 </button>
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="lg:hidden p-2.5 bg-white/5 text-slate-400 rounded-xl border border-white/10"
-                >
+                <button onClick={() => setIsOpen(false)} className="lg:hidden p-2.5 bg-white/5 text-slate-400 rounded-xl border border-white/10">
                   <CloseIcon size={18} />
                 </button>
             </div>
@@ -87,15 +78,14 @@ export function ClienteSidebar({
                     <span className="font-black text-white block text-xs truncate uppercase leading-none tracking-tighter italic">
                       {c.razon_social}
                     </span>
-                    <span className="text-[9px] text-slate-600 font-bold uppercase mt-1 block">
-                      CUIT: {c.cuit || '---'}
+                    <span className="text-[8px] text-slate-400 font-bold uppercase mt-1 block">
+                      {c.nombre_contacto || 'SIN CONTACTO'}
                     </span>
                   </div>
                   <div className="text-right relative z-10">
                     <p className={`text-[11px] font-black tabular-nums ${tieneDeuda ? 'text-emerald-500' : 'text-slate-500'}`}>
                       $ {saldoActual.toLocaleString('es-AR')}
                     </p>
-                    <div className={`h-1 w-1 rounded-full ml-auto mt-1 ${tieneDeuda ? 'bg-emerald-500 animate-pulse' : 'bg-slate-800'}`} />
                   </div>
                 </div>
               );
@@ -103,12 +93,8 @@ export function ClienteSidebar({
           )}
         </div>
 
-        {/* Cierre para móvil con margen extra para evitar el navbar del celular */}
         <div className="lg:hidden p-6 pb-12 border-t border-white/5 bg-slate-950/50">
-          <button 
-            onClick={() => setIsOpen(false)}
-            className="w-full py-4 bg-rose-500/10 text-rose-500 font-black rounded-2xl flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest border border-rose-500/20 active:bg-rose-500 active:text-white transition-all"
-          >
+          <button onClick={() => setIsOpen(false)} className="w-full py-4 bg-rose-500/10 text-rose-500 font-black rounded-2xl flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest border border-rose-500/20 active:bg-rose-500 active:text-white transition-all">
             <CloseIcon size={16} /> Cerrar Terminal
           </button>
         </div>
