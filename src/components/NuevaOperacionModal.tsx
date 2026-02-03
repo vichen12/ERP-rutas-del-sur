@@ -1,95 +1,83 @@
 'use client'
-import { useState } from 'react'
-import { X, ArrowUpRight, ArrowDownLeft, Calendar, FileText, DollarSign, CheckCircle2, Loader2 } from 'lucide-react'
+import { X, Receipt, DollarSign, Calendar as CalendarIcon, Loader2 } from 'lucide-react'
 
 export function NuevaOperacionModal({ isOpen, onClose, onSubmit, isSaving, clienteNombre }: any) {
-  const [tipo, setTipo] = useState<'debe' | 'haber'>('debe')
-  const [monto, setMonto] = useState('')
-  const [descripcion, setDescripcion] = useState('')
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0])
-
   if (!isOpen) return null
 
-  const handleLocalSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit({
-      tipo,
-      monto: Number(monto),
-      descripcion: descripcion.toUpperCase(),
-      fecha
-    })
-    setMonto('')
-    setDescripcion('')
-  }
-
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md italic">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-lg rounded-[3.5rem] shadow-2xl relative overflow-hidden">
-        <div className={`absolute top-0 left-0 w-full h-1.5 ${tipo === 'debe' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-[#020617] border border-white/10 p-10 lg:p-14 rounded-[3.5rem] w-full max-w-lg relative italic shadow-2xl font-sans">
         
-        <div className="p-10 pb-0 flex justify-between items-start">
-          <div>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Cargar movimiento para</p>
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">{clienteNombre}</h2>
-          </div>
-          <button onClick={onClose} className="p-2 text-slate-500 hover:text-white"><X size={28}/></button>
-        </div>
+        <button onClick={onClose} className="absolute top-10 right-10 text-slate-500 hover:text-white transition-all">
+          <X size={28}/>
+        </button>
 
-        <div className="p-10 pt-8 space-y-8">
-          <div className="grid grid-cols-2 gap-4">
-            <button 
-              type="button"
-              onClick={() => setTipo('debe')}
-              className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-2 ${tipo === 'debe' ? 'border-rose-500 bg-rose-500/10 text-white' : 'border-white/5 bg-white/5 text-slate-500'}`}
-            >
-              <ArrowUpRight size={20} />
-              <span className="text-[10px] font-black uppercase">Flete (Debe)</span>
-            </button>
-            <button 
-              type="button"
-              onClick={() => setTipo('haber')}
-              className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-2 ${tipo === 'haber' ? 'border-emerald-500 bg-emerald-500/10 text-white' : 'border-white/5 bg-white/5 text-slate-500'}`}
-            >
-              <ArrowDownLeft size={20} />
-              <span className="text-[10px] font-black uppercase">Pago (Haber)</span>
-            </button>
-          </div>
+        <header className="mb-10">
+          <p className="text-[10px] font-black text-sky-500 uppercase tracking-[0.4em] mb-2">Registro de Facturación</p>
+          <h3 className="text-4xl font-black uppercase tracking-tighter text-white leading-none">
+            {clienteNombre}
+          </h3>
+        </header>
 
-          <form onSubmit={handleLocalSubmit} className="space-y-4">
-            <input 
-              required 
-              placeholder="CONCEPTO (EJ: FLETE BS AS)"
-              className="w-full bg-slate-950 border border-white/10 rounded-2xl p-5 text-white font-bold uppercase outline-none focus:border-sky-500"
-              value={descripcion}
-              onChange={e => setDescripcion(e.target.value)}
-            />
-            <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={(e) => {
+          e.preventDefault()
+          const fd = new FormData(e.currentTarget)
+          onSubmit({
+            nro_factura: fd.get('nro_factura')?.toString().toUpperCase(),
+            monto: fd.get('monto'),
+            fecha: fd.get('fecha')
+          })
+        }} className="space-y-5">
+          
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-widest">Número de Comprobante</label>
+            <div className="relative">
+              <Receipt className="absolute left-5 top-5 text-slate-600" size={20} />
               <input 
+                name="nro_factura" 
+                placeholder="0001-00004562" 
                 required 
-                type="number"
-                placeholder="MONTO $"
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-5 text-white font-bold outline-none focus:border-sky-500"
-                value={monto}
-                onChange={e => setMonto(e.target.value)}
-              />
-              <input 
-                required 
-                type="date"
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-5 text-white font-bold outline-none focus:border-sky-500 [color-scheme:dark]"
-                value={fecha}
-                onChange={e => setFecha(e.target.value)}
+                className="w-full p-5 pl-14 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold uppercase focus:border-sky-500/50 transition-all" 
               />
             </div>
-            <button 
-              disabled={isSaving}
-              className={`w-full py-6 rounded-3xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-3 ${
-                tipo === 'debe' ? 'bg-rose-600' : 'bg-emerald-600'
-              }`}
-            >
-              {isSaving ? <Loader2 className="animate-spin" /> : 'Registrar Movimiento'}
-            </button>
-          </form>
-        </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-widest">Monto Total</label>
+            <div className="relative">
+              <DollarSign className="absolute left-5 top-5 text-emerald-500" size={20} />
+              <input 
+                name="monto" 
+                type="number" 
+                step="0.01" 
+                placeholder="0.00" 
+                required 
+                className="w-full p-5 pl-14 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold focus:border-emerald-500/50 transition-all" 
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-widest">Fecha de Emisión</label>
+            <div className="relative">
+              <CalendarIcon className="absolute left-5 top-5 text-slate-600" size={20} />
+              <input 
+                name="fecha" 
+                type="date" 
+                defaultValue={new Date().toISOString().split('T')[0]} 
+                required 
+                className="w-full p-5 pl-14 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold focus:border-sky-500/50 transition-all uppercase" 
+              />
+            </div>
+          </div>
+
+          <button 
+            disabled={isSaving} 
+            className="w-full py-6 bg-sky-600 text-white font-black rounded-[2rem] uppercase text-[11px] tracking-[0.2em] mt-8 shadow-xl shadow-sky-900/20 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+          >
+            {isSaving ? <Loader2 className="animate-spin" /> : 'Confirmar Carga en Libro Mayor'}
+          </button>
+        </form>
       </div>
     </div>
   )
