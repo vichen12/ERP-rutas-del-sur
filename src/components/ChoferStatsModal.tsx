@@ -1,85 +1,168 @@
 'use client'
-import { X, Calendar, Truck, MapPin, TrendingUp, Clock } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { DollarSign, Receipt, Calculator } from 'lucide-react'
+import { getSupabase } from '@/lib/supabase'
 
-export function ChoferStatsModal({ isOpen, onClose, chofer, viajes }: any) {
+// IMPORTAMOS LOS SUB-COMPONENTES
+import { ChoferPaymentModal } from './ChoferPaymentModal'
+import { ChoferStatsHeader } from './ChoferStatsHeader'
+import { ChoferStatsKPIs } from './ChoferStatsKPIs'
+import { LiquidacionList, BitacoraTable } from './ChoferStatsTables'
+
+export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }: any) {
   if (!isOpen || !chofer) return null
 
-  // Lógica de filtrado por tiempo
-  const ahora = new Date()
-  const inicioSemana = new Date(ahora.setDate(ahora.getDate() - ahora.getDay()))
-  const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  const inicioAnio = new Date(new Date().getFullYear(), 0, 1)
+  const supabase = getSupabase()
+  const [activeTab, setActiveTab] = useState<'liquidacion' | 'bitacora'>('liquidacion')
+  
+  // --- FILTROS ---
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth())
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [showAllTime, setShowAllTime] = useState(false)
 
-  const filtrar = (desde: Date) => {
-    const filtrados = viajes.filter((v: any) => new Date(v.fecha) >= desde)
-    return {
-      km: filtrados.reduce((acc: number, curr: any) => acc + (Number(curr.km_recorridos) || 0), 0),
-      cant: filtrados.length
-    }
+  // --- ESTADOS DE SELECCIÓN Y UI ---
+  const [selectedViajes, setSelectedViajes] = useState<string[]>([])
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+
+  // --- LÓGICA DE DATOS ---
+  const filteredViajes = useMemo(() => {
+    return viajes.filter((v: any) => {
+      if (showAllTime) return true;
+      const d = new Date(v.fecha);
+      return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+    });
+  }, [viajes, selectedMonth, selectedYear, showAllTime]);
+
+  // Cálculos de KPIs
+  const stats = useMemo(() => {
+    return filteredViajes.reduce((acc: any, curr: any) => {
+      const pago = Number(curr.pago_chofer) || 0
+      const km = (Number(curr.km_salida || curr.km_recorridos) || 0) + (Number(curr.km_retorno) || 0)
+      const lts = Number(curr.lts_combustible) || 0
+      
+      return {
+        totalPlata: acc.totalPlata + pago,
+        totalDeuda: !curr.pago_chofer_realizado ? acc.totalDeuda + pago : acc.totalDeuda,
+        totalKm: acc.totalKm + km,
+        totalLts: acc.totalLts + lts,
+        viajesCount: acc.viajesCount + 1
+      }
+    }, { totalPlata: 0, totalDeuda: 0, totalKm: 0, totalLts: 0, viajesCount: 0 })
+  }, [filteredViajes])
+
+  const consumoPromedio = stats.totalKm > 0 ? ((stats.totalLts / stats.totalKm) * 100).toFixed(1) : '0'
+
+  const totalSeleccionado = useMemo(() => {
+    return filteredViajes
+      .filter((v: any) => selectedViajes.includes(v.id))
+      .reduce((acc: number, curr: any) => acc + (Number(curr.pago_chofer) || 0), 0)
+  }, [filteredViajes, selectedViajes])
+
+  // --- HANDLERS ---
+  const toggleSelect = (id: string) => {
+    setSelectedViajes(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
   }
 
-  const statsSemana = filtrar(inicioSemana)
-  const statsMes = filtrar(inicioMes)
-  const statsAnio = filtrar(inicioAnio)
+  const handleSelectAll = () => {
+    const pendientes = filteredViajes.filter((v: any) => !v.pago_chofer_realizado);
+    if (selectedViajes.length === pendientes.length) setSelectedViajes([])
+    else setSelectedViajes(pendientes.map((v: any) => v.id))
+  }
+
+  const handleConfirmPayment = async (paymentData: any) => {
+    if (selectedViajes.length === 0) return
+    setIsProcessing(true)
+
+    const diferencia = paymentData.montoReal - totalSeleccionado
+    let notaAutomatica = paymentData.notas.toUpperCase()
+    if (diferencia !== 0) {
+        notaAutomatica += ` | TOTAL REAL: $${totalSeleccionado} | PAGO: $${paymentData.montoReal} (${diferencia > 0 ? 'ADELANTO' : 'PARCIAL'}: $${diferencia})`
+    }
+
+    try {
+      const { error } = await supabase.from('viajes').update({
+          pago_chofer_realizado: true,
+          fecha_pago: paymentData.fecha,
+          metodo_pago: paymentData.metodo,
+          notas_pago: notaAutomatica
+        }).in('id', selectedViajes)
+
+      if (error) throw error
+      setShowPaymentModal(false)
+      setSelectedViajes([])
+      if (onRefresh) onRefresh()
+    } catch (err: any) { alert("Error: " + err.message) } 
+    finally { setIsProcessing(false) }
+  }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-300 italic">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-4xl rounded-[3.5rem] p-10 shadow-2xl relative overflow-hidden font-sans">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 to-indigo-500" />
+    <>
+      {/* FIX VISUAL: 
+         - `items-start` en vez de `center`
+         - `pt-24 md:pt-32` para bajarlo del navbar 
+      */}
+      <div className="fixed inset-0 z-[200] flex items-start justify-center pt-24 md:pt-32 p-4 md:p-8 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
         
-        <div className="flex justify-between items-start mb-10">
-          <div>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2">Legajo de Rendimiento</p>
-            <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">{chofer.nombre}</h2>
+        {/* Contenedor del Modal */}
+        <div className="bg-[#020617] border border-white/10 w-full max-w-7xl h-full max-h-[85vh] rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col mb-10">
+          
+          {/* HEADER (Con lógica de carnet y filtros) */}
+          <ChoferStatsHeader 
+             chofer={chofer} 
+             onClose={onClose}
+             selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth}
+             selectedYear={selectedYear} setSelectedYear={setSelectedYear}
+             showAllTime={showAllTime} setShowAllTime={setShowAllTime}
+          />
+
+          {/* DASHBOARD KPIs (Tarjetas) */}
+          <ChoferStatsKPIs 
+             stats={stats} 
+             consumoPromedio={consumoPromedio} 
+             showAllTime={showAllTime} 
+          />
+
+          {/* TABS NAVEGACIÓN */}
+          <div className="px-8 pt-6 flex gap-6 shrink-0">
+             <button onClick={() => setActiveTab('liquidacion')} className={`pb-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'liquidacion' ? 'border-rose-500 text-rose-500' : 'border-transparent text-slate-600 hover:text-white'}`}><DollarSign size={14}/> Liquidación Pendiente</button>
+             <button onClick={() => setActiveTab('bitacora')} className={`pb-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'bitacora' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-600 hover:text-white'}`}><Receipt size={14}/> Bitácora de Viajes</button>
           </div>
-          <button onClick={onClose} className="p-3 bg-white/5 rounded-full text-slate-500 hover:text-white transition-all"><X size={24}/></button>
-        </div>
 
-        {/* GRID DE ESTADÍSTICAS TEMPORALES */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {[
-            { label: 'Esta Semana', data: statsSemana, color: 'text-cyan-400' },
-            { label: 'Mes en Curso', data: statsMes, color: 'text-indigo-400' },
-            { label: 'Total Anual', data: statsAnio, color: 'text-emerald-400' },
-          ].map((s, i) => (
-            <div key={i} className="bg-slate-900/40 p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
-              <TrendingUp className={`absolute -right-4 -top-4 w-24 h-24 opacity-[0.03] ${s.color}`} />
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{s.label}</p>
-              <p className={`text-3xl font-black ${s.color} tracking-tighter mb-1`}>{s.data.km.toLocaleString()} KM</p>
-              <p className="text-[11px] font-bold text-slate-400 uppercase">{s.data.cant} Viajes Realizados</p>
-            </div>
-          ))}
-        </div>
-
-        {/* LISTA DE ÚLTIMOS VIAJES DEL CHOFER */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 mb-4">
-            <Clock size={16} className="text-cyan-500" /> Historial Reciente de Ruta
-          </h3>
-          <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-            {viajes.length > 0 ? viajes.slice(0, 10).map((v: any) => (
-              <div key={v.id} className="bg-white/5 p-5 rounded-3xl border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-slate-950 rounded-2xl text-cyan-500"><MapPin size={18}/></div>
-                  <div>
-                    <p className="text-xs font-black text-white uppercase">{v.origen} → {v.destino}</p>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase">{new Date(v.fecha).toLocaleDateString('es-AR')}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-black text-white">+{v.km_recorridos} KM</p>
-                  <p className="text-[9px] font-bold text-emerald-500 uppercase italic">Flete Exitoso</p>
-                </div>
-              </div>
-            )) : (
-              <div className="text-center py-10 opacity-20">
-                <Truck size={48} className="mx-auto mb-2" />
-                <p className="text-xs font-black uppercase tracking-widest">Sin registros de viaje</p>
-              </div>
+          {/* LISTADOS DE CONTENIDO */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
+            {activeTab === 'liquidacion' && (
+              <LiquidacionList 
+                 viajes={filteredViajes} 
+                 selectedViajes={selectedViajes} 
+                 toggleSelect={toggleSelect} 
+                 handleSelectAll={handleSelectAll} 
+              />
             )}
+            {activeTab === 'bitacora' && <BitacoraTable viajes={filteredViajes} />}
           </div>
+
+          {/* FOOTER FLOTANTE (Solo para Liquidación) */}
+          {activeTab === 'liquidacion' && selectedViajes.length > 0 && (
+             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] p-4 bg-indigo-600 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 animate-in slide-in-from-bottom-4 border border-white/20">
+                <div className="pl-6">
+                   <p className="text-[9px] font-black text-white/70 uppercase tracking-widest">A Liquidar</p>
+                   <p className="text-3xl font-black text-white italic tracking-tighter">$ {totalSeleccionado.toLocaleString()}</p>
+                </div>
+                <button onClick={() => setShowPaymentModal(true)} className="px-8 py-3 bg-white text-indigo-600 hover:bg-slate-100 rounded-[2rem] font-black uppercase tracking-widest shadow-lg flex items-center gap-2 transition-colors"><Calculator size={18}/> Continuar</button>
+             </div>
+          )}
         </div>
       </div>
-    </div>
+
+      <ChoferPaymentModal 
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={handleConfirmPayment}
+        totalSeleccionado={totalSeleccionado}
+        count={selectedViajes.length}
+        isProcessing={isProcessing}
+      />
+    </>
   )
 }
