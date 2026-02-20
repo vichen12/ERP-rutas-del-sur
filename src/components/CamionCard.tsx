@@ -2,7 +2,7 @@
 import { 
   Truck, Gauge, Droplets, Calendar, ShieldCheck, 
   DollarSign, User, AlertTriangle, AlertCircle, 
-  Edit3, Trash2, Plus, Activity 
+  Edit3, Trash2, Plus, Activity, History 
 } from 'lucide-react'
 
 interface CamionCardProps {
@@ -11,8 +11,9 @@ interface CamionCardProps {
   totalGastos?: number;
   onEdit: (camion: any) => void;
   onDelete: (id: string, patente: string) => void;
-  onAddGasto?: (camion: any) => void; 
-  onShowStats?: (camion: any) => void; 
+  onAddGasto: (camion: any) => void; 
+  onShowHistory: (camion: any) => void; // 🚀 Requerido para corregir error de Netlify
+  onShowStats: (camion: any) => void;    // 🚀 Requerido para corregir error de Netlify
 }
 
 export function CamionCard({ 
@@ -22,6 +23,7 @@ export function CamionCard({
   onEdit, 
   onDelete, 
   onAddGasto, 
+  onShowHistory,
   onShowStats 
 }: CamionCardProps) {
   
@@ -62,7 +64,7 @@ export function CamionCard({
   // --- 🎨 LÓGICA DE COLORES POR ESTADO ---
   const estado = camion.estado || 'Disponible';
   
-  let estadoColor = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'; // Default Disponible
+  let estadoColor = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'; 
   let dotColor = 'bg-emerald-500';
 
   if (estado === 'En Viaje') {
@@ -188,7 +190,6 @@ export function CamionCard({
             </div>
           </div>
 
-          {/* OPERADOR Y GASTOS (Restaurado) */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-900/60 border border-white/5 p-4 rounded-[1.2rem]">
                <div className="flex items-center gap-1.5 mb-1.5 text-slate-500">
@@ -212,38 +213,50 @@ export function CamionCard({
           </div>
         </div>
 
-        {/* BOTONES */}
-        <div className="mt-6 pt-6 border-t border-white/5 flex gap-2">
-          <button 
-            onClick={() => onAddGasto?.(camion)} 
-            className="flex-[2] py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex justify-center items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
-          >
-            <Plus size={14} strokeWidth={3} /> Gasto
-          </button>
+        {/* 🚀 BOTONERA DE ACCIONES (ACTUALIZADA) */}
+        <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-2">
           
-          <button 
-            onClick={() => onShowStats?.(camion)} 
-            className="flex-1 py-3 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-white rounded-xl flex justify-center items-center transition-all border border-sky-500/20" 
-            title="Telemetría"
-          >
-            <Activity size={18} />
-          </button>
+          <div className="flex gap-2 w-full">
+            <button 
+              onClick={() => onAddGasto?.(camion)} 
+              className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex justify-center items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
+            >
+              <Plus size={14} strokeWidth={3} /> Gasto
+            </button>
+
+            <button 
+              onClick={() => onShowHistory(camion)} 
+              className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex justify-center items-center gap-1.5 transition-all border border-white/5"
+            >
+              <History size={14} /> Historial
+            </button>
+          </div>
           
-          <button 
-            onClick={() => onEdit(camion)} 
-            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl flex justify-center items-center transition-all border border-white/5" 
-            title="Editar"
-          >
-            <Edit3 size={18} />
-          </button>
-          
-          <button 
-            onClick={() => onDelete(camion.id, camion.patente)} 
-            className="flex-1 py-3 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl flex justify-center items-center transition-all border border-rose-500/20" 
-            title="Eliminar"
-          >
-            <Trash2 size={18} />
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => onShowStats(camion)} 
+              className="flex-1 py-3 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-white rounded-xl flex justify-center items-center transition-all border border-sky-500/20" 
+              title="Telemetría y Estadísticas"
+            >
+              <Activity size={18} />
+            </button>
+            
+            <button 
+              onClick={() => onEdit(camion)} 
+              className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl flex justify-center items-center transition-all border border-white/5" 
+              title="Editar Unidad"
+            >
+              <Edit3 size={18} />
+            </button>
+            
+            <button 
+              onClick={() => onDelete(camion.id, camion.patente)} 
+              className="flex-1 py-3 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl flex justify-center items-center transition-all border border-rose-500/20" 
+              title="Eliminar Unidad"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
         </div>
 
       </div>
