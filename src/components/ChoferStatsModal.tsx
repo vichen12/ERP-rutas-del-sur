@@ -1,168 +1,196 @@
 'use client'
 import { useState, useMemo } from 'react'
-import { DollarSign, Receipt, Calculator } from 'lucide-react'
-import { getSupabase } from '@/lib/supabase'
+import { X, Calendar as CalIcon, FilterX, Droplets, Gauge, Wallet, Milestone, Flame } from 'lucide-react'
 
-// IMPORTAMOS LOS SUB-COMPONENTES
-import { ChoferPaymentModal } from './ChoferPaymentModal'
-import { ChoferStatsHeader } from './ChoferStatsHeader'
-import { ChoferStatsKPIs } from './ChoferStatsKPIs'
-import { LiquidacionList, BitacoraTable } from './ChoferStatsTables'
-
-export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }: any) {
+export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [] }: any) {
   if (!isOpen || !chofer) return null
 
-  const supabase = getSupabase()
-  const [activeTab, setActiveTab] = useState<'liquidacion' | 'bitacora'>('liquidacion')
-  
-  // --- FILTROS ---
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth())
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
-  const [showAllTime, setShowAllTime] = useState(false)
+  // --- MOTORES DE FILTRO DE TIEMPO ---
+  const [filterMode, setFilterMode] = useState<'mes' | 'año' | 'historico' | 'custom'>('mes')
+  const [dateStart, setDateStart] = useState<string>(() => {
+    const d = new Date(); d.setDate(1); return d.toISOString().split('T')[0];
+  })
+  const [dateEnd, setDateEnd] = useState<string>(() => new Date().toISOString().split('T')[0])
 
-  // --- ESTADOS DE SELECCIÓN Y UI ---
-  const [selectedViajes, setSelectedViajes] = useState<string[]>([])
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const filterByDate = (fechaStr: string) => {
+    if (!fechaStr) return false;
+    const fecha = new Date(fechaStr);
+    const hoy = new Date();
+    
+    switch (filterMode) {
+      case 'historico': return true;
+      case 'año': return fecha.getFullYear() === hoy.getFullYear();
+      case 'mes': return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
+      case 'custom': return fechaStr >= dateStart && fechaStr <= dateEnd;
+      default: return true;
+    }
+  }
 
-  // --- LÓGICA DE DATOS (Filtrado por fecha) ---
-  const filteredViajes = useMemo(() => {
-    return viajes.filter((v: any) => {
-      if (showAllTime) return true;
-      const d = new Date(v.fecha);
-      return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
-    });
-  }, [viajes, selectedMonth, selectedYear, showAllTime]);
+  // --- FILTRADO DE VIAJES DEL CHOFER ---
+  const viajesFiltrados = useMemo(() => {
+    return viajes.filter((v: any) => v.chofer_id === chofer.id && filterByDate(v.fecha));
+  }, [viajes, chofer, filterMode, dateStart, dateEnd]);
 
-  // --- CÁLCULOS DE KPIs (Alineados a BD V2.0) ---
+  // --- CÁLCULOS MATEMÁTICOS EXACTOS ---
   const stats = useMemo(() => {
-    return filteredViajes.reduce((acc: any, curr: any) => {
-      const pago = Number(curr.pago_chofer) || 0
-      const km = Number(curr.km_recorridos) || 0 // V2.0 usa km_recorridos directo
-      const lts = Number(curr.lts_gasoil) || 0    // V2.0 usa lts_gasoil
-      
-      return {
-        totalPlata: acc.totalPlata + pago,
-        totalDeuda: !curr.pago_chofer_realizado ? acc.totalDeuda + pago : acc.totalDeuda,
-        totalKm: acc.totalKm + km,
-        totalLts: acc.totalLts + lts,
-        viajesCount: acc.viajesCount + 1
-      }
-    }, { totalPlata: 0, totalDeuda: 0, totalKm: 0, totalLts: 0, viajesCount: 0 })
-  }, [filteredViajes])
+    let totalKm = 0;
+    let totalLts = 0;
+    let totalPlata = 0; // Ganancia / Pago al chofer
 
-  // Rendimiento: Litros cada 100km
-  const consumoPromedio = stats.totalKm > 0 ? ((stats.totalLts / stats.totalKm) * 100).toFixed(1) : '0'
+    viajesFiltrados.forEach((v: any) => {
+      totalKm += Number(v.km_recorridos) || 0;
+      totalLts += Number(v.lts_gasoil) || 0;
+      totalPlata += Number(v.pago_chofer) || 0;
+    });
 
-  const totalSeleccionado = useMemo(() => {
-    return filteredViajes
-      .filter((v: any) => selectedViajes.includes(v.id))
-      .reduce((acc: number, curr: any) => acc + (Number(curr.pago_chofer) || 0), 0)
-  }, [filteredViajes, selectedViajes])
+    // Fórmula: (Litros / Kilómetros) * 100
+    const rendimiento = totalKm > 0 ? ((totalLts / totalKm) * 100).toFixed(1) : '0.0';
 
-  // --- HANDLERS ---
-  const toggleSelect = (id: string) => {
-    setSelectedViajes(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
-  }
+    return { totalKm, totalLts, totalPlata, rendimiento };
+  }, [viajesFiltrados]);
 
-  const handleSelectAll = () => {
-    const pendientes = filteredViajes.filter((v: any) => !v.pago_chofer_realizado);
-    if (selectedViajes.length === pendientes.length) setSelectedViajes([])
-    else setSelectedViajes(pendientes.map((v: any) => v.id))
-  }
-
-  const handleConfirmPayment = async (paymentData: any) => {
-    if (selectedViajes.length === 0) return
-    setIsProcessing(true)
-
-    const diferencia = paymentData.montoReal - totalSeleccionado
-    let notaAutomatica = paymentData.notas.toUpperCase()
-    if (diferencia !== 0) {
-        notaAutomatica += ` | TOTAL REAL: $${totalSeleccionado} | PAGO: $${paymentData.montoReal} (${diferencia > 0 ? 'ADELANTO' : 'PARCIAL'}: $${diferencia})`
-    }
-
-    try {
-      // Actualizamos los viajes marcándolos como pagados al chofer
-      const { error } = await supabase.from('viajes').update({
-          pago_chofer_realizado: true,
-          fecha_pago: paymentData.fecha,
-          metodo_pago: paymentData.metodo,
-          notas_pago: notaAutomatica
-        }).in('id', selectedViajes)
-
-      if (error) throw error
-      setShowPaymentModal(false)
-      setSelectedViajes([])
-      if (onRefresh) onRefresh()
-    } catch (err: any) { 
-        alert("Error al procesar pago: " + err.message) 
-    } finally { 
-        setIsProcessing(false) 
-    }
-  }
+  // Colores dinámicos para el rendimiento
+  const numConsumo = Number(stats.rendimiento);
+  const consumoColor = numConsumo === 0 ? 'text-slate-500' : 
+                       numConsumo > 40 ? 'text-rose-500' : 
+                       numConsumo > 35 ? 'text-amber-500' : 
+                       'text-emerald-500';
 
   return (
-    <>
-      <div className="fixed inset-0 z-[200] flex items-start justify-center pt-24 md:pt-32 p-4 md:p-8 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
+      <div className="bg-[#020617] border border-white/10 w-full max-w-6xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
         
-        <div className="bg-[#020617] border border-white/10 w-full max-w-7xl h-full max-h-[85vh] rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col mb-10">
-          
-          {/* HEADER */}
-          <ChoferStatsHeader 
-             chofer={chofer} 
-             onClose={onClose}
-             selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth}
-             selectedYear={selectedYear} setSelectedYear={setSelectedYear}
-             showAllTime={showAllTime} setShowAllTime={setShowAllTime}
-          />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-          {/* DASHBOARD KPIs */}
-          <ChoferStatsKPIs 
-             stats={stats} 
-             consumoPromedio={consumoPromedio} 
-             showAllTime={showAllTime} 
-          />
-
-          {/* TABS NAVEGACIÓN */}
-          <div className="px-8 pt-6 flex gap-6 shrink-0">
-             <button onClick={() => setActiveTab('liquidacion')} className={`pb-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'liquidacion' ? 'border-rose-500 text-rose-500' : 'border-transparent text-slate-600 hover:text-white'}`}><DollarSign size={14}/> Liquidación Pendiente</button>
-             <button onClick={() => setActiveTab('bitacora')} className={`pb-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all flex items-center gap-2 ${activeTab === 'bitacora' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-600 hover:text-white'}`}><Receipt size={14}/> Bitácora de Viajes</button>
+        {/* --- HEADER Y FILTROS --- */}
+        <div className="p-8 md:p-10 border-b border-white/5 relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 bg-slate-900/20">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Auditoría de Operador</p>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">
+              {chofer.nombre}
+            </h2>
           </div>
 
-          {/* LISTADOS DE CONTENIDO */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
-            {activeTab === 'liquidacion' && (
-              <LiquidacionList 
-                  viajes={filteredViajes} 
-                  selectedViajes={selectedViajes} 
-                  toggleSelect={toggleSelect} 
-                  handleSelectAll={handleSelectAll} 
-              />
-            )}
-            {activeTab === 'bitacora' && <BitacoraTable viajes={filteredViajes} />}
-          </div>
+          <div className="flex flex-col items-end gap-4 w-full xl:w-auto">
+            <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 transition-colors absolute top-6 right-6 xl:relative xl:top-0 xl:right-0">
+              <X size={20} />
+            </button>
+            
+            {/* PANEL DE FILTROS */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto bg-slate-950/50 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
+              <div className="flex gap-2">
+                <FilterBtn active={filterMode === 'mes'} onClick={() => setFilterMode('mes')} label="Este Mes" />
+                <FilterBtn active={filterMode === 'año'} onClick={() => setFilterMode('año')} label="Este Año" />
+                <FilterBtn active={filterMode === 'historico'} onClick={() => setFilterMode('historico')} label="Histórico" />
+                <FilterBtn active={filterMode === 'custom'} onClick={() => setFilterMode('custom')} icon={CalIcon} label="Rango" />
+              </div>
 
-          {/* FOOTER FLOTANTE PARA LIQUIDACIÓN */}
-          {activeTab === 'liquidacion' && selectedViajes.length > 0 && (
-             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] p-4 bg-indigo-600 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 animate-in slide-in-from-bottom-4 border border-white/20">
-                <div className="pl-6">
-                   <p className="text-[9px] font-black text-white/70 uppercase tracking-widest">A Liquidar</p>
-                   <p className="text-3xl font-black text-white italic tracking-tighter">$ {totalSeleccionado.toLocaleString()}</p>
+              {filterMode === 'custom' && (
+                <div className="flex items-center gap-2 px-2 animate-in slide-in-from-left-4">
+                  <input type="date" value={dateStart} onChange={(e) => setDateStart(e.target.value)} className="bg-black/50 text-[10px] font-black text-indigo-400 uppercase outline-none px-4 py-2 rounded-xl border border-indigo-500/20 [color-scheme:dark]" />
+                  <span className="text-slate-600 text-xs font-black">/</span>
+                  <input type="date" value={dateEnd} onChange={(e) => setDateEnd(e.target.value)} className="bg-black/50 text-[10px] font-black text-indigo-400 uppercase outline-none px-4 py-2 rounded-xl border border-indigo-500/20 [color-scheme:dark]" />
                 </div>
-                <button onClick={() => setShowPaymentModal(true)} className="px-8 py-3 bg-white text-indigo-600 hover:bg-slate-100 rounded-[2rem] font-black uppercase tracking-widest shadow-lg flex items-center gap-2 transition-colors"><Calculator size={18}/> Continuar</button>
-             </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* --- GRID DE KPIs --- */}
+        <div className="p-8 md:p-10 grid grid-cols-2 lg:grid-cols-4 gap-4 bg-white/[0.01] shrink-0 border-b border-white/5">
+          
+          <div className="bg-indigo-500/10 border border-indigo-500/20 p-6 rounded-[2.5rem] flex flex-col justify-center">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Liquidación</p>
+              <Wallet size={14} className="text-indigo-500" />
+            </div>
+            <p className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">$ {stats.totalPlata.toLocaleString()}</p>
+          </div>
+
+          <div className="bg-slate-900/60 border border-white/5 p-6 rounded-[2.5rem] flex flex-col justify-center">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Distancia</p>
+              <Milestone size={14} className="text-sky-500" />
+            </div>
+            <p className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">{stats.totalKm.toLocaleString()} <span className="text-xs text-slate-600">KM</span></p>
+          </div>
+
+          <div className="bg-slate-900/60 border border-white/5 p-6 rounded-[2.5rem] flex flex-col justify-center">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gasoil Utilizado</p>
+              <Droplets size={14} className="text-cyan-500" />
+            </div>
+            <p className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">{stats.totalLts.toLocaleString()} <span className="text-xs text-slate-600">LTS</span></p>
+          </div>
+
+          <div className="bg-slate-900/60 border border-white/5 p-6 rounded-[2.5rem] flex flex-col justify-center shadow-inner">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Rendimiento</p>
+              <Flame size={14} className={consumoColor} />
+            </div>
+            <p className={`text-2xl md:text-3xl font-black italic tracking-tighter ${consumoColor}`}>
+              {stats.rendimiento} <span className="text-xs text-slate-600">L/100km</span>
+            </p>
+          </div>
+
+        </div>
+
+        {/* --- LISTA DE VIAJES DEL PERÍODO --- */}
+        <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar">
+          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-6">Detalle de Viajes en el período</h3>
+          
+          {viajesFiltrados.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 opacity-50">
+               <FilterX size={32} className="text-slate-600 mb-3" />
+               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">No hay viajes registrados</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {viajesFiltrados.map((v: any, i: number) => (
+                <div key={i} className="flex flex-col sm:flex-row justify-between items-center bg-slate-950/50 p-5 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors gap-4">
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                    <div className="bg-indigo-500/10 p-3 rounded-xl text-indigo-400">
+                      <CalIcon size={16} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-500">{new Date(v.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
+                      <p className="text-sm font-black text-white uppercase mt-0.5">{Number(v.km_recorridos)} KM</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-6 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="text-left sm:text-right">
+                      <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Litros</p>
+                      <p className="text-sm font-black text-cyan-400 tabular-nums">{Number(v.lts_gasoil)} L</p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Liquidación</p>
+                      <p className="text-sm font-black text-emerald-400 tabular-nums">$ {Number(v.pago_chofer).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      </div>
 
-      <ChoferPaymentModal 
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onConfirm={handleConfirmPayment}
-        totalSeleccionado={totalSeleccionado}
-        count={selectedViajes.length}
-        isProcessing={isProcessing}
-      />
-    </>
+      </div>
+    </div>
+  )
+}
+
+function FilterBtn({ active, onClick, label, icon: Icon }: any) {
+  return (
+    <button 
+      onClick={onClick} 
+      className={`px-4 py-3 rounded-[1.5rem] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+        active ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]' : 'bg-transparent text-slate-500 hover:text-slate-300 hover:bg-white/5'
+      }`}
+    >
+      {Icon && <Icon size={12} />}
+      {label}
+    </button>
   )
 }

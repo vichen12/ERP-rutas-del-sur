@@ -4,9 +4,8 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo } from 'react'
 import { 
   Plus, Search, Loader2, UserCheck, ShieldAlert, 
-  CreditCard, UserPlus, SearchX
+  CreditCard, UserPlus, SearchX, Filter
 } from 'lucide-react'
-// 🚀 CAMBIO CLAVE: Importación directa para estabilidad
 import { supabase } from '@/lib/supabase' 
 
 // Componentes del sistema
@@ -21,6 +20,9 @@ export default function ChoferesPage() {
   const [camiones, setCamiones] = useState<any[]>([])
   const [todosLosViajes, setTodosLosViajes] = useState<any[]>([])
   const [search, setSearch] = useState('')
+  
+  // 🚀 NUEVO ESTADO: Filtro de Choferes
+  const [filterEstado, setFilterEstado] = useState<'TODOS' | 'ACTIVOS' | 'NO_DISPONIBLES' | 'INACTIVOS'>('ACTIVOS')
   
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
@@ -44,11 +46,11 @@ export default function ChoferesPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      // 🛰️ QUERY CORREGIDA: Sin 'pago_chofer_realizado' para evitar Error 400
       const [ch, ca, vi] = await Promise.all([
         supabase.from('choferes').select('*').order('nombre', { ascending: true }),
         supabase.from('camiones').select('id, patente, modelo, operador_id'),
-        supabase.from('viajes').select('chofer_id, pago_chofer, km_recorridos, fecha')
+        // 👇 ACÁ ESTABA EL ERROR: AGREGAMOS lts_gasoil 👇
+        supabase.from('viajes').select('chofer_id, pago_chofer, km_recorridos, lts_gasoil, fecha')
       ])
       
       if (ch.data) setChoferes(ch.data)
@@ -61,11 +63,10 @@ export default function ChoferesPage() {
     }
   }
 
-  // --- 📊 KPI DINÁMICOS CORREGIDOS ---
+  // --- 📊 KPI DINÁMICOS ---
   const globalStats = useMemo(() => {
     const hoy = new Date()
     return {
-      // Calculamos deuda total basándonos en todos los viajes cargados
       deudaTotal: todosLosViajes.reduce((acc, curr) => acc + (Number(curr.pago_chofer) || 0), 0),
       vencimientosProximos: choferes.filter(ch => {
         if (!ch.vto_licencia) return false
@@ -76,13 +77,12 @@ export default function ChoferesPage() {
     }
   }, [todosLosViajes, choferes])
 
-  // --- HANDLERS CORREGIDOS ---
+  // --- HANDLERS ---
   const handleEdit = (chofer: any) => {
     setFormData({
       nombre: chofer.nombre || '', 
       dni: chofer.dni || '',
       licencia: chofer.licencia || '', 
-      // ✅ BUG 1 CORREGIDO: Usando 'chofer' en lugar del inexistente 'ch'
       vto_licencia: chofer.vto_licencia || '',
       telefono: chofer.telefono || '', 
       estado: chofer.estado || 'Disponible',
@@ -116,10 +116,48 @@ export default function ChoferesPage() {
     }
   }
 
-  const filtered = choferes.filter(ch => 
-    ch.nombre.toLowerCase().includes(search.toLowerCase()) || 
-    ch.dni?.includes(search)
-  )
+  // 🚀 FUNCIÓN DE BORRADO INTELIGENTE
+  const handleDeleteChofer = async (id: string, nombre: string) => {
+    if (!confirm(`¿Eliminar el legajo de ${nombre}?`)) return;
+    setIsSubmitting(true);
+    
+    const { error } = await supabase.from('choferes').delete().eq('id', id);
+    
+    if (error) {
+      if (error.code === '23503') {
+        alert(`⛔ NO SE PUEDE ELIMINAR:\n\nEl chofer ${nombre} tiene Viajes asignados en el historial.\n\nSOLUCIÓN:\nSi ya no trabaja en la empresa, dale a Editar y cambiá su estado a "Inactivo / Desvinculado".`);
+      } else {
+        alert("Error al eliminar: " + error.message);
+      }
+    } else {
+      await fetchData();
+    }
+    setIsSubmitting(false);
+  }
+
+  // 🚀 LÓGICA DE FILTRADO COMBINADO
+  const filteredData = useMemo(() => {
+    const term = search.toLowerCase().trim();
+    
+    return choferes.filter(ch => {
+      // 1. Filtro por texto
+      const matchSearch = ch.nombre.toLowerCase().includes(term) || ch.dni?.includes(term);
+      
+      // 2. Filtro por Estado
+      let matchEstado = true;
+      const est = (ch.estado || 'Disponible').toLowerCase();
+      
+      if (filterEstado === 'ACTIVOS') {
+        matchEstado = est.includes('disponible') || est.includes('viaje');
+      } else if (filterEstado === 'NO_DISPONIBLES') {
+        matchEstado = est.includes('franco') || est.includes('licencia');
+      } else if (filterEstado === 'INACTIVOS') {
+        matchEstado = est.includes('inactivo') || est.includes('desvinculado');
+      }
+
+      return matchSearch && matchEstado;
+    });
+  }, [choferes, search, filterEstado])
 
   if (!mounted || loading) return (
     <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center">
@@ -137,7 +175,7 @@ export default function ChoferesPage() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:40px_40px]" />
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-6 md:px-10 space-y-12 relative z-10">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-10 space-y-8 relative z-10">
         
         <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
           <div className="space-y-6 flex-1">
@@ -170,17 +208,25 @@ export default function ChoferesPage() {
           </div>
         </header>
 
-        {filtered.length === 0 ? (
+        {/* 🚀 BOTONERA DE FILTRO DE ESTADOS */}
+        <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 pb-4">
+            <StatusFilterBtn active={filterEstado === 'ACTIVOS'} onClick={() => setFilterEstado('ACTIVOS')} label="Operativos" color="text-emerald-400" border="border-emerald-500/30" bg="bg-emerald-500/10" />
+            <StatusFilterBtn active={filterEstado === 'NO_DISPONIBLES'} onClick={() => setFilterEstado('NO_DISPONIBLES')} label="Franco / Licencia" color="text-amber-400" border="border-amber-500/30" bg="bg-amber-500/10" />
+            <StatusFilterBtn active={filterEstado === 'INACTIVOS'} onClick={() => setFilterEstado('INACTIVOS')} label="Inactivos / Bajas" color="text-rose-400" border="border-rose-500/30" bg="bg-rose-500/10" />
+            <div className="w-[1px] bg-white/10 mx-2" />
+            <StatusFilterBtn active={filterEstado === 'TODOS'} onClick={() => setFilterEstado('TODOS')} label="Ver Todos" color="text-slate-300" border="border-white/10" bg="bg-white/5" />
+        </div>
+
+        {filteredData.length === 0 ? (
           <div className="py-40 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[4rem] bg-white/[0.01]">
-            <SearchX size={80} className="text-slate-800 mb-6" />
-            <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-center">Sin resultados</p>
+            <Filter size={80} className="text-slate-800 mb-6" />
+            <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-center">Sin resultados en esta categoría</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
-            {filtered.map(ch => {
+            {filteredData.map(ch => {
               const camion = camiones.find(c => c.operador_id === ch.id)
               const viajesCh = todosLosViajes.filter(v => v.chofer_id === ch.id)
-              // Cálculo de saldo ajustado a las columnas existentes
               const saldo = viajesCh.reduce((acc, v) => acc + (Number(v.pago_chofer) || 0), 0)
               const kms = viajesCh.reduce((acc, v) => acc + (Number(v.km_recorridos) || 0), 0)
 
@@ -188,7 +234,9 @@ export default function ChoferesPage() {
                 <ChoferCard 
                   key={ch.id} chofer={ch} camion={camion} 
                   totalKm={kms} totalViajes={viajesCh.length} saldoPendiente={saldo}
-                  onEdit={handleEdit} onDelete={() => {}} onViewStats={() => {setSelectedChofer(ch); setIsStatsModalOpen(true)}} 
+                  onEdit={handleEdit} 
+                  onDelete={() => handleDeleteChofer(ch.id, ch.nombre)} // 🚀 Función real conectada
+                  onViewStats={() => {setSelectedChofer(ch); setIsStatsModalOpen(true)}} 
                 />
               )
             })}
@@ -220,5 +268,19 @@ function HeaderStat({ label, val, color, icon: Icon, highlight }: any) {
       </p>
       <p className="text-2xl font-black text-white italic tracking-tighter">{val}</p>
     </div>
+  )
+}
+
+// 🚀 Componente para los botones de filtro
+function StatusFilterBtn({ active, onClick, label, color, border, bg }: any) {
+  return (
+    <button 
+      onClick={onClick} 
+      className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+        active ? `${bg} ${border} ${color}` : 'border-transparent text-slate-500 hover:bg-white/5'
+      }`}
+    >
+      {label}
+    </button>
   )
 }

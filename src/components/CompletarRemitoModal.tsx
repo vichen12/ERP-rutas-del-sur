@@ -1,93 +1,181 @@
 'use client'
-import { X, FileEdit, Hash, Loader2, ShieldCheck } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { X, FileEdit, Loader2, CheckCircle2, AlertTriangle, Camera, FileText, UploadCloud, Image as ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 
-export function CompletarRemitoModal({ isOpen, onClose, onSubmit, isSaving }: any) {
-  if (!isOpen) return null;
+// 🚀 AHORA RECIBE "initialRemito"
+export function CompletarRemitoModal({ isOpen, initialRemito, onClose, onSubmit, isSaving }: any) {
+  const [numero, setNumero] = useState('')
+  const [fileData, setFileData] = useState<{ base64: string, type: string, name?: string } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const handleLocalSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const numero = fd.get('remito')?.toString().trim().toUpperCase();
-    
-    if (numero) {
-      onSubmit(numero);
+  useEffect(() => {
+    if (isOpen) {
+      // 🚀 SI TIENE REMITO PREVIO, LO CARGA. SINO, EN BLANCO.
+      setNumero(initialRemito && initialRemito !== 'PENDIENTE' ? initialRemito : '')
+      setFileData(null)
     }
-  };
+  }, [isOpen, initialRemito])
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (!isOpen) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1 || items[i].type === 'application/pdf') {
+          const file = items[i].getAsFile();
+          if (file) processFile(file);
+          break; 
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [isOpen]);
+
+  if (!isOpen) return null
+
+  const processFile = (file: File) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setFileData({
+        base64: reader.result as string,
+        type: file.type,
+        name: file.name
+      })
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) processFile(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault()
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+      processFile(file);
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!numero.trim()) return
+    onSubmit(numero, fileData?.base64 || null) 
+  }
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
-      <div className="bg-[#020617] border border-orange-500/30 p-8 md:p-10 rounded-[3rem] w-full max-w-md relative shadow-2xl shadow-orange-900/20 overflow-hidden">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto">
+      
+      <div className="bg-[#020617] border border-orange-500/30 w-full max-w-md rounded-[3rem] p-8 md:p-10 shadow-[0_0_50px_rgba(249,115,22,0.15)] relative overflow-hidden my-auto">
         
-        {/* Efecto de resplandor naranja de fondo */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500 blur-[80px] opacity-10 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-600 to-amber-500" />
 
-        <button 
-          onClick={onClose} 
-          className="absolute top-6 right-6 text-slate-500 hover:text-white hover:rotate-90 transition-all z-10 p-2 bg-white/5 rounded-full"
-        >
-          <X size={20}/>
-        </button>
-
-        <header className="mb-8 relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-inner">
-              <FileEdit size={20} />
-            </div>
-            <div className="flex flex-col">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">
-                Paso de Control
-              </p>
-              <span className="h-0.5 w-8 bg-orange-500/30 rounded-full" />
-            </div>
+        <div className="flex justify-between items-start mb-8 relative z-10">
+          <div>
+            <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-1 flex items-center gap-2">
+              <AlertTriangle size={12} /> {initialRemito ? 'Editando Datos' : 'Faltan Datos'}
+            </p>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">
+              {initialRemito ? 'Editar' : 'Cargar'} <br/> <span className="text-orange-500">Remito</span>
+            </h2>
           </div>
-          <h3 className="text-3xl font-black uppercase tracking-tighter text-white leading-none">
-            Oficializar <span className="text-orange-500">Remito</span>
-          </h3>
-          <p className="text-slate-500 text-[11px] font-bold mt-4 leading-relaxed uppercase">
-            Ingrese el identificador del comprobante físico para validar la entrega y habilitar el cobro.
-          </p>
-        </header>
+          <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 rounded-full text-slate-500 transition-colors">
+            <X size={20} />
+          </button>
+        </div>
 
-        <form onSubmit={handleLocalSubmit} className="space-y-8 relative z-10">
+        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           
           <div className="space-y-2">
-            <label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-[0.2em] flex items-center gap-2">
-              <Hash size={12} /> Nro. Comprobante / Remito
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">
+              Número Físico
             </label>
             <div className="relative group">
-              <div className="absolute inset-0 bg-orange-500/5 blur-xl group-focus-within:opacity-100 opacity-0 transition-opacity" />
+              <FileEdit className="absolute left-5 top-1/2 -translate-y-1/2 text-orange-500/50 group-focus-within:text-orange-500 transition-colors" size={20} />
               <input 
-                name="remito" 
-                placeholder="EJ: 0001-00045628" 
-                required 
+                required
                 autoFocus
-                autoComplete="off"
-                className="relative w-full p-5 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black uppercase focus:border-orange-500/50 transition-all text-base tracking-widest placeholder:text-slate-800" 
+                type="text"
+                placeholder="EJ: 0001-00001234"
+                className="w-full bg-black/50 border border-white/10 rounded-[1.5rem] py-5 pl-14 pr-6 text-white text-lg font-black outline-none focus:border-orange-500 transition-all uppercase placeholder:text-slate-700"
+                value={numero}
+                onChange={(e) => setNumero(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <button 
-              type="submit"
-              disabled={isSaving} 
-              className="w-full py-5 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-2xl uppercase text-[11px] tracking-[0.3em] shadow-xl shadow-orange-900/30 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
-            >
-              {isSaving ? (
-                <Loader2 className="animate-spin" size={18} />
-              ) : (
-                <>
-                  Confirmar y Liberar 
-                  <ShieldCheck size={18} className="group-hover:scale-110 transition-transform" />
-                </>
-              )}
-            </button>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 flex justify-between items-center">
+              <span>Archivo Adjunto {initialRemito && '(Opcional)'}</span>
+              <span className="text-[8px] text-slate-500 opacity-60">Foto o PDF (Ctrl+V)</span>
+            </label>
             
-            <p className="text-[8px] text-center text-slate-600 font-black uppercase tracking-widest">
-              Esta acción moverá el cargo a la columna de "Deuda Activa"
-            </p>
+            <input 
+              type="file" 
+              accept="image/*,application/pdf" 
+              capture="environment"
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              className="hidden" 
+            />
+
+            <div 
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
+              {fileData ? (
+                <div className="relative w-full h-40 rounded-[1.5rem] overflow-hidden border border-white/10 group bg-slate-900/50 flex flex-col items-center justify-center">
+                  {fileData.type.startsWith('image/') ? (
+                    <Image src={fileData.base64} alt="Remito" fill className="object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 text-sky-500 p-4 text-center">
+                      <FileText size={40} strokeWidth={1.5} />
+                      <p className="text-[10px] font-black uppercase tracking-widest truncate max-w-full">
+                        {fileData.name || 'Documento PDF'}
+                      </p>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                     <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase flex items-center gap-2 hover:bg-white/20 transition-all">
+                       <Camera size={16} /> Cambiar Archivo
+                     </button>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-32 rounded-[1.5rem] border-2 border-dashed border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10 transition-all flex flex-col items-center justify-center gap-3 group"
+                >
+                  <div className="p-3 bg-orange-500/10 rounded-full text-orange-500 group-hover:scale-110 transition-transform flex items-center gap-2">
+                    <Camera size={20} /> <span className="text-orange-500/50 text-[12px]">+</span> <UploadCloud size={20} />
+                  </div>
+                  <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest text-center">
+                    Escanear / Arrastrar / Pegar
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
+
+          <button 
+            type="submit"
+            disabled={isSaving || !numero.trim()}
+            className="w-full py-5 mt-4 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-[0_0_20px_rgba(234,88,12,0.3)] disabled:shadow-none"
+          >
+            {isSaving ? <Loader2 className="animate-spin" size={24} /> : <><CheckCircle2 size={20} /> {initialRemito ? 'Guardar Cambios' : 'Guardar Datos'}</>}
+          </button>
         </form>
+
       </div>
     </div>
   )

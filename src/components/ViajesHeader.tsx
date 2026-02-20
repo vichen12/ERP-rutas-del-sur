@@ -3,9 +3,8 @@ import { useState, useEffect } from 'react'
 import { 
   Plus, Search, TrendingUp, DollarSign, ArrowRight, ArrowLeft, 
   Fuel, CalendarClock, Trash2, Save, Calendar, Globe, 
-  Droplets, UserCheck, Wrench, Receipt, Percent, FilterX
+  Droplets, UserCheck, Wrench, Receipt, Percent, FilterX, Gauge
 } from 'lucide-react'
-// 🚀 1. CAMBIO CLAVE: Importación directa y estática
 import { supabase } from '@/lib/supabase'
 
 interface ViajesHeaderProps {
@@ -57,26 +56,20 @@ export function ViajesHeader({
     }
   }
 
-  // --- 🛰️ MOTOR DE CREACIÓN BLINDADO ---
   const handleAddRecordatorio = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!nuevoRecordatorio.trim()) return
 
     try {
-      console.log("📤 Intentando guardar recordatorio:", nuevoRecordatorio)
-      
       const { data, error } = await supabase
         .from('recordatorios')
         .insert([{ descripcion: nuevoRecordatorio.toUpperCase() }])
-        .select() // Forzamos a que devuelva la data para confirmar
+        .select() 
 
       if (error) throw error;
-
-      console.log("✅ Recordatorio creado:", data)
       setNuevoRecordatorio('')
       fetchRecordatorios()
     } catch (error: any) {
-      console.error("🔥 Error al crear:", error)
       alert("No se pudo crear: " + error.message)
     }
   }
@@ -103,12 +96,35 @@ export function ViajesHeader({
     }
   }
 
+  // --- 🚀 FILTROS RÁPIDOS DE FECHA ---
+  const setFilterEsteMes = () => {
+    const today = new Date()
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+    
+    setDateStart(firstDay.toISOString().split('T')[0])
+    setDateEnd(lastDay.toISOString().split('T')[0])
+    setShowAllTime(false)
+  }
+
+  const setFilterEsteAno = () => {
+    const today = new Date()
+    const firstDay = new Date(today.getFullYear(), 0, 1) // 1 de Enero
+    const lastDay = new Date(today.getFullYear(), 11, 31) // 31 de Diciembre
+    
+    setDateStart(firstDay.toISOString().split('T')[0])
+    setDateEnd(lastDay.toISOString().split('T')[0])
+    setShowAllTime(false)
+  }
+
   const themeColor = activeTab === 'global' ? 'text-cyan-500' : activeTab === 'retorno' ? 'text-indigo-500' : 'text-emerald-500'
   const buttonColor = activeTab === 'global' ? 'bg-cyan-600 hover:bg-cyan-500' : activeTab === 'retorno' ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-emerald-600 hover:bg-emerald-500'
 
-  // Funciones auxiliares para formateo seguro
   const formatCurrency = (val: number) => `$ ${(val || 0).toLocaleString('es-AR', { minimumFractionDigits: 0 })}`
   const formatNumber = (val: number) => (val || 0).toLocaleString('es-AR')
+  
+  // 🚀 CÁLCULO DE RENDIMIENTO PROMEDIO
+  const consumoPromedio = totalKm > 0 ? ((totalLts / totalKm) * 100).toFixed(1) : '0.0'
 
   return (
     <div className="space-y-8 font-sans italic selection:bg-cyan-500/30">
@@ -136,7 +152,7 @@ export function ViajesHeader({
                     type="number" value={precioGasoil || ''} 
                     onChange={(e) => setPrecioGasoil(Number(e.target.value))}
                     onBlur={handleSavePrice}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSavePrice()} // Para que guarde al apretar Enter
+                    onKeyDown={(e) => e.key === 'Enter' && handleSavePrice()} 
                     className="bg-transparent text-white font-black text-3xl w-28 outline-none border-b-2 border-white/5 focus:border-amber-500 transition-all tabular-nums"
                  />
                  {guardandoPrecio && <Save size={18} className="text-emerald-500 animate-bounce ml-2" />}
@@ -175,37 +191,52 @@ export function ViajesHeader({
         </div>
       </header>
 
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 bg-slate-950/40 p-2 rounded-[2.2rem] border border-white/5">
-        <div className={`flex-1 flex flex-col md:flex-row items-center gap-4 md:gap-8 px-6 py-2 transition-all duration-700 ${showAllTime ? 'opacity-20 grayscale pointer-events-none' : 'opacity-100'}`}>
-          <div className="flex items-center gap-3 w-full md:w-auto border-b md:border-b-0 md:border-r border-white/10 pb-2 md:pb-0 md:pr-8">
+      {/* 🚀 BARRA DE FILTROS SUPERIOR POTENCIADA */}
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 bg-slate-950/40 p-2 rounded-[2.2rem] border border-white/5">
+        
+        {/* BOTONES DE PERIODO RÁPIDO */}
+        <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 shadow-inner">
+           <button onClick={setFilterEsteMes} className={`px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${!showAllTime && new Date(dateStart).getDate() === 1 && new Date(dateEnd).getMonth() === new Date().getMonth() ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>Este Mes</button>
+           <button onClick={setFilterEsteAno} className={`px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${!showAllTime && new Date(dateStart).getMonth() === 0 && new Date(dateEnd).getMonth() === 11 ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>Este Año</button>
+        </div>
+
+        {/* SELECTOR DE FECHAS MANUAL */}
+        <div className={`flex-1 flex flex-col sm:flex-row items-center gap-4 px-4 transition-all duration-700 ${showAllTime ? 'opacity-20 grayscale pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex items-center gap-3 w-full sm:w-auto border-b sm:border-b-0 sm:border-r border-white/10 pb-2 sm:pb-0 sm:pr-4">
             <Calendar className="text-cyan-500" size={16} />
             <div className="flex flex-col">
               <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Desde</span>
               <input type="date" value={dateStart} onChange={e => setDateStart(e.target.value)} className="bg-transparent text-white font-black text-xs uppercase outline-none [color-scheme:dark]" />
             </div>
           </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="flex flex-col">
               <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Hasta</span>
               <input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} className="bg-transparent text-white font-black text-xs uppercase outline-none [color-scheme:dark]" />
             </div>
           </div>
         </div>
+
         <button onClick={() => setShowAllTime(!showAllTime)} className={`flex items-center justify-center gap-3 px-8 py-4 rounded-[1.8rem] text-[9px] font-black uppercase tracking-[0.2em] transition-all border ${showAllTime ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-slate-900 border-white/10 text-slate-500 hover:text-white'}`}>
             <Globe size={16} className={showAllTime ? 'animate-spin-slow' : ''} />
             {showAllTime ? 'AUDITANDO HISTORIAL COMPLETO' : 'VER TODO EL HISTORIAL'}
         </button>
       </div>
 
+      {/* 🚀 TARJETAS PRINCIPALES (AGREGADA KMs) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Facturación Bruta" value={formatCurrency(totalFacturado)} icon={Receipt} color="text-white" />
         <StatCard title="Ganancia Neta" value={formatCurrency(totalNeto)} icon={DollarSign} color="text-emerald-400" highlight />
         <StatCard title="Sujeto a IVA" value={formatCurrency(totalSiva)} icon={Percent} color="text-cyan-500" />
+        {/* Usamos el valor real de totalKm que calcularemos en el padre */}
         <StatCard title="Kms en Ruta" value={`${formatNumber(totalKm)} KM`} icon={TrendingUp} color="text-slate-300" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 🚀 TARJETAS SECUNDARIAS (AGREGADO RENDIMIENTO MEDIO) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <SubStat label="Combustible" value={`${formatNumber(totalLts)} LTS`} icon={Droplets} color="text-amber-500" />
+        {/* Tarjeta de Rendimiento */}
+        <SubStat label="Rendimiento Medio" value={`${consumoPromedio} L/100`} icon={Gauge} color="text-emerald-500" />
         <SubStat label="Liq. Choferes" value={formatCurrency(totalChofer)} icon={UserCheck} color="text-rose-500" />
         <SubStat label="Gastos / Manten." value={formatCurrency(totalCostos)} icon={Wrench} color="text-indigo-500" />
       </div>
@@ -241,8 +272,8 @@ function StatCard({ title, value, icon: Icon, color, highlight }: any) {
 
 function SubStat({ label, value, icon: Icon, color }: any) {
   return (
-    <div className="bg-slate-900/20 p-5 rounded-[1.8rem] border border-white/5 flex items-center gap-5 group hover:bg-slate-900/40 transition-all">
-      <div className={`p-3 rounded-xl bg-slate-950 ${color} border border-white/5 shadow-inner`}>
+    <div className="bg-slate-900/20 p-5 rounded-[1.8rem] border border-white/5 flex items-center gap-5 group hover:bg-slate-900/40 transition-all h-full">
+      <div className={`p-3 rounded-xl bg-slate-950 ${color} border border-white/5 shadow-inner shrink-0`}>
         <Icon size={20} />
       </div>
       <div>

@@ -2,11 +2,10 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo } from 'react'
-// 🚀 CAMBIO CLAVE: Importación directa para estabilidad de sesión
 import { supabase } from '@/lib/supabase'
 import { 
   Loader2, Truck, MapPin, SearchX, ArrowRightLeft, 
-  Calendar, ShieldCheck, TrendingUp, Info, FilterX 
+  Calendar, ShieldCheck, TrendingUp, Info, FilterX, Trash2
 } from 'lucide-react'
 
 // Componentes del sistema
@@ -54,22 +53,11 @@ export default function ViajesPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      console.log("🚀 Iniciando sincronización de datos...");
-      
       const [v, cl, ch, ca, conf] = await Promise.all([
-        // 1. Viajes (Relaciones automáticas de Supabase)
         supabase.from('viajes').select('*, clientes(razon_social), choferes(nombre), camiones(patente)').order('fecha', { ascending: false }),
-        
-        // 2. Clientes (Traemos todo para el ADN)
         supabase.from('clientes').select('*').order('razon_social'),
-        
-        // 3. Choferes
-        supabase.from('choferes').select('id, nombre').order('nombre'),
-        
-        // 4. Camiones
-        supabase.from('camiones').select('id, patente, km_actual, operador_id').order('patente'),
-        
-        // 5. Precio Gasoil
+        supabase.from('choferes').select('id, nombre, km_recorridos, lts_consumidos').order('nombre'),
+        supabase.from('camiones').select('id, patente, km_actual, operador_id, lts_consumidos').order('patente'),
         supabase.from('configuracion').select('precio_gasoil').single()
       ]);
 
@@ -81,9 +69,6 @@ export default function ViajesPage() {
       setChoferes(ch.data || []);
       setCamiones(ca.data || []);
       if (conf.data) setPrecioGasoil(conf.data.precio_gasoil);
-      
-      console.log("✅ Datos cargados: ", v.data?.length, "viajes encontrados.");
-
     } catch (e) { 
       console.error("❌ Fallo Crítico:", e) 
     } finally { 
@@ -96,7 +81,6 @@ export default function ViajesPage() {
     const term = search.toLowerCase().trim();
     
     return (viajes || []).filter(v => {
-      // Búsqueda en campos anidados y directos
       const searchableText = [
         v.clientes?.razon_social,
         v.origen,
@@ -122,6 +106,7 @@ export default function ViajesPage() {
       const neta = bruta - pagoCh - costoGas - descarga;
 
       return {
+        // 🚀 ASEGURAMOS EXTRAER LOS KMS COMO NÚMEROS
         km: acc.km + (Number(v.km_recorridos) || 0),
         bruta: acc.bruta + bruta,
         neta: acc.neta + neta,
@@ -137,9 +122,6 @@ export default function ViajesPage() {
     e.preventDefault(); 
     setIsSubmitting(true);
     try {
-      console.log("📤 Preparando envío de viaje...");
-
-      // 🧹 LIMPIEZA DE PAYLOAD: Excluimos propiedades auxiliares
       const { precio_gasoil_sugerido, desgaste_por_km, ...payloadLimpio } = formData;
       
       const { data: nV, error: eV } = await supabase
@@ -149,28 +131,79 @@ export default function ViajesPage() {
         .single();
       
       if (eV) throw eV;
+
+      const kmSumar = Number(payloadLimpio.km_recorridos) || 0;
+      const ltsSumar = Number(payloadLimpio.lts_gasoil) || 0;
+      const camionActual = camiones.find(c => c.id === payloadLimpio.camion_id);
+      const choferActual = choferes.find(ch => ch.id === payloadLimpio.chofer_id);
       
-      // Operaciones en cascada
       await Promise.all([
         supabase.from('remitos').insert([{ viaje_id: nV.id, cliente_id: payloadLimpio.cliente_id, numero_remito: 'PENDIENTE' }]),
         payloadLimpio.cliente_id && supabase.from("cuenta_corriente").insert([{ 
-          cliente_id: payloadLimpio.cliente_id, fecha: payloadLimpio.fecha, tipo_movimiento: 'DEBE', 
+          cliente_id: payloadLimpio.cliente_id, viaje_id: nV.id, fecha: payloadLimpio.fecha, tipo_movimiento: 'DEBE', 
           detalle: `FLETE: ${payloadLimpio.origen} > ${payloadLimpio.destino}`, debe: Number(payloadLimpio.tarifa_flete) 
         }]),
         payloadLimpio.camion_id && supabase.from('camiones').update({ 
-          km_actual: (camiones.find(c => c.id === payloadLimpio.camion_id)?.km_actual || 0) + (Number(payloadLimpio.km_recorridos) || 0) 
-        }).eq('id', payloadLimpio.camion_id)
+          km_actual: (Number(camionActual?.km_actual) || 0) + kmSumar,
+          lts_consumidos: (Number(camionActual?.lts_consumidos) || 0) + ltsSumar
+        }).eq('id', payloadLimpio.camion_id),
+        payloadLimpio.chofer_id && supabase.from('choferes').update({
+          km_recorridos: (Number(choferActual?.km_recorridos) || 0) + kmSumar,
+          lts_consumidos: (Number(choferActual?.lts_consumidos) || 0) + ltsSumar
+        }).eq('id', payloadLimpio.chofer_id)
       ]);
 
-      console.log("✅ Viaje guardado correctamente");
       setIsModalOpen(false); 
-      setFormData(initialFormState); // Reseteamos el form
+      setFormData(initialFormState); 
       fetchData();
     } catch (err: any) { 
-      console.error("🔥 Error al guardar:", err);
       alert("Error: " + err.message);
     } finally { 
       setIsSubmitting(false);
+    }
+  }
+
+  // 🚀 NUEVA FUNCIÓN: BORRADO REVERSO
+  const handleDeleteViaje = async (viaje: any) => {
+    if (!confirm(`⚠️ ¿Eliminar viaje a ${viaje.destino}? Esto anulará el remito y la deuda del cliente.`)) return;
+    
+    try {
+      const kmRestar = Number(viaje.km_recorridos) || 0;
+      const ltsRestar = Number(viaje.lts_gasoil) || 0;
+      const camionActual = camiones.find(c => c.id === viaje.camion_id);
+      const choferActual = choferes.find(ch => ch.id === viaje.chofer_id);
+
+      // 1. Borramos la cuenta corriente y el remito asociados a este viaje
+      await Promise.all([
+        supabase.from('cuenta_corriente').delete().eq('viaje_id', viaje.id),
+        supabase.from('remitos').delete().eq('viaje_id', viaje.id)
+      ]);
+
+      // 2. Le restamos los km y litros al camión y chofer (si existen)
+      const updates = [];
+      if (viaje.camion_id && camionActual) {
+        updates.push(supabase.from('camiones').update({ 
+          km_actual: Math.max(0, (Number(camionActual.km_actual) || 0) - kmRestar),
+          lts_consumidos: Math.max(0, (Number(camionActual.lts_consumidos) || 0) - ltsRestar)
+        }).eq('id', viaje.camion_id));
+      }
+      
+      if (viaje.chofer_id && choferActual) {
+        updates.push(supabase.from('choferes').update({
+          km_recorridos: Math.max(0, (Number(choferActual.km_recorridos) || 0) - kmRestar),
+          lts_consumidos: Math.max(0, (Number(choferActual.lts_consumidos) || 0) - ltsRestar)
+        }).eq('id', viaje.chofer_id));
+      }
+      
+      await Promise.all(updates);
+
+      // 3. Finalmente, borramos el viaje
+      const { error } = await supabase.from('viajes').delete().eq('id', viaje.id);
+      if (error) throw error;
+
+      fetchData();
+    } catch (err: any) {
+      alert("Error al eliminar el viaje: " + err.message);
     }
   }
 
@@ -190,10 +223,13 @@ export default function ViajesPage() {
         
         <ViajesHeader 
           search={search} setSearch={setSearch} onOpenModal={() => {
-            setFormData(initialFormState); // Aseguramos un form limpio al abrir
+            setFormData(initialFormState); 
             setIsModalOpen(true);
           }} 
-          {...stats} totalFacturado={stats.bruta} totalNeto={stats.neta}
+          {...stats} // Pasa km, totalLts, etc.
+          totalKm={stats.km} // Forzamos el mapeo explícito por las dudas
+          totalFacturado={stats.bruta} 
+          totalNeto={stats.neta}
           activeTab={activeTab} setActiveTab={setActiveTab} precioGasoil={precioGasoil} setPrecioGasoil={setPrecioGasoil}
           dateStart={dateStart} setDateStart={setDateStart} dateEnd={dateEnd} setDateEnd={setDateEnd}
           showAllTime={showAllTime} setShowAllTime={setShowAllTime}
@@ -217,7 +253,7 @@ export default function ViajesPage() {
                     <th className="p-7">Activos</th>
                     <th className="p-7 text-right">Flete</th>
                     <th className="p-7 text-right">Utilidad</th>
-                    <th className="p-7 text-center">Tipo</th>
+                    <th className="p-7 text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -248,9 +284,18 @@ export default function ViajesPage() {
                           $ {Math.round(netaViaje).toLocaleString()}
                         </td>
                         <td className="p-7 text-center">
-                          <span className={`px-4 py-2 rounded-full text-[9px] font-black uppercase border ${v.es_retorno ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
-                            {v.es_retorno ? 'Retorno' : 'Ida'}
-                          </span>
+                          <div className="flex justify-center items-center gap-2">
+                            <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border ${v.es_retorno ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                              {v.es_retorno ? 'Ret' : 'Ida'}
+                            </span>
+                            <button 
+                              onClick={() => handleDeleteViaje(v)}
+                              className="p-1.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all"
+                              title="Anular Viaje"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -270,9 +315,11 @@ export default function ViajesPage() {
                     </div>
                     <div className="text-right">
                        <p className="text-[10px] font-bold text-slate-500 tabular-nums">{new Date(v.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
-                       <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${v.es_retorno ? 'text-indigo-400 border-indigo-400/20' : 'text-emerald-400 border-emerald-400/20'}`}>
-                        {v.es_retorno ? 'Retorno' : 'Ida'}
-                      </span>
+                       <div className="flex items-center justify-end gap-1 mt-1">
+                         <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${v.es_retorno ? 'text-indigo-400 border-indigo-400/20' : 'text-emerald-400 border-emerald-400/20'}`}>
+                          {v.es_retorno ? 'Retorno' : 'Ida'}
+                         </span>
+                       </div>
                     </div>
                   </div>
                   
@@ -292,6 +339,12 @@ export default function ViajesPage() {
                         <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400"><Truck size={14} /></div>
                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest truncate max-w-[120px]">{v.choferes?.nombre || 'S/C'}</p>
                      </div>
+                     <button 
+                        onClick={() => handleDeleteViaje(v)}
+                        className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                   </div>
                 </div>
               ))}

@@ -1,11 +1,11 @@
 'use client'
-import { LayoutDashboard, UserCircle2, BarChart3, Users2, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, UserCircle2, BarChart3, Users2, ShieldCheck, Bell } from 'lucide-react'
 
-export function ClienteViewSelector({ viewMode, setViewMode, hasSelected }: any) {
+export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalAlertas = 0 }: any) {
   return (
     <div className="sticky top-0 z-[100] px-6 py-4 bg-[#020617]/80 backdrop-blur-2xl border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] font-sans italic">
       
-      {/* BRANDING / STATUS DE CONEXIÓN */}
+      {/* BRANDING */}
       <div className="flex items-center gap-4">
         <div className="relative">
           <div className="absolute inset-0 bg-sky-500 blur-lg opacity-20 animate-pulse" />
@@ -27,7 +27,7 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected }: any)
         </div>
       </div>
 
-      {/* SWITCHER TÁCTICO DE VISTA */}
+      {/* SWITCHER DE VISTA */}
       <div className="p-1.5 bg-slate-950/80 rounded-[1.5rem] border border-white/5 flex gap-2 shadow-inner">
         <button 
           onClick={() => setViewMode('general')}
@@ -57,10 +57,23 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected }: any)
         </button>
       </div>
 
-      {/* INDICADOR DE ACCESO SEGURO (Solo decoración visual) */}
-      <div className="hidden xl:flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
-         <ShieldCheck size={14} className="text-slate-600" />
-         <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Acceso Encriptado</span>
+      {/* 🚀 CAMBIO 2: CAMPANA DE ALERTAS + ACCESO SEGURO */}
+      <div className="hidden xl:flex items-center gap-3">
+        {/* Campana de remitos pendientes */}
+        <div className="relative p-2 bg-white/5 rounded-xl border border-white/10">
+          <Bell 
+            size={20} 
+            className={totalAlertas > 0 ? "text-orange-500 animate-pulse" : "text-slate-500"} 
+          />
+          {totalAlertas > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_8px_orange]" />
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
+          <ShieldCheck size={14} className="text-slate-600" />
+          <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Acceso Encriptado</span>
+        </div>
       </div>
     </div>
   )

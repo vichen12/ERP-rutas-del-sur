@@ -42,7 +42,7 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
     if (file) processFile(file)
   }
 
-  // Convierte la imagen a Base64 para guardarla directo en la DB sin necesitar Supabase Storage
+  // Convierte la imagen a Base64 para guardarla directo en la DB
   const processFile = (file: File) => {
     const reader = new FileReader()
     reader.onloadend = () => {
@@ -177,72 +177,73 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
                 />
               </div>
             </div>
-          </div>
 
-          {/* =========================================
-              4. LICENCIA Y VENCIMIENTO
-          ========================================= */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div className="space-y-1">
-              <label className="text-[9px] font-black text-slate-500 uppercase pl-3 tracking-widest">Nro. LNH (Licencia)</label>
-              <input 
-                required 
-                placeholder="XXX-XXX"
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm" 
-                value={formData.licencia || ''} 
-                onChange={e => setFormData({...formData, licencia: e.target.value})} 
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[9px] font-black text-slate-500 uppercase pl-3 tracking-widest">Vencimiento LNH</label>
-              <div className="relative group">
-                <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-400 transition-colors pointer-events-none" size={18} />
+            {/* =========================================
+                4. LICENCIA Y VENCIMIENTO
+            ========================================= */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase pl-3 tracking-widest">Nro. LNH (Licencia)</label>
                 <input 
                   required 
-                  type="date" 
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white font-black outline-none focus:border-indigo-500 [color-scheme:dark] uppercase text-xs" 
-                  value={formData.vto_licencia || ''} 
-                  onChange={e => setFormData({...formData, vto_licencia: e.target.value})} 
+                  placeholder="XXX-XXX"
+                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm" 
+                  value={formData.licencia || ''} 
+                  onChange={e => setFormData({...formData, licencia: e.target.value})} 
                 />
               </div>
-            </div>
-          </div>
 
-          {/* =========================================
-              5. ESTADO OPERATIVO
-          ========================================= */}
-          <div className="space-y-1 pt-2">
-            <label className="text-[9px] font-black text-indigo-500 uppercase pl-3 tracking-widest">Estado de Disponibilidad</label>
-            <div className="relative group">
-              <Activity className="absolute left-5 top-1/2 -translate-y-1/2 text-indigo-600 group-focus-within:text-indigo-400 transition-colors pointer-events-none" size={18} />
-              <select 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-black outline-none appearance-none cursor-pointer uppercase focus:border-indigo-500 text-xs" 
-                value={formData.estado || 'Disponible'} 
-                onChange={e => setFormData({...formData, estado: e.target.value})}
-              >
-                <option value="Disponible" className="bg-[#020617] text-white">Disponible</option>
-                <option value="En Viaje" className="bg-[#020617] text-white">En Viaje</option>
-                <option value="Franco" className="bg-[#020617] text-white">Franco / Licencia</option>
-              </select>
-              <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={16} />
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-500 uppercase pl-3 tracking-widest">Vencimiento LNH</label>
+                <div className="relative group">
+                  <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-400 transition-colors pointer-events-none" size={18} />
+                  <input 
+                    required 
+                    type="date" 
+                    className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white font-black outline-none focus:border-indigo-500 [color-scheme:dark] uppercase text-xs" 
+                    value={formData.vto_licencia || ''} 
+                    onChange={e => setFormData({...formData, vto_licencia: e.target.value})} 
+                  />
+                </div>
+              </div>
             </div>
+
+            {/* =========================================
+                5. ESTADO OPERATIVO
+            ========================================= */}
+            <div className="space-y-1 pt-2">
+              <label className="text-[9px] font-black text-indigo-500 uppercase pl-3 tracking-widest">Estado de Disponibilidad</label>
+              <div className="relative group">
+                <Activity className="absolute left-5 top-1/2 -translate-y-1/2 text-indigo-600 group-focus-within:text-indigo-400 transition-colors pointer-events-none" size={18} />
+                <select 
+                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-black outline-none appearance-none cursor-pointer uppercase focus:border-indigo-500 text-xs" 
+                  value={formData.estado || 'Disponible'} 
+                  onChange={e => setFormData({...formData, estado: e.target.value})}
+                >
+                  <option value="Disponible" className="bg-[#020617] text-white">Disponible</option>
+                  <option value="Franco" className="bg-[#020617] text-white">Franco / Licencia</option>
+                  {/* 🚀 Nueva opción */}
+                  <option value="Inactivo" className="bg-[#020617] text-white">Inactivo / Desvinculado</option>
+                </select>
+                <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={16} />
+              </div>
+            </div>
+            
+            <button 
+              type="submit"
+              disabled={isSubmitting} 
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] mt-8 transition-all active:scale-95 flex items-center justify-center gap-3 shadow-xl shadow-indigo-900/30 border border-indigo-400/20 group"
+            >
+              {isSubmitting ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <>
+                  <CheckCircle2 size={22} className="group-hover:scale-110 transition-transform" /> 
+                  {editingId ? 'Sincronizar Cambios' : 'Registrar Legajo'}
+                </>
+              )}
+            </button>
           </div>
-          
-          <button 
-            type="submit"
-            disabled={isSubmitting} 
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] mt-8 transition-all active:scale-95 flex items-center justify-center gap-3 shadow-xl shadow-indigo-900/30 border border-indigo-400/20 group"
-          >
-            {isSubmitting ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
-              <>
-                <CheckCircle2 size={22} className="group-hover:scale-110 transition-transform" /> 
-                {editingId ? 'Sincronizar Cambios' : 'Registrar Legajo'}
-              </>
-            )}
-          </button>
         </form>
       </div>
     </div>

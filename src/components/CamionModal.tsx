@@ -1,5 +1,5 @@
 'use client'
-import { X, Loader2, Truck, User, Gauge, Droplets, ChevronRight } from 'lucide-react'
+import { X, Loader2, Truck, User, Gauge, Droplets, ChevronRight, Activity } from 'lucide-react'
 
 export function CamionModal({ 
   isOpen, onClose, onSubmit, isSubmitting, editingId, formData, setFormData, choferes 
@@ -31,7 +31,7 @@ export function CamionModal({
           </button>
         </header>
 
-        {/* 🚀 FORMULARIO: Llamada directa al prop onSubmit para evitar pérdida de contexto */}
+        {/* 🚀 FORMULARIO */}
         <form onSubmit={onSubmit} className="space-y-6">
           
           {/* GRUPO 1: IDENTIDAD */}
@@ -105,21 +105,38 @@ export function CamionModal({
             </div>
           </div>
 
-          {/* GRUPO 4: RECURSOS HUMANOS */}
-          <div className="space-y-2">
-            <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
-              <User size={10}/> Operador Responsable
-            </label>
-            <select 
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
-              value={formData.chofer_id || ''}
-              onChange={e => setFormData({...formData, chofer_id: e.target.value})}
-            >
-              <option value="">SIN OPERADOR ASIGNADO</option>
-              {choferes.map((ch: any) => (
-                <option key={ch.id} value={ch.id}>{ch.nombre}</option>
-              ))}
-            </select>
+          {/* GRUPO 4: RECURSOS HUMANOS Y ESTADO (🔥 LO NUEVO) */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
+                <User size={10}/> Operador
+              </label>
+              <select 
+                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
+                value={formData.chofer_id || ''}
+                onChange={e => setFormData({...formData, chofer_id: e.target.value})}
+              >
+                <option value="">SIN ASIGNAR</option>
+                {choferes.map((ch: any) => (
+                  <option key={ch.id} value={ch.id}>{ch.nombre}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
+                <Activity size={10}/> Estado Operativo
+              </label>
+              <select 
+                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
+                value={formData.estado || 'Disponible'}
+                onChange={e => setFormData({...formData, estado: e.target.value})}
+              >
+                <option value="Disponible">Disponible</option>
+                <option value="En Taller">En Taller / Reparación</option>
+                <option value="Vendido">Vendido</option>
+              </select>
+            </div>
           </div>
 
           {/* BOTÓN DE ACCIÓN FINAL */}

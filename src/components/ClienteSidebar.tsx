@@ -6,7 +6,6 @@ export function ClienteSidebar({
 }: any) {
   return (
     <>
-      {/* Botón flotante móvil con Glow */}
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
@@ -16,7 +15,6 @@ export function ClienteSidebar({
         </button>
       )}
 
-      {/* Backdrop con desenfoque profundo */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] lg:hidden animate-in fade-in duration-300" onClick={() => setIsOpen(false)} />
       )}
@@ -27,7 +25,6 @@ export function ClienteSidebar({
         pt-10 lg:pt-20 
       `}>
         
-        {/* BUSCADOR INTEGRADO */}
         <div className="p-6 space-y-6">
           <div className="flex justify-between items-center">
             <div>
@@ -52,7 +49,6 @@ export function ClienteSidebar({
           </div>
         </div>
 
-        {/* LISTADO DE CLIENTES */}
         <div className="flex-1 overflow-y-auto px-4 space-y-3 custom-scrollbar pb-24">
           {loading ? (
             <div className="p-10 text-center flex flex-col items-center gap-3 opacity-20">
@@ -63,8 +59,6 @@ export function ClienteSidebar({
               const saldoActual = Number(c.saldo) || 0;
               const tieneDeuda = saldoActual > 0;
               const isSelected = selectedId === c.id;
-              
-              // 🚀 CAMBIO V2.0: Lógica de pendientes basada en cuenta_corriente
               const cantPendientes = c.cuenta_corriente?.filter((f:any) => Number(f.debe) > 0 && Number(f.haber) === 0).length || 0;
 
               return (
@@ -78,13 +72,21 @@ export function ClienteSidebar({
                   }`}
                 >
                   <div className="space-y-4 relative z-10">
-                    {/* Fila superior: Cliente y Deuda */}
                     <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1 truncate">
-                        <h3 className={`font-black text-xs uppercase leading-tight italic truncate ${isSelected ? 'text-sky-400' : 'text-slate-200 group-hover:text-white'}`}>
-                          {c.razon_social}
-                        </h3>
-                        <p className="text-[8px] text-slate-600 font-bold mt-1.5 uppercase tracking-tighter">{c.cuit || 'S/ CUIT'}</p>
+                      <div className="flex-1 truncate flex items-center gap-2">
+                        {/* 🚀 CAMBIO 3: Puntito naranja si tiene alertaRemito */}
+                        {c.alertaRemito && (
+                          <span 
+                            className="shrink-0 w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.8)] animate-pulse" 
+                            title="Remito pendiente"
+                          />
+                        )}
+                        <div className="truncate">
+                          <h3 className={`font-black text-xs uppercase leading-tight italic truncate ${isSelected ? 'text-sky-400' : 'text-slate-200 group-hover:text-white'}`}>
+                            {c.razon_social}
+                          </h3>
+                          <p className="text-[8px] text-slate-600 font-bold mt-1.5 uppercase tracking-tighter">{c.cuit || 'S/ CUIT'}</p>
+                        </div>
                       </div>
                       <div className="text-right shrink-0">
                         <p className={`text-sm font-black tabular-nums ${tieneDeuda ? 'text-emerald-500' : 'text-slate-700'}`}>
@@ -97,7 +99,6 @@ export function ClienteSidebar({
                       </div>
                     </div>
 
-                    {/* 🚀 CAMBIO V2.0: Trayecto Central directo del objeto cliente */}
                     <div className={`p-3 rounded-2xl border flex items-center justify-between text-[9px] font-black uppercase tracking-tighter transition-all ${
                         isSelected ? 'bg-sky-500/10 border-sky-500/20 text-sky-300' : 'bg-black/30 border-white/5 text-slate-500'
                     }`}>
@@ -109,7 +110,6 @@ export function ClienteSidebar({
                         <span className="truncate text-right">{c.ruta_destino || 'S/D'}</span>
                     </div>
 
-                    {/* Contacto Inferior */}
                     <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/[0.02] mt-2">
                        <div className="flex items-center gap-2 truncate">
                           <User size={12} className="text-slate-700" />
@@ -126,7 +126,6 @@ export function ClienteSidebar({
                     </div>
                   </div>
                   
-                  {/* Indicador visual de selección */}
                   {isSelected && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-sky-500 rounded-r-full shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
                   )}
@@ -136,7 +135,6 @@ export function ClienteSidebar({
           )}
         </div>
 
-        {/* Cierre en móvil */}
         <div className="lg:hidden p-6 pb-12 border-t border-white/5 bg-slate-950/50">
            <button onClick={() => setIsOpen(false)} className="w-full py-4 bg-white/5 text-slate-600 font-black rounded-3xl uppercase text-[9px] tracking-[0.4em] border border-white/5 active:bg-rose-500/10 active:text-rose-500 transition-all">
              Cerrar Terminal
