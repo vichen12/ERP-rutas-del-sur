@@ -1,7 +1,7 @@
 'use client'
 import { 
   TrendingUp, Map, Fuel, CreditCard, 
-  Activity, FileDown, Ruler, DollarSign 
+  Activity, FileDown, Ruler, DollarSign, MapPin // 👈 ¡Acá está el MapPin agregado!
 } from 'lucide-react'
 
 export function ClienteResumenGeneral({ selected, gestion, onExportPDF }: any) {
