@@ -1,9 +1,9 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Truck, Users, DollarSign, Loader2, AlertTriangle, 
-  TrendingUp, Bell, ArrowRight, Gauge, ShieldAlert, 
+  TrendingUp, Bell, Gauge, ShieldAlert, 
   Activity, Zap, Map as MapIcon, ChevronRight
 } from 'lucide-react'
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid, YAxis } from 'recharts'
@@ -13,7 +13,6 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<any>({ stats: {}, charts: [], alertas: [] })
-  const supabase = getSupabase()
 
   useEffect(() => {
     setMounted(true)
@@ -78,7 +77,7 @@ export default function DashboardPage() {
       } catch (err) { console.error("Dashboard Error:", err) } finally { setLoading(false) }
     }
     fetchDashboardData()
-  }, [supabase])
+  }, []) // Removed supabase from dependency array to prevent unnecessary re-renders
 
   if (!mounted || loading) return (
     <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center">
