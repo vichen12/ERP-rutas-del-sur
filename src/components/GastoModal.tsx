@@ -5,7 +5,6 @@ import {
   FileText,
   CheckCircle2,
   Calendar,
-  Tooltip,
 } from "lucide-react";
 
 export function GastoModal({
