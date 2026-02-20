@@ -1,11 +1,9 @@
 import { createBrowserClient } from '@supabase/ssr'
 
-export const getSupabase = () => {
-  // Este log te confirmará en la consola si la URL se está leyendo bien
-  console.log("Intentando conectar a:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+// Compatibilidad con el código existente
+export const getSupabase = () => supabase

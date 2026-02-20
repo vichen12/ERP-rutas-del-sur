@@ -1,371 +1,329 @@
-'use client'
-export const dynamic = 'force-dynamic'
+"use client";
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useMemo } from 'react'
-import { getSupabase } from '@/lib/supabase'
-import { backupService } from '@/lib/backupService' 
-import { 
-  Truck, Loader2, Plus, CheckCircle2, 
-  Inbox, TrendingUp, GripVertical, Trash2, DownloadCloud, X, Edit3, Menu, ArrowRight, ArrowLeft, Hash, RotateCcw, Users, Phone, User as UserIcon
-} from 'lucide-react'
+import { useState, useEffect, useMemo } from "react";
+import { getSupabase } from "@/lib/supabase";
+import { backupService } from "@/lib/backupService";
+import { Plus, Loader2 } from "lucide-react";
 
 // Componentes modulares
-import { ClienteSidebar } from '@/components/ClienteSidebar'
-import { NuevaOperacionModal } from '@/components/NuevaOperacionModal'
+import { ClienteSidebar } from "@/components/ClienteSidebar";
+import { ClienteHeader } from "@/components/ClienteHeader";
+import { ClientesLibroMayor } from "@/components/ClientesLibroMayor";
+import { ClientesDashboardGeneral } from "@/components/ClientesDashboardGeneral";
+import { ClienteViewSelector } from "@/components/ClienteViewSelector";
+import { ClienteModal } from "@/components/ClienteModal";
+import { ClienteBackUp } from "@/components/ClienteBackUp";
+import { RegistrarMovimientoModal } from "@/components/RegistrarMovimientoModal";
+import { CompletarRemitoModal } from "@/components/CompletarRemitoModal";
 
 export default function ClientesPage() {
-  const [clientes, setClientes] = useState<any[]>([])
-  const [selected, setSelected] = useState<any | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isClientModalOpen, setIsClientModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isOpModalOpen, setIsOpModalOpen] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [backupLoading, setBackupLoading] = useState(false)
+  const [viewMode, setViewMode] = useState<"general" | "individual">("general");
+  const [clientes, setClientes] = useState<any[]>([]);
+  const [selected, setSelected] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isOverBox, setIsOverBox] = useState<string | null>(null);
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [isMovimientoModalOpen, setIsMovimientoModalOpen] = useState(false);
+  
+  const [remitoModalConfig, setRemitoModalConfig] = useState<{isOpen: boolean, opId: string | null}>({
+    isOpen: false, 
+    opId: null
+  });
 
-  const [isOverBox, setIsOverBox] = useState<string | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const [isSaving, setIsSaving] = useState(false);
 
-  const supabase = getSupabase()
+  // 🚀 ESTADO INICIAL V2.0 (Campos unificados en la tabla clientes)
+  const emptyForm = {
+    razon_social: "", 
+    cuit: "", 
+    nombre_contacto: "", 
+    telefono: "", 
+    direccion: "",
+    ruta_origen: "", 
+    ruta_destino: "", 
+    ruta_km_estimados: "",
+    tarifa_flete: "", 
+    pago_chofer: "",
+    lts_gasoil_estimado: "", 
+    costo_descarga: "",
+    desgaste_por_km: "",
+  };
 
-  // --- LÓGICA DE ORDENAMIENTO: LO ÚLTIMO MOVIDO SIEMPRE ARRIBA ---
-  const gestion = useMemo(() => {
-    const historial = [...(selected?.historial || [])].sort((a: any, b: any) => {
-      // Usamos updated_at para que lo último que tocamos suba, fallback a fecha original
-      const timeB = new Date(b.updated_at || b.created_at || b.fecha).getTime()
-      const timeA = new Date(a.updated_at || a.created_at || a.fecha).getTime()
-      return timeB - timeA
-    })
-    
-    const maestro = historial.filter((m: any) => m.estado_gestion === 'maestro' || !m.estado_gestion)
-    const porCobrar = historial.filter((m: any) => m.estado_gestion === 'por_cobrar')
-    const cobrados = historial.filter((m: any) => m.estado_gestion === 'cobrado')
-    const saldoPendiente = porCobrar.reduce((acc: number, m: any) => acc + Number(m.debe || m.monto || 0), 0)
-    
-    return { maestro, porCobrar, cobrados, saldoPendiente }
-  }, [selected])
+  const [clientForm, setClientForm] = useState(emptyForm);
+  const supabase = getSupabase();
 
-  useEffect(() => { fetchClientes() }, [])
+  useEffect(() => { fetchClientes(); }, []);
 
   async function fetchClientes() {
-    setLoading(true)
-    try {
-      const { data } = await supabase.from('clientes').select('*, cuenta_corriente(*)')
-      if (data) {
-        const procesados = data.map((c: any) => {
-          const historial = (c.cuenta_corriente || [])
-          const saldoPendiente = historial
-            .filter((m: any) => m.estado_gestion === 'por_cobrar')
-            .reduce((acc: number, m: any) => acc + Number(m.debe || m.monto || 0), 0)
-          return { ...c, historial, saldo: saldoPendiente }
-        })
-        setClientes(procesados)
-        if (selected) {
-          const actualizado = procesados.find(p => p.id === selected.id)
-          if (actualizado) setSelected(actualizado)
-        } else if (procesados.length > 0) {
-          setSelected(procesados[0])
-        }
+    setLoading(true);
+    // 🚀 V2.0: Ya no necesitamos unir 'cliente_rutas_config'. Todo viene en 'clientes'
+    const { data } = await supabase
+      .from("clientes")
+      .select("*, cuenta_corriente(*)")
+      .order('razon_social', { ascending: true });
+
+    if (data) {
+      const procesados = data.map((c: any) => {
+        const historial = c.cuenta_corriente || [];
+        // Saldo = Suma de Debe (lo que nos deben) - Suma de Haber (lo que ya pagaron)
+        const saldoTotal = historial.reduce((acc: number, m: any) => acc + (Number(m.debe || 0) - Number(m.haber || 0)), 0);
+        
+        return {
+          ...c,
+          historial,
+          saldo: saldoTotal,
+        };
+      });
+      setClientes(procesados);
+      if (selected) {
+        const act = procesados.find((p) => p.id === selected.id);
+        if (act) setSelected(act);
       }
-    } finally { setLoading(false) }
+    }
+    setLoading(false);
   }
 
-  const handleBackup = async () => {
-    setBackupLoading(true)
+  // --- 🚀 GUARDADO UNIFICADO V2.0 ---
+  const handleSaveCliente = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
     try {
-      const deudoresActuales = clientes.filter(c => (c.saldo || 0) > 0).map(c => ({ ...c, saldo: c.saldo }))
-      await backupService.enviarBackupMensual(deudoresActuales)
-      alert("✅ Backup enviado correctamente")
-    } catch (err) { 
-      alert("❌ Error al enviar el backup") 
-    } finally { setBackupLoading(false) }
-  }
+      const payload = {
+        razon_social: clientForm.razon_social.toUpperCase(),
+        cuit: clientForm.cuit,
+        nombre_contacto: clientForm.nombre_contacto.toUpperCase(),
+        telefono: clientForm.telefono,
+        direccion: clientForm.direccion.toUpperCase(),
+        ruta_origen: clientForm.ruta_origen.toUpperCase(),
+        ruta_destino: clientForm.ruta_destino.toUpperCase(),
+        ruta_km_estimados: Number(clientForm.ruta_km_estimados) || 0,
+        tarifa_flete: Number(clientForm.tarifa_flete) || 0,
+        pago_chofer: Number(clientForm.pago_chofer) || 0,
+        lts_gasoil_estimado: Number(clientForm.lts_gasoil_estimado) || 0,
+        costo_descarga: Number(clientForm.costo_descarga) || 0,
+        desgaste_por_km: Number(clientForm.desgaste_por_km) || 0,
+      };
 
-  const handleUpdateCliente = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); if (!selected) return
-    setIsSaving(true)
-    const fd = new FormData(e.currentTarget)
-    const { error } = await supabase.from('clientes').update({
-        razon_social: fd.get('rs')?.toString().toUpperCase(),
-        cuit: fd.get('cuit'),
-        direccion: fd.get('dir')?.toString().toUpperCase(),
-        nombre_contacto: fd.get('nombre')?.toString().toUpperCase(),
-        telefono: fd.get('tel')
-      }).eq('id', selected.id)
-    if (!error) { setIsEditModalOpen(false); await fetchClientes() }
-    setIsSaving(false)
-  }
+      if (isEditModalOpen && selected) {
+        const { error } = await supabase.from("clientes").update(payload).eq("id", selected.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("clientes").insert([payload]);
+        if (error) throw error;
+      }
+
+      setIsClientModalOpen(false); 
+      setIsEditModalOpen(false); 
+      fetchClientes();
+      alert("✅ Cliente y ADN Logístico sincronizados.");
+    } catch (err: any) { 
+      alert("❌ Error: " + err.message); 
+    } finally { 
+      setIsSaving(false); 
+    }
+  };
+
+  const handlePrepareEdit = () => {
+    if (!selected) return;
+    setClientForm({
+      razon_social: selected.razon_social || "",
+      cuit: selected.cuit || "",
+      nombre_contacto: selected.nombre_contacto || "",
+      telefono: selected.telefono || "",
+      direccion: selected.direccion || "",
+      ruta_origen: selected.ruta_origen || "",
+      ruta_destino: selected.ruta_destino || "",
+      ruta_km_estimados: selected.ruta_km_estimados?.toString() || "",
+      tarifa_flete: selected.tarifa_flete?.toString() || "",
+      pago_chofer: selected.pago_chofer?.toString() || "",
+      lts_gasoil_estimado: selected.lts_gasoil_estimado?.toString() || "",
+      costo_descarga: selected.costo_descarga?.toString() || "",
+      desgaste_por_km: selected.desgaste_por_km?.toString() || "",
+    });
+    setIsEditModalOpen(true);
+  };
 
   const handleDeleteCliente = async () => {
-    if (!selected) return
-    if (!confirm(`¿Eliminar a ${selected.razon_social}?`)) return
-    setIsSaving(true)
-    const { error } = await supabase.from('clientes').delete().eq('id', selected.id)
-    if (!error) { setSelected(null); await fetchClientes() }
-    setIsSaving(false)
-  }
+    if (!selected) return;
+    if (!window.confirm(`⚠️ ¿Eliminar a ${selected.razon_social}? Esta acción no se puede deshacer.`)) return;
+    
+    const { error } = await supabase.from("clientes").delete().eq("id", selected.id);
+    if (error) {
+        alert("No se puede eliminar el cliente porque tiene historial de viajes o movimientos. Debería borrar esos registros primero.");
+    } else {
+        setSelected(null); 
+        setViewMode("general"); 
+        fetchClientes();
+    }
+  };
+
+  const handleSaveMovimiento = async (formData: any) => {
+    if (!selected) return;
+    setIsSaving(true);
+    try {
+      const isCargo = formData.tipo_movimiento === 'cargo';
+      const payload = {
+        cliente_id: selected.id,
+        fecha: formData.fecha,
+        detalle: formData.detalle.toUpperCase(),
+        tipo_movimiento: isCargo ? 'Cargo por Flete' : 'Cobro Transferencia',
+        debe: isCargo ? Number(formData.monto) : 0,
+        haber: isCargo ? 0 : Number(formData.monto),
+      };
+
+      const { error } = await supabase.from("cuenta_corriente").insert([payload]);
+      if (error) throw error;
+
+      setIsMovimientoModalOpen(false); 
+      fetchClientes();
+    } catch (err: any) { 
+      alert("Error al registrar movimiento: " + err.message); 
+    } finally { 
+      setIsSaving(false); 
+    }
+  };
 
   const moverOperacion = async (id: string, nuevoEstado: string) => {
-    // Actualizamos el updated_at para que el useMemo lo ponga arriba de todo
-    const { error } = await supabase.from('cuenta_corriente').update({ 
-      estado_gestion: nuevoEstado,
-      updated_at: new Date().toISOString() 
-    }).eq('id', id)
+    // 🚀 Lógica de Kanban Financiero
+    const { error } = await supabase
+      .from("cuenta_corriente")
+      .update({ estado_gestion: nuevoEstado })
+      .eq("id", id);
     
-    if (!error) await fetchClientes()
-    setIsOverBox(null)
-  }
+    if (error) alert(error.message);
+    else fetchClientes();
+  };
 
-  const eliminarOperacion = async (id: string) => {
-    if (!confirm("¿Borrar factura?")) return
-    const { error } = await supabase.from('cuenta_corriente').delete().eq('id', id)
-    if (!error) await fetchClientes()
-    setIsDragging(false)
-  }
+  const gestion = useMemo(() => {
+    if (!selected) return { maestro: [], porCobrar: [], cobrados: [], saldoPendiente: 0 };
+    
+    const hist = [...(selected?.historial || [])].sort((a: any, b: any) => 
+      new Date(b.created_at || b.fecha).getTime() - new Date(a.created_at || a.fecha).getTime()
+    );
 
-  const handleSubmitOperacion = async (formData: any) => {
-    if (!selected) return
-    setIsSaving(true)
-    const now = new Date().toISOString()
-    const payload = {
-      cliente_id: selected.id,
-      fecha: formData.fecha,
-      descripcion: `FACTURA ${formData.nro_factura}`.toUpperCase(),
-      debe: Number(formData.monto),
-      monto: Number(formData.monto),
-      nro_factura: formData.nro_factura, 
-      haber: 0,
-      estado_gestion: 'maestro',
-      updated_at: now
-    }
-    const { error } = await supabase.from('cuenta_corriente').insert([payload])
-    if (!error) { setIsOpModalOpen(false); await fetchClientes() }
-    setIsSaving(false)
-  }
-
-  const onDragStart = (e: React.DragEvent, id: string) => { e.dataTransfer.setData("opId", id); setIsDragging(true); }
-  const onDragEnd = () => { setIsDragging(false); setIsOverBox(null); }
-  const onDrop = (e: React.DragEvent, nuevoEstado: string) => {
-    e.preventDefault()
-    const id = e.dataTransfer.getData("opId")
-    if (nuevoEstado === 'delete') eliminarOperacion(id)
-    else moverOperacion(id, nuevoEstado)
-  }
-
-  if (loading && !selected) return <div className="h-screen bg-[#020617] flex items-center justify-center text-sky-500 font-black italic animate-pulse">SINCRONIZANDO...</div>
+    return {
+      maestro: hist.filter((m: any) => m.estado_gestion === "maestro" || !m.estado_gestion),
+      porCobrar: hist.filter((m: any) => m.estado_gestion === "por_cobrar"),
+      cobrados: hist.filter((m: any) => m.estado_gestion === "cobrado"),
+      saldoPendiente: hist.filter((m: any) => m.estado_gestion === "por_cobrar")
+                          .reduce((acc: number, m: any) => acc + (Number(m.debe || 0) - Number(m.haber || 0)), 0),
+    };
+  }, [selected]);
 
   return (
     <div className="flex h-screen bg-[#020617] text-slate-100 overflow-hidden font-sans italic selection:bg-sky-500/30">
       
-      <div className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static z-[60] transition-transform duration-300 h-full w-full lg:w-auto`}>
-        <ClienteSidebar 
-          clientes={clientes.filter((c: any) => c.razon_social.toLowerCase().includes(searchTerm.toLowerCase()))}
-          selectedId={selected?.id} onSelect={(c: any) => { setSelected(c); setIsSidebarOpen(false); }} loading={loading}
-          searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-          onAdd={() => setIsClientModalOpen(true)} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen}
-        />
-      </div>
+      <ClienteSidebar
+        clientes={clientes.filter((c) => c.razon_social.toLowerCase().includes(searchTerm.toLowerCase()))}
+        selectedId={selected?.id}
+        onSelect={(c: any) => { setSelected(c); setViewMode("individual"); setIsSidebarOpen(false); }}
+        loading={loading}
+        searchTerm={searchTerm} 
+        setSearchTerm={setSearchTerm}
+        onAdd={() => { setClientForm(emptyForm); setIsClientModalOpen(true); }}
+        isOpen={isSidebarOpen} 
+        setIsOpen={setIsSidebarOpen}
+      />
 
-      <main className="flex-1 overflow-y-auto relative z-10 lg:mt-0">
-        <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff01_1px,transparent_1px),linear-gradient(to_bottom,#ffffff01_1px,transparent_1px)] bg-[size:60px_60px]" />
-        
-        <div className="lg:hidden flex items-center justify-between p-6 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md sticky top-0 z-40">
-           <Truck className="text-sky-500" size={30} />
-           <button onClick={() => setIsSidebarOpen(true)} className="p-3 bg-white/5 rounded-2xl"><Menu size={24} /></button>
+      <main className="flex-1 overflow-y-auto relative custom-scrollbar">
+        <div className="pt-24 pb-4 text-slate-100">
+          <ClienteViewSelector viewMode={viewMode} setViewMode={setViewMode} hasSelected={!!selected} />
         </div>
 
-        {selected ? (
-          <div className="mt-20  max-w-7xl mx-auto p-6 lg:p-10 space-y-8 lg:space-y-12 relative animate-in fade-in duration-500 pb-32">
-            
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-8">
-              <div className="space-y-4">
-                <p className="text-[10px] font-black text-sky-500 uppercase tracking-[0.4em]">Gestión / {selected.cuit}</p>
-                <div className="flex flex-wrap items-center gap-4 lg:gap-6">
-                  <h1 className="text-4xl lg:text-6xl font-black italic tracking-tighter uppercase leading-none">{selected.razon_social}</h1>
-                  <div className="flex gap-2">
-                    <button onClick={() => setIsEditModalOpen(true)} className="p-2 bg-white/5 rounded-xl border border-white/5 transition-all hover:bg-sky-500/10"><Edit3 size={18} /></button>
-                    <button onClick={handleDeleteCliente} className="p-2 bg-white/5 rounded-xl border border-white/5 transition-all hover:bg-rose-500/10"><Trash2 size={18} /></button>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-6 mt-2 text-slate-400 font-bold uppercase text-[10px] italic">
-                   <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                      <UserIcon size={12} className="text-sky-500" />
-                      <span>{selected.nombre_contacto || 'SIN CONTACTO'}</span>
-                   </div>
-                   <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                      <Phone size={12} className="text-sky-500" />
-                      <span>{selected.telefono || 'SIN TELÉFONO'}</span>
-                   </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6">
-                  <div className="px-6 py-3 bg-emerald-500/10 rounded-full border border-emerald-500/20 shadow-lg">
-                    <span className="text-[10px] font-black text-emerald-500/50 uppercase mr-3 tracking-widest italic text-emerald-500">Saldo Pendiente Hoy:</span>
-                    <span className="text-xl lg:text-2xl font-black text-emerald-500 tabular-nums">$ {gestion.saldoPendiente.toLocaleString('es-AR')}</span>
-                  </div>
-                  <button onClick={handleBackup} disabled={backupLoading} className="flex items-center gap-3 px-6 py-3 lg:py-4 bg-slate-900 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-sky-500 transition-all shadow-xl group">
-                    {backupLoading ? <Loader2 size={18} className="animate-spin" /> : <DownloadCloud size={18} className="text-sky-500" />}
-                    Backup
-                  </button>
-                </div>
-              </div>
-              <button onClick={() => setIsOpModalOpen(true)} className="w-full md:w-auto px-8 lg:px-10 py-5 bg-sky-600 text-white rounded-[1.5rem] lg:rounded-[2rem] font-black uppercase text-[11px] tracking-widest hover:bg-sky-500 transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95 shadow-sky-900/20 border border-sky-400/20">
-                <Plus size={20} strokeWidth={3} /> Nueva Operación
+        <div className="max-w-7xl mx-auto px-6 pb-32">
+          {viewMode === "general" ? (
+            <div className="animate-in fade-in duration-500 space-y-8 text-right">
+              <button 
+                onClick={() => { setClientForm(emptyForm); setIsClientModalOpen(true); }} 
+                className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-black text-[11px] uppercase flex items-center gap-3 transition-all ml-auto active:scale-95 shadow-xl shadow-sky-900/20"
+              >
+                <Plus size={18} /> Nuevo Cliente
               </button>
-            </header>
-
-            {/* LIBRO MAYOR */}
-            <section 
-              className={`space-y-6 p-4 lg:p-6 rounded-[2rem] border transition-all duration-300 ${isOverBox === 'maestro' ? 'bg-sky-500/10 border-sky-500 scale-[1.01]' : 'border-transparent'}`}
-              onDragOver={(e) => {e.preventDefault(); setIsOverBox('maestro')}} onDragLeave={() => setIsOverBox(null)} onDrop={(e) => onDrop(e, 'maestro')}
-            >
-              <h2 className="text-[11px] font-black uppercase tracking-[0.4em] opacity-40 flex items-center gap-3 italic"><Inbox size={18} /> Libro Mayor / Clasificar</h2>
-              <div className="grid grid-cols-1 gap-3">
-                {gestion.maestro.map((m: any) => (
-                  <div key={m.id} draggable onDragStart={(e) => onDragStart(e, m.id)} onDragEnd={onDragEnd} className="bg-slate-900/40 p-5 lg:p-6 rounded-[1.5rem] border border-white/5 flex justify-between items-center group cursor-grab active:cursor-grabbing hover:border-sky-500/30 transition-all">
-                    <div className="flex items-center gap-4 lg:gap-8 text-white">
-                      <GripVertical size={20} className="text-slate-700 group-hover:text-sky-500 hidden sm:block" />
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                           <Hash size={12} className="text-sky-500" />
-                           <p className="text-[10px] font-black text-slate-500 uppercase italic leading-none">REMITO: {m.nro_factura || 'S/N'}</p>
-                           <span className="text-[9px] text-slate-600 ml-2">{new Date(m.fecha).toLocaleDateString('es-AR')}</span>
-                        </div>
-                        <p className="text-xl lg:text-2xl font-black italic tracking-tighter text-white font-sans leading-none">$ {Number(m.debe || m.monto).toLocaleString('es-AR')}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => eliminarOperacion(m.id)} className="p-4 text-slate-500 hover:text-rose-500 transition-colors"><Trash2 size={20}/></button>
-                        <button onClick={() => moverOperacion(m.id, 'por_cobrar')} className="p-4 bg-sky-600/20 text-sky-500 rounded-2xl hover:bg-sky-600 hover:text-white transition-all flex items-center gap-3 group">
-                           <span className="text-[10px] font-black uppercase tracking-widest italic">Cobrar</span>
-                           <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-              {/* POR COBRAR */}
-              <div onDragOver={(e) => {e.preventDefault(); setIsOverBox('por_cobrar')}} onDragLeave={() => setIsOverBox(null)} onDrop={(e) => onDrop(e, 'por_cobrar')} className={`border p-6 lg:p-10 rounded-[2.5rem] min-h-[400px] flex flex-col transition-all duration-300 ${isOverBox === 'por_cobrar' ? 'bg-emerald-500/10 border-emerald-500 scale-[1.02]' : 'bg-emerald-500/[0.02] border-emerald-500/10'}`}>
-                <h3 className="text-emerald-500 font-black uppercase text-xl italic mb-6 flex items-center gap-3"><TrendingUp size={24} /> Por Cobrar</h3>
-                <div className="space-y-3 flex-1 overflow-y-auto">
-                  {gestion.porCobrar.map((m: any) => (
-                    <div key={m.id} draggable onDragStart={(e) => onDragStart(e, m.id)} className="bg-slate-950 p-5 rounded-[1.5rem] border border-emerald-500/10 flex justify-between items-center group cursor-grab">
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => moverOperacion(m.id, 'maestro')} className="p-2 bg-white/5 rounded-lg text-slate-500 hover:text-sky-500 transition-colors"><RotateCcw size={16} /></button>
-                        <div>
-                           <p className="text-[9px] font-black text-emerald-500 uppercase italic mb-1 leading-none">R: {m.nro_factura || 'S/N'}</p>
-                           <p className="text-xl font-black italic tracking-tighter text-white">${Number(m.debe || m.monto).toLocaleString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => eliminarOperacion(m.id)} className="p-2 text-slate-600 hover:text-rose-500 transition-colors"><Trash2 size={16}/></button>
-                        <button onClick={() => moverOperacion(m.id, 'cobrado')} className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white transition-all"><ArrowRight size={20} /></button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* COBRADOS */}
-              <div onDragOver={(e) => {e.preventDefault(); setIsOverBox('cobrado')}} onDragLeave={() => setIsOverBox(null)} onDrop={(e) => onDrop(e, 'cobrado')} className={`border p-6 lg:p-10 rounded-[2.5rem] min-h-[400px] flex flex-col transition-all duration-300 ${isOverBox === 'cobrado' ? 'bg-rose-500/10 border-rose-500 scale-[1.02]' : 'bg-rose-500/[0.02] border-rose-500/10'}`}>
-                <h3 className="text-rose-500 font-black uppercase text-xl italic mb-6 flex items-center gap-3"><CheckCircle2 size={24} /> Cobrados</h3>
-                <div className="space-y-3 flex-1 overflow-y-auto">
-                  {gestion.cobrados.map((m: any) => (
-                    <div key={m.id} draggable onDragStart={(e) => onDragStart(e, m.id)} className="bg-slate-950 p-5 rounded-[1.5rem] border border-rose-500/10 flex justify-between items-center opacity-40 hover:opacity-100 transition-all cursor-grab group">
-                      <div className="flex items-center gap-3">
-                        <button onClick={() => moverOperacion(m.id, 'maestro')} className="p-2 bg-white/5 rounded-lg text-slate-500 hover:text-sky-500 transition-colors"><RotateCcw size={16} /></button>
-                        <div>
-                           <p className="text-[9px] font-black text-rose-500 uppercase italic mb-1 leading-none">R: {m.nro_factura || 'S/N'}</p>
-                           <p className="text-xl font-black italic tracking-tighter text-white">${Number(m.debe || m.monto).toLocaleString()}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => eliminarOperacion(m.id)} className="p-2 text-slate-600 hover:text-rose-500 transition-colors"><Trash2 size={16}/></button>
-                        <button onClick={() => moverOperacion(m.id, 'por_cobrar')} className="p-2 bg-white/5 rounded-lg text-slate-500 hover:text-emerald-500 transition-all"><ArrowLeft size={16} /></button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              
+              <ClientesDashboardGeneral 
+                clientes={clientes} 
+                onExportAll={() => backupService.downloadResumenGeneral(clientes)} 
+                onSelectClient={(c: any) => { setSelected(c); setViewMode("individual"); }} 
+              />
             </div>
-
-            {/* TACHO DE BASURA ARRASTRE */}
-            <div onDragOver={(e) => { e.preventDefault(); setIsOverBox('delete') }} onDrop={(e) => onDrop(e, 'delete')} className={`fixed bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 flex flex-col items-center gap-3 ${isDragging ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20 pointer-events-none'}`}>
-              <div className={`p-6 lg:p-8 rounded-full border-2 border-dashed transition-all ${isOverBox === 'delete' ? 'bg-rose-600 border-white scale-110 text-white shadow-[0_0_50px_rgba(225,29,72,0.5)]' : 'bg-rose-900/20 border-rose-500/50 text-rose-500'}`}><Trash2 size={32} /></div>
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500 bg-black/80 px-4 py-1 rounded-full italic leading-none">Borrar</p>
-            </div>
-          </div>
-        ) : (
-          <div className="h-full flex flex-col items-center justify-center opacity-10 grayscale italic"><Truck size={120} strokeWidth={1} /><h2 className="text-4xl lg:text-6xl font-black uppercase tracking-[0.5em] mt-8 text-center leading-none italic">Rutas del Sur</h2></div>
-        )}
-
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden fixed bottom-6 right-6 z-[100] p-5 bg-sky-600 text-white rounded-full shadow-2xl active:scale-90 transition-all border border-sky-400/30"
-        >
-          <Users size={28} />
-        </button>
+          ) : (
+            selected && (
+              <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <ClienteHeader
+                  selected={selected}
+                  onBackup={() => setIsBackupModalOpen(true)}
+                  onEdit={handlePrepareEdit}
+                  onNuevaOp={() => setIsMovimientoModalOpen(true)}
+                  onDelete={handleDeleteCliente}
+                />
+                
+                <ClientesLibroMayor
+                  gestion={gestion}
+                  isOverBox={isOverBox} 
+                  setIsOverBox={setIsOverBox}
+                  onDragStart={(e: any, id: string) => { e.dataTransfer.setData("opId", id); }}
+                  onDragEnd={() => { setIsOverBox(null); }}
+                  onDrop={(e: any, n: string) => { e.preventDefault(); const id = e.dataTransfer.getData("opId"); moverOperacion(id, n); }}
+                  moverOperacion={moverOperacion}
+                  eliminarOperacion={async (id: any) => { 
+                    if (confirm("¿Eliminar este movimiento permanentemente?")) {
+                        await supabase.from("cuenta_corriente").delete().eq("id", id);
+                        fetchClientes();
+                    }
+                  }}
+                  onCompletarRemito={(id: string) => setRemitoModalConfig({ isOpen: true, opId: id })} 
+                />
+              </div>
+            )
+          )}
+        </div>
       </main>
 
-      {/* MODAL ALTA CLIENTE */}
-      {isClientModalOpen && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-[#020617] border border-white/10 p-8 rounded-[2.5rem] w-full max-w-lg relative italic shadow-2xl">
-            <button onClick={() => setIsClientModalOpen(false)} className="absolute top-8 right-8 text-slate-500 hover:text-white transition-all"><X size={28}/></button>
-            <h3 className="text-3xl font-black uppercase text-white mb-8 italic">Nuevo Cliente</h3>
-            <form onSubmit={async (e) => {
-              e.preventDefault(); setIsSaving(true)
-              const fd = new FormData(e.currentTarget)
-              const { error } = await supabase.from('clientes').insert([{ 
-                razon_social: fd.get('rs')?.toString().toUpperCase(), 
-                cuit: fd.get('cuit'), 
-                direccion: fd.get('dir')?.toString().toUpperCase(),
-                nombre_contacto: fd.get('nombre')?.toString().toUpperCase(),
-                telefono: fd.get('tel')
-              }])
-              setIsSaving(false)
-              if (!error) { setIsClientModalOpen(false); fetchClientes() }
-            }} className="space-y-4">
-              <input name="rs" placeholder="RAZÓN SOCIAL" required className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold uppercase" />
-              <input name="cuit" placeholder="CUIT" required className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold" />
-              <input name="nombre" placeholder="NOMBRE DE CONTACTO" className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold uppercase" />
-              <input name="tel" placeholder="TELÉFONO" className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold" />
-              <input name="dir" placeholder="DIRECCIÓN" className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold uppercase" />
-              <button disabled={isSaving} className="w-full py-5 bg-sky-600 text-white font-black rounded-2xl uppercase text-[11px] tracking-widest mt-6 shadow-xl active:scale-95 transition-all">
-                {isSaving ? 'Registrando...' : 'Registrar Cliente'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* MODALES TÁCTICOS */}
+      <ClienteModal 
+        isOpen={isClientModalOpen || isEditModalOpen} 
+        onClose={() => { setIsClientModalOpen(false); setIsEditModalOpen(false); }} 
+        formData={clientForm} 
+        setFormData={setClientForm} 
+        onSubmit={handleSaveCliente} 
+        isSubmitting={isSaving} 
+      />
 
-      {/* MODAL EDICIÓN CLIENTE */}
-      {isEditModalOpen && selected && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-[#0f172a] border border-sky-500/30 p-8 rounded-[2.5rem] w-full max-w-lg relative italic shadow-2xl">
-            <button onClick={() => setIsEditModalOpen(false)} className="absolute top-8 right-8 text-slate-500 hover:text-white transition-all"><X size={28}/></button>
-            <h3 className="text-3xl font-black uppercase text-white mb-8 italic text-sky-500">Editar Cliente</h3>
-            <form onSubmit={handleUpdateCliente} className="space-y-4">
-              <input name="rs" defaultValue={selected.razon_social} required className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold uppercase" />
-              <input name="cuit" defaultValue={selected.cuit} required className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold" />
-              <input name="nombre" defaultValue={selected.nombre_contacto} placeholder="NOMBRE DE CONTACTO" className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold uppercase" />
-              <input name="tel" defaultValue={selected.telefono} placeholder="TELÉFONO" className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold" />
-              <input name="dir" defaultValue={selected.direccion} className="w-full p-4 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-bold uppercase" />
-              <button disabled={isSaving} className="w-full py-5 bg-emerald-600 text-white font-black rounded-2xl uppercase text-[11px] mt-6 shadow-xl active:scale-95 transition-all">
-                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <RegistrarMovimientoModal 
+        isOpen={isMovimientoModalOpen} 
+        onClose={() => setIsMovimientoModalOpen(false)} 
+        onSubmit={handleSaveMovimiento} 
+        isSaving={isSaving} 
+        clienteNombre={selected?.razon_social} 
+      />
 
-      <NuevaOperacionModal isOpen={isOpModalOpen} onClose={() => setIsOpModalOpen(false)} onSubmit={handleSubmitOperacion} isSaving={isSaving} clienteNombre={selected?.razon_social} />
+      <CompletarRemitoModal 
+        isOpen={remitoModalConfig.isOpen} 
+        onClose={() => setRemitoModalConfig({ isOpen: false, opId: null })} 
+        onSubmit={async (num: string) => {
+          if (!remitoModalConfig.opId) return;
+          setIsSaving(true);
+          await supabase.from("cuenta_corriente").update({ remito: num.toUpperCase() }).eq("id", remitoModalConfig.opId);
+          setRemitoModalConfig({ isOpen: false, opId: null }); 
+          fetchClientes();
+          setIsSaving(false);
+        }} 
+        isSaving={isSaving} 
+      />
+
+      <ClienteBackUp 
+        isOpen={isBackupModalOpen} 
+        onClose={() => setIsBackupModalOpen(false)} 
+        clienteNombre={selected?.razon_social} 
+        onDownloadPDF={() => backupService.downloadPDF(selected, gestion)} 
+      />
     </div>
-  )
+  );
 }

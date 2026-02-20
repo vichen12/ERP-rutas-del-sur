@@ -1,5 +1,5 @@
 'use client'
-import { Truck, AlertCircle, AlertTriangle, ShieldCheck, Calendar, Filter, X, ChevronDown, Clock } from 'lucide-react'
+import { Truck, AlertCircle, AlertTriangle, ShieldCheck, Calendar, Filter, X, ChevronDown, Clock, Activity } from 'lucide-react'
 
 export function ChoferStatsHeader({ 
   chofer, 
@@ -9,9 +9,9 @@ export function ChoferStatsHeader({
   showAllTime, setShowAllTime 
 }: any) {
   
-  // Lógica del Carnet
-  const tieneVencimiento = Boolean(chofer.vencimiento_licencia)
-  const vencimiento = tieneVencimiento ? new Date(chofer.vencimiento_licencia) : new Date()
+  // Lógica del Carnet (Actualizado a vto_licencia)
+  const tieneVencimiento = Boolean(chofer.vto_licencia)
+  const vencimiento = tieneVencimiento ? new Date(chofer.vto_licencia) : new Date()
   const hoy = new Date()
   const estaVencido = tieneVencimiento && vencimiento < hoy
   const vencePronto = tieneVencimiento && !estaVencido && (vencimiento.getTime() - hoy.getTime()) / (1000 * 3600 * 24) <= 30
@@ -31,7 +31,7 @@ export function ChoferStatsHeader({
       <div className="pr-10 relative z-10">
         
         {/* Badge Flotante */}
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap gap-2">
            {tieneVencimiento ? (
              <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border text-[10px] font-black uppercase tracking-widest shadow-2xl backdrop-blur-md transition-all ${
                 estaVencido ? 'bg-rose-500/10 border-rose-500/50 text-rose-400 shadow-rose-900/20' :
@@ -40,8 +40,8 @@ export function ChoferStatsHeader({
              }`}>
                 {estaVencido ? <AlertCircle size={14}/> : vencePronto ? <AlertTriangle size={14}/> : <ShieldCheck size={14}/>}
                 <div className="flex flex-col leading-none gap-0.5">
-                    <span>{estaVencido ? 'Licencia Vencida' : vencePronto ? 'Vence Pronto' : 'Licencia Al Día'}</span>
-                    <span className="opacity-60 text-[8px] font-bold">{vencimiento.toLocaleDateString('es-AR')}</span>
+                   <span>{estaVencido ? 'Licencia Vencida' : vencePronto ? 'Vence Pronto' : 'Licencia Al Día'}</span>
+                   <span className="opacity-60 text-[8px] font-bold">{vencimiento.toLocaleDateString('es-AR')}</span>
                 </div>
              </div>
            ) : (
@@ -49,6 +49,15 @@ export function ChoferStatsHeader({
                 <Calendar size={14}/> Sin Vencimiento
              </div>
            )}
+
+           {/* NUEVO: Badge de Estado del Chofer V2.0 */}
+           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl border text-[10px] uppercase font-black ${
+             chofer.estado === 'En Viaje' ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' :
+             chofer.estado === 'Franco' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
+             'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
+           }`}>
+              <Activity size={14}/> {chofer.estado || 'Disponible'}
+           </div>
         </div>
 
         {/* Título y Subtítulo */}

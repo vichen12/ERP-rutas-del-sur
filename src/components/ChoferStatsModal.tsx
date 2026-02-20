@@ -25,7 +25,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }:
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  // --- LÓGICA DE DATOS ---
+  // --- LÓGICA DE DATOS (Filtrado por fecha) ---
   const filteredViajes = useMemo(() => {
     return viajes.filter((v: any) => {
       if (showAllTime) return true;
@@ -34,12 +34,12 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }:
     });
   }, [viajes, selectedMonth, selectedYear, showAllTime]);
 
-  // Cálculos de KPIs
+  // --- CÁLCULOS DE KPIs (Alineados a BD V2.0) ---
   const stats = useMemo(() => {
     return filteredViajes.reduce((acc: any, curr: any) => {
       const pago = Number(curr.pago_chofer) || 0
-      const km = (Number(curr.km_salida || curr.km_recorridos) || 0) + (Number(curr.km_retorno) || 0)
-      const lts = Number(curr.lts_combustible) || 0
+      const km = Number(curr.km_recorridos) || 0 // V2.0 usa km_recorridos directo
+      const lts = Number(curr.lts_gasoil) || 0    // V2.0 usa lts_gasoil
       
       return {
         totalPlata: acc.totalPlata + pago,
@@ -51,6 +51,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }:
     }, { totalPlata: 0, totalDeuda: 0, totalKm: 0, totalLts: 0, viajesCount: 0 })
   }, [filteredViajes])
 
+  // Rendimiento: Litros cada 100km
   const consumoPromedio = stats.totalKm > 0 ? ((stats.totalLts / stats.totalKm) * 100).toFixed(1) : '0'
 
   const totalSeleccionado = useMemo(() => {
@@ -81,6 +82,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }:
     }
 
     try {
+      // Actualizamos los viajes marcándolos como pagados al chofer
       const { error } = await supabase.from('viajes').update({
           pago_chofer_realizado: true,
           fecha_pago: paymentData.fecha,
@@ -92,22 +94,20 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }:
       setShowPaymentModal(false)
       setSelectedViajes([])
       if (onRefresh) onRefresh()
-    } catch (err: any) { alert("Error: " + err.message) } 
-    finally { setIsProcessing(false) }
+    } catch (err: any) { 
+        alert("Error al procesar pago: " + err.message) 
+    } finally { 
+        setIsProcessing(false) 
+    }
   }
 
   return (
     <>
-      {/* FIX VISUAL: 
-         - `items-start` en vez de `center`
-         - `pt-24 md:pt-32` para bajarlo del navbar 
-      */}
       <div className="fixed inset-0 z-[200] flex items-start justify-center pt-24 md:pt-32 p-4 md:p-8 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
         
-        {/* Contenedor del Modal */}
         <div className="bg-[#020617] border border-white/10 w-full max-w-7xl h-full max-h-[85vh] rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col mb-10">
           
-          {/* HEADER (Con lógica de carnet y filtros) */}
+          {/* HEADER */}
           <ChoferStatsHeader 
              chofer={chofer} 
              onClose={onClose}
@@ -116,7 +116,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }:
              showAllTime={showAllTime} setShowAllTime={setShowAllTime}
           />
 
-          {/* DASHBOARD KPIs (Tarjetas) */}
+          {/* DASHBOARD KPIs */}
           <ChoferStatsKPIs 
              stats={stats} 
              consumoPromedio={consumoPromedio} 
@@ -133,16 +133,16 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes, onRefresh }:
           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
             {activeTab === 'liquidacion' && (
               <LiquidacionList 
-                 viajes={filteredViajes} 
-                 selectedViajes={selectedViajes} 
-                 toggleSelect={toggleSelect} 
-                 handleSelectAll={handleSelectAll} 
+                  viajes={filteredViajes} 
+                  selectedViajes={selectedViajes} 
+                  toggleSelect={toggleSelect} 
+                  handleSelectAll={handleSelectAll} 
               />
             )}
             {activeTab === 'bitacora' && <BitacoraTable viajes={filteredViajes} />}
           </div>
 
-          {/* FOOTER FLOTANTE (Solo para Liquidación) */}
+          {/* FOOTER FLOTANTE PARA LIQUIDACIÓN */}
           {activeTab === 'liquidacion' && selectedViajes.length > 0 && (
              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] p-4 bg-indigo-600 rounded-[2.5rem] shadow-2xl flex justify-between items-center z-50 animate-in slide-in-from-bottom-4 border border-white/20">
                 <div className="pl-6">

@@ -1,34 +1,72 @@
 'use client'
 import { useState } from 'react'
-import { ArrowRight, ArrowLeft, Globe, Droplets, UserCheck, DollarSign, Calculator, TrendingUp, Percent } from 'lucide-react'
+import { 
+  ArrowRight, ArrowLeft, Globe, Droplets, UserCheck, 
+  DollarSign, Calculator, TrendingUp, Percent, Gauge 
+} from 'lucide-react'
+
+// Paleta táctica optimizada para el ERP V2.0
+const THEMES = {
+  ida: {
+    bgActive: 'bg-emerald-600 shadow-emerald-600/30 text-white',
+    textMain: 'text-emerald-400',
+    textIcon: 'text-emerald-500',
+    border: 'border-emerald-500/30',
+    ring: 'ring-emerald-500/10',
+    shadow: 'shadow-emerald-900/20',
+    badgeBg: 'bg-emerald-500/10',
+    badgeBorder: 'border-emerald-500/20'
+  },
+  retorno: {
+    bgActive: 'bg-indigo-600 shadow-indigo-600/30 text-white',
+    textMain: 'text-indigo-400',
+    textIcon: 'text-indigo-500',
+    border: 'border-indigo-500/30',
+    ring: 'ring-indigo-500/10',
+    shadow: 'shadow-indigo-900/20',
+    badgeBg: 'bg-indigo-500/10',
+    badgeBorder: 'border-indigo-500/20'
+  },
+  total: {
+    bgActive: 'bg-cyan-600 shadow-cyan-600/30 text-white',
+    textMain: 'text-cyan-400',
+    textIcon: 'text-cyan-500',
+    border: 'border-cyan-500/30',
+    ring: 'ring-cyan-500/10',
+    shadow: 'shadow-cyan-900/20',
+    badgeBg: 'bg-cyan-500/10',
+    badgeBorder: 'border-cyan-500/20'
+  }
+}
 
 export function ViajesGeneral({ stats }: { stats: any }) {
-  // Estado para controlar qué vista mostrar: 'ida', 'retorno' o 'total'
   const [activeView, setActiveView] = useState<'ida' | 'retorno' | 'total'>('total')
 
   const views = [
-    { id: 'ida', label: 'Operación Ida', icon: <ArrowRight size={14} />, color: 'emerald' },
-    { id: 'retorno', label: 'Operación Retorno', icon: <ArrowLeft size={14} />, color: 'indigo' },
-    { id: 'total', label: 'Balance General', icon: <Globe size={14} />, color: 'cyan' },
+    { id: 'ida', label: 'Operación Ida', icon: <ArrowRight size={14} /> },
+    { id: 'total', label: 'Consolidado', icon: <Globe size={14} /> },
+    { id: 'retorno', label: 'Operación Retorno', icon: <ArrowLeft size={14} /> },
   ] as const;
 
-  const currentData = stats[activeView]
-  const currentColor = activeView === 'ida' ? 'emerald' : activeView === 'retorno' ? 'indigo' : 'cyan'
+  const currentData = stats[activeView] || { km: 0, totalLts: 0, totalChofer: 0, totalCostos: 0, bruta: 0, siva: 0, neta: 0 }
+  const t = THEMES[activeView]
+  
+  // Lógica de Rentabilidad
+  const eficiencia = currentData.bruta > 0 ? (currentData.neta / currentData.bruta) * 100 : 0
+  const rendimientoCombustible = currentData.km > 0 ? (currentData.totalLts / currentData.km) * 100 : 0
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 italic font-sans">
       
-      {/* SELECTOR DE VISTA (TABS) */}
-      <div className="flex p-1.5 bg-slate-900/60 border border-white/5 rounded-[2rem] w-fit backdrop-blur-md mx-auto lg:mx-0">
+      {/* --- SELECTOR TÁCTICO --- */}
+      <div className="flex flex-col sm:flex-row p-1.5 bg-slate-950/80 border border-white/5 rounded-[2rem] w-full sm:w-fit backdrop-blur-md mx-auto lg:mx-0 shadow-2xl">
         {views.map((view) => (
           <button
             key={view.id}
             onClick={() => setActiveView(view.id)}
             className={`
-              flex items-center gap-3 px-6 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300
-              ${activeView === view.id 
-                ? `bg-${view.color}-600 text-white shadow-lg shadow-${view.color}-900/20` 
-                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}
+              flex-1 sm:flex-none flex justify-center items-center gap-3 px-6 py-4 md:py-3 rounded-[1.5rem] text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all duration-500
+              ${activeView === view.id ? t.bgActive : 'text-slate-600 hover:text-slate-300 hover:bg-white/5'}
             `}
           >
             {view.icon}
@@ -37,69 +75,102 @@ export function ViajesGeneral({ stats }: { stats: any }) {
         ))}
       </div>
 
-      {/* TARJETA DINÁMICA DE RESULTADOS */}
+      {/* --- PANEL DE CONTROL DE RESULTADOS --- */}
       <div className={`
-        relative bg-slate-900/40 rounded-[3rem] border p-8 lg:p-12 backdrop-blur-xl transition-all duration-500 overflow-hidden
-        ${activeView === 'total' ? 'border-cyan-500/30 ring-1 ring-cyan-500/10 shadow-2xl shadow-cyan-900/20' : 'border-white/5'}
+        relative bg-slate-900/40 rounded-[2.5rem] md:rounded-[3.5rem] border p-6 md:p-10 lg:p-14 backdrop-blur-xl transition-all duration-700 overflow-hidden shadow-2xl
+        ${activeView === 'total' ? `${t.border} ring-1 ${t.ring} ${t.shadow}` : 'border-white/5'}
       `}>
         
-        {/* Decoración de fondo dinámica */}
-        <div className={`absolute -right-10 -top-10 opacity-[0.03] transition-colors duration-500 text-${currentColor}-400`}>
-           {activeView === 'total' ? <Globe size={300} /> : activeView === 'ida' ? <ArrowRight size={300} /> : <ArrowLeft size={300} />}
+        {/* Glow Decorativo de fondo */}
+        <div className={`absolute -right-10 -top-10 opacity-[0.04] transition-colors duration-700 ${t.textMain} pointer-events-none`}>
+           {activeView === 'total' ? <Globe size={300}/> : activeView === 'ida' ? <ArrowRight size={300}/> : <ArrowLeft size={300}/>}
         </div>
 
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           
-          {/* LADO IZQUIERDO: MÉTRICAS OPERATIVAS */}
+          {/* MÉTRICAS DE CAMPO */}
           <div className="space-y-8">
             <div>
-              <h3 className={`text-xs font-black uppercase tracking-[0.3em] mb-1 text-${currentColor}-400`}>Resumen Detallado</h3>
-              <p className="text-4xl font-black italic text-white uppercase tracking-tighter">
-                {activeView === 'total' ? 'Estado Global' : activeView === 'ida' ? 'Logística de Carga' : 'Logística de Retorno'}
+              <div className="flex items-center gap-2 mb-2">
+                 <span className={`w-1.5 h-1.5 rounded-full ${t.bgActive.split(' ')[0]} animate-pulse`} />
+                 <h3 className={`text-[10px] md:text-xs font-black uppercase tracking-[0.4em] ${t.textMain}`}>Análisis Operativo</h3>
+              </div>
+              <p className="text-4xl md:text-5xl lg:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
+                {activeView === 'total' ? 'Balance General' : activeView === 'ida' ? 'Sentido Ida' : 'Sentido Retorno'}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <MetricBox label="Distancia Recorrida" value={currentData.km} suffix=" KM" icon={<TrendingUp size={16}/>} />
-              <MetricBox label="Combustible Consumido" value={currentData.totalLts} suffix=" LTS" icon={<Droplets size={16}/>} />
-              <MetricBox label="Pagos a Choferes" value={currentData.totalChofer} prefix="$ " icon={<UserCheck size={16}/>} />
-              <MetricBox label="Gastos Operativos" value={currentData.totalCostos} prefix="$ " icon={<Calculator size={16}/>} />
+            <div className="grid grid-cols-2 gap-4">
+              <MetricBox label="Kilometraje" value={currentData.km} suffix=" KM" icon={<TrendingUp size={16}/>} />
+              <MetricBox label="Gasoil Consumido" value={currentData.totalLts} suffix=" LTS" icon={<Droplets size={16}/>} />
+              <MetricBox label="Viáticos Chofer" value={currentData.totalChofer} prefix="$ " icon={<UserCheck size={16}/>} />
+              <MetricBox label="Costos / Desgaste" value={currentData.totalCostos} prefix="$ " icon={<Calculator size={16}/>} />
+            </div>
+
+            {/* Rendimiento Energético */}
+            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Gauge size={16} className="text-slate-500" />
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Rendimiento Promedio</span>
+                </div>
+                <span className="text-sm font-black text-slate-300 italic">{rendimientoCombustible.toFixed(1)} Lts / 100km</span>
             </div>
           </div>
 
-          {/* LADO DERECHO: RESULTADO FINANCIERO */}
-          <div className={`bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 lg:p-10 flex flex-col justify-center space-y-8`}>
+          {/* BALANCE FINANCIERO (THE MONEY STUFF) */}
+          <div className="bg-slate-950/80 border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 flex flex-col justify-center space-y-10 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+              <DollarSign size={100} className="text-white" />
+            </div>
             
-            <div className="flex justify-between items-end border-b border-white/5 pb-6">
+            <div className="flex justify-between items-end border-b border-white/5 pb-8">
               <div className="space-y-1">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Ingreso Bruto</span>
-                <p className="text-2xl font-bold text-white tracking-tighter">$ {Math.round(currentData.bruta).toLocaleString()}</p>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <DollarSign size={14} className={t.textIcon} /> Facturación Bruta
+                </span>
+                <p className="text-3xl md:text-4xl font-bold text-white tracking-tighter tabular-nums">$ {Math.round(currentData.bruta).toLocaleString('es-AR')}</p>
               </div>
               <div className="text-right space-y-1">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Margen s/IVA</span>
-                <p className="text-lg font-black text-slate-400 italic">$ {Math.round(currentData.siva).toLocaleString()}</p>
+                <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Utilidad s/IVA</span>
+                <p className="text-xl md:text-2xl font-black text-slate-400 italic tabular-nums">$ {Math.round(currentData.siva).toLocaleString('es-AR')}</p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-2 h-2 rounded-full bg-${currentColor}-500 animate-pulse`} />
-                <span className={`text-[11px] font-black uppercase tracking-[0.2em] text-${currentColor}-500`}>Resultado Neto Final</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className={`p-1.5 rounded-md ${t.bgActive.split(' ')[0]} bg-opacity-20`}>
+                   <TrendingUp size={14} className={t.textMain} />
+                </div>
+                <span className={`text-[11px] font-black uppercase tracking-[0.3em] ${t.textIcon}`}>Margen Neto Final</span>
               </div>
-              <p className={`text-6xl lg:text-7xl font-black italic tracking-tighter text-white`}>
-                $ {Math.round(currentData.neta).toLocaleString()}
+              <p className={`text-6xl sm:text-7xl lg:text-8xl font-black italic tracking-tighter leading-none ${currentData.neta >= 0 ? 'text-white' : 'text-rose-500 animate-pulse'}`}>
+                $ {Math.round(currentData.neta).toLocaleString('es-AR')}
               </p>
             </div>
 
-            <div className="pt-4 flex items-center gap-4">
-               <div className={`px-4 py-2 rounded-xl bg-${currentColor}-500/10 border border-${currentColor}-500/20 flex items-center gap-2`}>
-                  <Percent size={14} className={`text-${currentColor}-400`} />
-                  <span className={`text-[10px] font-bold text-${currentColor}-400 uppercase`}>
-                    Eficiencia: {Math.round((currentData.neta / currentData.bruta) * 100 || 0)}%
-                  </span>
+            <div className="pt-4 flex flex-wrap items-center gap-5">
+               <div className={`px-5 py-3 rounded-2xl ${t.badgeBg} ${t.badgeBorder} border flex items-center gap-3 shadow-lg`}>
+                  <Percent size={18} className={t.textMain} />
+                  <div className="flex flex-col">
+                    <span className="text-[8px] font-black text-slate-500 uppercase">Eficiencia Operativa</span>
+                    <span className={`text-sm font-black ${t.textMain} tracking-tighter`}>
+                      {Math.round(eficiencia)}%
+                    </span>
+                  </div>
+               </div>
+               
+               <div className="flex-1">
+                 <p className={`text-[9px] font-black uppercase tracking-widest ${eficiencia > 30 ? 'text-emerald-500' : eficiencia > 15 ? 'text-amber-500' : 'text-rose-500'}`}>
+                   {eficiencia > 30 ? 'Rentabilidad Excepcional' : eficiencia > 15 ? 'Margen Operativo Saludable' : 'Alerta de Rentabilidad Crítica'}
+                 </p>
+                 <div className="w-full h-1 bg-white/5 rounded-full mt-2 overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-1000 ${eficiencia > 30 ? 'bg-emerald-500' : eficiencia > 15 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                      style={{ width: `${Math.min(Math.max(eficiencia, 0), 100)}%` }}
+                    />
+                 </div>
                </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -109,14 +180,16 @@ export function ViajesGeneral({ stats }: { stats: any }) {
 
 function MetricBox({ label, value, prefix = "", suffix = "", icon }: any) {
   return (
-    <div className="bg-slate-950/40 border border-white/5 p-5 rounded-2xl group hover:bg-slate-900/80 transition-all">
+    <div className="bg-slate-950/40 border border-white/5 p-5 md:p-6 rounded-[2rem] group hover:bg-slate-900/80 transition-all shadow-inner relative overflow-hidden">
       <div className="flex items-center gap-3 text-slate-500 mb-2 group-hover:text-slate-300 transition-colors">
-        {icon}
-        <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
+        <span className="p-1.5 bg-white/5 rounded-lg">{icon}</span>
+        <span className="text-[9px] font-black uppercase tracking-widest truncate">{label}</span>
       </div>
-      <p className="text-xl font-black text-white italic tracking-tight">
-        {prefix}{Math.round(value).toLocaleString()}{suffix}
+      <p className="text-2xl font-black text-white italic tracking-tighter tabular-nums">
+        {prefix}{Math.round(value).toLocaleString('es-AR')}<span className="text-[10px] ml-1 text-slate-600 not-italic uppercase">{suffix}</span>
       </p>
+      {/* Línea decorativa */}
+      <div className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full bg-sky-500/30 transition-all duration-500" />
     </div>
   )
 }

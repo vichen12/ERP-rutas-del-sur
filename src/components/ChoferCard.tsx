@@ -2,9 +2,10 @@
 import { 
   UserCircle, Truck, Trash2, Edit3, 
   Milestone, DollarSign, AlertCircle,
-  Wallet, ArrowRight, ShieldCheck, AlertTriangle, 
-  Calendar, IdCard // <--- Agregué IdCard
+  Wallet, ShieldCheck, AlertTriangle, 
+  IdCard, Activity, Clock, Ban
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface ChoferCardProps {
   chofer: any;
@@ -21,164 +22,193 @@ export function ChoferCard({
   chofer, camion, totalKm, totalViajes, saldoPendiente, onEdit, onDelete, onViewStats 
 }: ChoferCardProps) {
   
-  // --- LÓGICA DE VENCIMIENTO ---
-  const tieneVencimiento = Boolean(chofer.vencimiento_licencia)
-  const vencimiento = tieneVencimiento ? new Date(chofer.vencimiento_licencia) : new Date()
-  const hoy = new Date()
-  const estaVencido = tieneVencimiento && vencimiento < hoy
-  const vencePronto = tieneVencimiento && !estaVencido && (vencimiento.getTime() - hoy.getTime()) / (1000 * 3600 * 24) <= 30
+  // --- LÓGICA DE VENCIMIENTO MILIMÉTRICA ---
+  const tieneVencimiento = Boolean(chofer.vto_licencia);
+  const vencimiento = tieneVencimiento ? new Date(chofer.vto_licencia) : null;
+  const hoy = new Date();
   
-  const saldoSeguro = saldoPendiente ?? 0
-  const tieneDeuda = saldoSeguro > 0
+  hoy.setHours(0,0,0,0);
+  if (vencimiento) vencimiento.setHours(0,0,0,0);
+
+  const diasRestantes = vencimiento 
+    ? Math.ceil((vencimiento.getTime() - hoy.getTime()) / (1000 * 3600 * 24)) 
+    : null;
+
+  const estaVencido = diasRestantes !== null && diasRestantes < 0;
+  const vencePronto = diasRestantes !== null && diasRestantes >= 0 && diasRestantes <= 30;
+  
+  const saldoSeguro = saldoPendiente ?? 0;
+  const tieneDeuda = saldoSeguro > 0;
+
+  // --- ESTILOS DINÁMICOS DEL CONTENEDOR (Estilo BENTO) ---
+  const isDanger = estaVencido;
+  const isWarning = vencePronto;
+
+  const topBorderColor = isDanger ? 'bg-rose-500' : isWarning ? 'bg-amber-400' : 'bg-white/10';
 
   return (
-    <div className="group bg-slate-900/40 border border-white/5 rounded-[3.5rem] p-2 hover:bg-slate-800/40 transition-all duration-500 italic">
-      <div className="bg-[#020617] rounded-[3rem] p-8 h-full flex flex-col justify-between relative overflow-hidden shadow-2xl font-sans">
+    <div className="group rounded-[2.5rem] p-[1px] bg-gradient-to-b from-white/10 to-transparent hover:from-white/20 transition-all duration-500 h-full shadow-2xl relative overflow-hidden">
+      
+      {/* Contenedor Principal (Cristal Oscuro) */}
+      <div className="bg-[#020617]/95 backdrop-blur-2xl rounded-[2.4rem] p-6 flex flex-col justify-between relative h-full">
         
-        {/* --- ETIQUETA SUPERIOR: ESTADO (Semaforo general) --- */}
-        <div className="absolute top-0 right-0 z-20">
-           {tieneVencimiento ? (
-             <div className={`px-6 py-3 rounded-bl-3xl text-[9px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2 ${
-                estaVencido ? 'bg-rose-600 text-white animate-pulse' : 
-                vencePronto ? 'bg-amber-500 text-black' : 
-                'bg-white/5 text-slate-500 border-l border-b border-white/10'
-             }`}>
-                {estaVencido ? <AlertCircle size={12}/> : vencePronto ? <AlertTriangle size={12}/> : <ShieldCheck size={12}/>}
-                {estaVencido ? 'Atención Requerida' : vencePronto ? 'Revisar Legajo' : 'Legajo Activo'}
-             </div>
-           ) : (
-             <div className="px-6 py-3 rounded-bl-3xl text-[9px] font-black uppercase tracking-widest bg-slate-800 text-slate-500 border-l border-b border-white/10 flex items-center gap-2">
-                <AlertCircle size={12}/> Sin Datos
-             </div>
-           )}
-        </div>
+        {/* Acento superior elegante */}
+        <div className={`absolute top-0 left-0 w-full h-1 ${topBorderColor} opacity-80`} />
+        
+        {/* Glow de Deuda Fijo (si hay deuda, pero sin animaciones locas) */}
+        {tieneDeuda && (
+          <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-rose-500/10 blur-[80px] rounded-full pointer-events-none" />
+        )}
 
-        <div className="space-y-6 pt-4">
-          
-          {/* --- INFO DEL CHOFER (CABECERA REDISEÑADA) --- */}
-          <div className="flex gap-4 items-start">
-            {/* Avatar */}
-            <div className={`p-3.5 rounded-[1.5rem] bg-slate-950 border border-white/10 shadow-inner transition-colors duration-500 shrink-0 ${estaVencido ? 'text-rose-500 group-hover:bg-rose-500/10' : 'text-slate-400 group-hover:text-indigo-400 group-hover:bg-indigo-500/10'}`}>
-              <UserCircle size={32} strokeWidth={1.5} />
-            </div>
+        {/* --- 1. CABECERA: AVATAR Y DATOS PERSONALES --- */}
+        <div className="flex justify-between items-start mb-6 pt-1 relative z-10">
+          <div className="flex gap-4 items-center">
             
-            {/* Textos */}
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-black text-white italic uppercase leading-none tracking-tighter truncate group-hover:text-indigo-400 transition-colors mb-2">
-                {chofer.nombre}
-              </h2>
-              
-              {/* NUEVO: Badges de Licencia y Vencimiento */}
-              <div className="flex flex-wrap gap-2">
-                
-                {/* Badge Nro Licencia */}
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/5">
-                    <IdCard size={12} className="text-slate-500"/>
-                    <span className="text-[10px] font-bold text-slate-300 font-mono tracking-wider">
-                        {chofer.licencia || 'S/D'}
-                    </span>
-                </div>
-
-                {/* Badge Fecha Vencimiento */}
-                {tieneVencimiento && (
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${
-                        estaVencido ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' :
-                        vencePronto ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
-                        'bg-slate-800/50 border-white/5 text-emerald-400/80'
-                    }`}>
-                        <Calendar size={12} />
-                        <span className="text-[10px] font-bold tracking-wider">
-                           Vence: {vencimiento.toLocaleDateString('es-AR')}
-                        </span>
-                    </div>
+            {/* AVATAR CON FOTO O ÍCONO (Tamaño ajustado a la CamionCard) */}
+            <div className="relative">
+              <div className={`w-14 h-14 rounded-[1.2rem] bg-gradient-to-br from-slate-800 to-slate-950 border border-white/10 shadow-inner flex items-center justify-center overflow-hidden transition-colors ${isDanger ? 'border-rose-500/50 text-rose-500' : isWarning ? 'border-amber-500/50 text-amber-500' : 'text-slate-300 group-hover:text-white'}`}>
+                {chofer.foto_url ? (
+                  <Image 
+                    src={chofer.foto_url} 
+                    alt={`Foto de ${chofer.nombre}`} 
+                    fill 
+                    className="object-cover"
+                  />
+                ) : (
+                  <UserCircle size={26} strokeWidth={1.5} />
                 )}
               </div>
+              
+              {/* Punto de Disponibilidad */}
+              <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-[2.5px] border-[#020617] ${chofer.estado === 'En Viaje' ? 'bg-cyan-500' : chofer.estado === 'Franco' ? 'bg-indigo-500' : 'bg-emerald-500'}`} title={chofer.estado || 'Disponible'} />
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <h2 className="text-2xl font-black italic uppercase leading-none tracking-tighter text-white truncate max-w-[180px]">
+                {chofer.nombre}
+              </h2>
+              <div className="flex gap-2 items-center mt-1.5">
+                 <span className={`px-1.5 py-0.5 rounded-[5px] text-[7px] font-black uppercase tracking-widest border ${chofer.estado === 'En Viaje' ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' : chofer.estado === 'Franco' ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
+                   {chofer.estado || 'DISPONIBLE'}
+                 </span>
+                 <span className="w-1 h-1 rounded-full bg-slate-700" />
+                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                   <IdCard size={10} /> {chofer.licencia || 'S/D'}
+                 </span>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* --- BLOQUE DE DEUDA / SALDO --- */}
-          <div 
-             onClick={() => onViewStats(chofer)} 
-             className={`p-6 rounded-[2.5rem] border cursor-pointer relative overflow-hidden transition-all duration-500 group/balance ${
-            tieneDeuda 
-            ? 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/20' 
-            : 'bg-emerald-500/5 border-emerald-500/10 hover:bg-emerald-500/10'
+        {/* --- 🚨 BANNER DE VENCIMIENTO (SOBRIO Y ELEGANTE) --- */}
+        {(estaVencido || vencePronto) && (
+          <div className={`mb-5 p-3 rounded-[1rem] flex items-start gap-3 border shadow-sm ${
+             estaVencido 
+             ? 'bg-rose-950/20 border-rose-500/20' 
+             : 'bg-amber-950/10 border-amber-500/20'
           }`}>
-             <Wallet className={`absolute -right-4 -bottom-4 w-24 h-24 opacity-5 transition-transform group-hover/balance:scale-110 ${tieneDeuda ? 'text-rose-500' : 'text-emerald-500'}`} />
-             
-             <div className="flex justify-between items-center relative z-10">
-                <div className="space-y-1">
-                   <div className="flex items-center gap-2">
-                      <div className={`p-1.5 rounded-lg ${tieneDeuda ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}`}>
-                        <DollarSign size={14} strokeWidth={3}/>
-                      </div>
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${tieneDeuda ? 'text-rose-400' : 'text-emerald-500'}`}>
-                        {tieneDeuda ? 'Pendiente' : 'Al Día'}
-                      </span>
-                   </div>
-                   <p className="text-[9px] font-bold text-slate-500 uppercase pl-1">Saldo acumulado</p>
-                </div>
-                <div className="text-right">
-                  <p className={`text-3xl font-black tracking-tighter italic ${tieneDeuda ? 'text-rose-500' : 'text-emerald-400'}`}>
-                    $ {saldoSeguro.toLocaleString()}
-                  </p>
-                  {tieneDeuda && <p className="text-[9px] font-bold text-rose-400 uppercase flex justify-end items-center gap-1">Liquidar <ArrowRight size={10}/></p>}
-                </div>
+             <div className={`mt-0.5 ${estaVencido ? 'text-rose-500' : 'text-amber-500'}`}>
+                {estaVencido ? <AlertCircle size={16} strokeWidth={2.5} /> : <AlertTriangle size={16} strokeWidth={2.5} />}
+             </div>
+             <div>
+                <p className={`text-[9px] font-black uppercase tracking-widest ${estaVencido ? 'text-rose-500' : 'text-amber-500'}`}>
+                   {estaVencido ? 'Bloqueo Operativo' : 'Atención Preventiva'}
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-tight text-slate-300 mt-0.5">
+                   {estaVencido ? `Licencia vencida hace ${Math.abs(diasRestantes as number)} días` : `Licencia vence en ${diasRestantes} días`}
+                </p>
              </div>
           </div>
+        )}
 
-          {/* --- DATOS OPERATIVOS --- */}
+        {/* --- BENTO BOX GRID --- */}
+        <div className="space-y-3 flex-1">
+          
+          {/* FILA 1: LICENCIA Y KM */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-950/50 border border-white/5 p-4 rounded-3xl">
-              <div className="flex items-center gap-2 text-slate-500 mb-1">
-                <Milestone size={12} className="text-indigo-500"/> 
-                <span className="text-[8px] font-black uppercase tracking-widest">Recorrido</span>
-              </div>
-              <p className="text-xl font-black text-white italic tracking-tighter">
-                {(totalKm ?? 0).toLocaleString()} <span className="text-[9px] not-italic text-slate-600">KM</span>
-              </p>
+            <div className={`p-3.5 rounded-[1.2rem] border flex flex-col justify-center transition-colors ${estaVencido ? 'bg-rose-950/30 border-rose-500/30' : vencePronto ? 'bg-amber-950/20 border-amber-500/30' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck size={12} className={estaVencido ? 'text-rose-500' : vencePronto ? 'text-amber-500' : 'text-emerald-500'} />
+                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">LNH</span>
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <p className={`text-sm font-black italic tabular-nums ${estaVencido ? 'text-rose-400' : vencePronto ? 'text-amber-400' : 'text-white'}`}>
+                    {vencimiento ? vencimiento.toLocaleDateString('es-AR') : 'S/D'}
+                  </p>
+                  {(!estaVencido && !vencePronto && tieneVencimiento) && (
+                    <span className="text-[8px] font-black uppercase tracking-wider mt-0.5 text-emerald-500/80">
+                      VIGENTE
+                    </span>
+                  )}
+                </div>
             </div>
-            
-            <div className="bg-slate-950/50 border border-white/5 p-4 rounded-3xl">
-               <div className="flex justify-between items-center mb-1">
-                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1"><Truck size={12} className="text-cyan-500"/> Unidad</span>
+
+            <div className="bg-slate-900/60 border border-white/5 rounded-[1.2rem] p-3.5 flex flex-col justify-center hover:bg-slate-800/60 transition-colors">
+               <div className="flex items-center gap-1.5 mb-1.5">
+                 <Milestone size={12} className="text-sky-400" />
+                 <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Odómetro</span>
                </div>
-               <p className="text-sm font-black text-white uppercase italic tracking-wider truncate">
-                 {camion ? camion.patente : 'SIN ASIGNAR'}
+               <p className="text-lg font-black text-white italic tracking-tighter tabular-nums leading-none">
+                 {((chofer.km_recorridos || 0) + (totalKm || 0)).toLocaleString()} <span className="text-[10px] text-slate-600 not-italic">KM</span>
                </p>
             </div>
           </div>
+
+          {/* FILA 2: UNIDAD Y DEUDA/SALDO */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-900/60 border border-white/5 p-4 rounded-[1.2rem] flex flex-col justify-center">
+               <div className="flex items-center gap-1.5 mb-1.5">
+                  <Truck size={14} className="text-cyan-400" />
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Unidad</span>
+               </div>
+               <span className="text-xs font-black text-slate-200 uppercase truncate">
+                 {camion ? camion.patente : 'SIN ASIGNAR'}
+               </span>
+            </div>
+
+            <div onClick={() => onViewStats(chofer)} className={`border p-4 rounded-[1.2rem] flex flex-col justify-center cursor-pointer transition-colors group/balance ${tieneDeuda ? 'bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10' : 'bg-indigo-500/5 border-indigo-500/20 hover:bg-indigo-500/10'}`}>
+               <div className="flex items-center gap-1.5 mb-1">
+                  <DollarSign size={14} className={tieneDeuda ? 'text-rose-500' : 'text-indigo-400'} />
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${tieneDeuda ? 'text-rose-500' : 'text-indigo-400'}`}>
+                    {tieneDeuda ? 'Pendiente' : 'Al Día'}
+                  </span>
+               </div>
+               <p className={`text-lg font-black italic tracking-tighter tabular-nums ${tieneDeuda ? 'text-rose-400' : 'text-white'}`}>
+                 $ {saldoSeguro.toLocaleString()}
+               </p>
+            </div>
+          </div>
+
         </div>
 
-        {/* --- BOTONES DE ACCIÓN --- */}
-        <div className="mt-8 pt-6 border-t border-white/5 flex flex-col gap-4">
-          
-          <button 
-            onClick={() => onViewStats(chofer)}
-            className={`w-full py-4 rounded-2xl border font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-95 flex items-center justify-center gap-3 shadow-lg ${
-              tieneDeuda 
-              ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-500 shadow-rose-900/20' 
-              : 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500 shadow-indigo-900/20'
-            }`}
-          >
-            {tieneDeuda ? <AlertCircle size={18} /> : <Wallet size={18} />}
-            {tieneDeuda ? 'Gestionar Pagos' : 'Ver Cuenta Corriente'}
-          </button>
-
-          <div className="flex gap-2 justify-center">
-             <button 
-               onClick={() => onEdit(chofer)} 
-               className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-all border border-white/5 flex items-center gap-2"
-             >
-               <Edit3 size={14} /> Editar
-             </button>
-             <button 
-               onClick={() => onDelete(chofer.id, chofer.nombre)} 
-               className="px-4 py-3 bg-white/5 hover:bg-rose-500/10 rounded-xl text-slate-500 hover:text-rose-500 transition-all border border-white/5"
-             >
-               <Trash2 size={14} />
-             </button>
-          </div>
+        {/* --- 5. BOTONES DE ACCIÓN (Mismo layout que CamionCard) --- */}
+        <div className="mt-5 pt-5 border-t border-white/5 flex gap-2 relative z-10">
+           {/* Botón Principal */}
+           <button 
+             onClick={() => onViewStats(chofer)}
+             className={`flex-[2] py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex justify-center items-center gap-1.5 shadow-sm active:scale-95 transition-all border ${tieneDeuda ? 'bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border-rose-500/20 hover:border-rose-500' : 'bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-white border-indigo-500/20 hover:border-indigo-500'}`}
+           >
+             <Wallet size={14} strokeWidth={3} /> {tieneDeuda ? 'Liquidar' : 'Ver Ficha'}
+           </button>
+           
+           {/* Botones Secundarios */}
+           <button 
+             onClick={() => onEdit(chofer)} 
+             className="flex-1 py-3.5 bg-sky-500/5 hover:bg-sky-500/10 rounded-xl text-sky-400 flex justify-center items-center transition-all border border-sky-500/10 hover:border-sky-500/30" 
+             title="Editar"
+           >
+             <Edit3 size={16} />
+           </button>
+           
+           <button 
+             onClick={() => onDelete(chofer.id, chofer.nombre)} 
+             className="flex-1 py-3.5 bg-rose-500/5 hover:bg-rose-500/10 rounded-xl text-rose-400 flex justify-center items-center transition-all border border-rose-500/10 hover:border-rose-500/30" 
+             title="Eliminar"
+           >
+             <Trash2 size={16} />
+           </button>
         </div>
 
       </div>

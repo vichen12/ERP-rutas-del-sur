@@ -1,244 +1,138 @@
 'use client'
-import { X, Loader2, Calendar, User, Truck, DollarSign, MapPin, Fuel, Wrench, Coins, TrendingUp, Percent } from 'lucide-react'
+import { X, Loader2, Truck, DollarSign, TrendingUp } from 'lucide-react'
 import { useState, useMemo } from 'react'
+
+// Importamos los sub-componentes
+import { ViajeModalOperativo } from './ViajeModalOperativo'
+import { ViajeModalFinanciero } from './ViajeModalFinanciero'
 
 export function ViajeModal({ isOpen, onClose, onSubmit, isSubmitting, formData, setFormData, clientes, choferes, camiones }: any) {
   const [tab, setTab] = useState<'general' | 'financiero'>('general')
 
-  // --- CÁLCULOS EN TIEMPO REAL CON MARGEN DE RENTABILIDAD ---
-  const finanzas = useMemo(() => {
-    const bruta = Number(formData.facturacion) || 0;
-    const pagoChofer = Number(formData.pago_chofer) || 0;
-    const otrosCostos = Number(formData.costos_operativos) || 0;
-    const litros = Number(formData.lts_combustible) || 0;
-    const precioGasoil = Number(formData.precio_gasoil) || 0;
+  // --- 🧠 LÓGICA DE AUTOMATIZACIÓN (El Cerebro del ERP) ---
 
-    const costoGasoil = litros * precioGasoil;
-    const gastosTotales = pagoChofer + otrosCostos + costoGasoil;
-    const neta = bruta - gastosTotales;
-    const sinIva = neta / 1.21;
+  // 1. Manejador de Cambio de Cliente (Carga ADN de ruta)
+  const handleClienteChange = (clienteId: string) => {
+    const cliente = clientes?.find((c: any) => c.id === clienteId);
+    if (!cliente) return;
+
+    // Si es retorno, invertimos los campos que vienen de la base de datos del cliente
+    const origenFinal = formData.es_retorno ? cliente.ruta_destino : cliente.ruta_origen;
+    const destinoFinal = formData.es_retorno ? cliente.ruta_origen : cliente.ruta_destino;
+
+    setFormData((prev: any) => ({
+      ...prev,
+      cliente_id: clienteId,
+      origen: (origenFinal || "MENDOZA").toUpperCase(),
+      destino: (destinoFinal || "").toUpperCase(),
+      km_recorridos: cliente.ruta_km_estimados || "",
+      tarifa_flete: cliente.tarifa_flete || "",
+      pago_chofer: cliente.pago_chofer || "",
+      lts_gasoil: cliente.lts_gasoil_estimado || "",
+      costo_descarga: cliente.costo_descarga || "0",
+      desgaste_por_km: cliente.desgaste_por_km || "180"
+    }));
+  };
+
+  // 2. Manejador de Cambio de Camión (Asigna Chofer Automático)
+  const handleCamionChange = (camionId: string) => {
+    const camion = camiones?.find((c: any) => c.id === camionId);
     
-    // Cálculo del margen: Qué % de la bruta es ganancia
+    setFormData((prev: any) => ({
+      ...prev,
+      camion_id: camionId,
+      // Si el camión tiene un operador_id en la DB, lo ponemos automáticamente
+      chofer_id: camion?.operador_id || prev.chofer_id 
+    }));
+  };
+
+  // 3. Manejador de Switch de Retorno (Ruta Espejo)
+  const handleToggleRetorno = () => {
+    const nuevoEstadoRetorno = !formData.es_retorno;
+    
+    setFormData((prev: any) => ({
+      ...prev,
+      es_retorno: nuevoEstadoRetorno,
+      // 🔥 SWAP: Invertimos lo que haya escrito en origen y destino
+      origen: prev.destino,
+      destino: prev.origen
+    }));
+  };
+
+  // --- 🚀 CÁLCULOS FINANCIEROS REACTIVOS ---
+  const finanzas = useMemo(() => {
+    const bruta = Number(formData.tarifa_flete) || 0;
+    const pagoChofer = Number(formData.pago_chofer) || 0;
+    const costoDescarga = Number(formData.costo_descarga) || 0;
+    const litros = Number(formData.lts_gasoil) || 0;
+    const precioGasoil = Number(formData.precio_gasoil) || 0;
+    const totalGasoil = litros * precioGasoil;
+    const kms = Number(formData.km_recorridos) || 0;
+    const desgastePorKm = Number(formData.desgaste_por_km) || 0;
+    const totalDesgaste = kms * desgastePorKm;
+
+    const totalCostos = pagoChofer + costoDescarga + totalGasoil + totalDesgaste;
+    const neta = bruta - totalCostos;
     const margen = bruta > 0 ? (neta / bruta) * 100 : 0;
 
-    return { bruta, costoGasoil, neta, sinIva, margen };
+    return { bruta, totalGasoil, totalDesgaste, totalCostos, neta, margen };
   }, [formData]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-2xl rounded-[3rem] p-8 md:p-10 shadow-2xl relative italic overflow-hidden font-sans">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-emerald-500 to-indigo-500" />
+    <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto bg-black/90 backdrop-blur-md pt-24 md:pt-32 p-4 font-sans italic">
+      <div className="bg-[#020617] border border-white/10 w-full max-w-2xl rounded-[2.5rem] p-6 md:p-10 shadow-2xl relative mb-20 animate-in fade-in zoom-in-95 duration-300">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 via-emerald-500 to-indigo-500 rounded-t-full" />
         
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-start mb-8">
           <div>
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`w-2 h-2 rounded-full ${formData.es_retorno ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">
+                Logística de {formData.es_retorno ? 'Retorno' : 'Ida'}
+              </p>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter leading-none">
               Hoja de <span className="text-cyan-500">Ruta</span>
             </h2>
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">
-              {formData.es_retorno ? 'Carga de Retorno' : 'Nuevo Viaje de Ida'}
-            </p>
           </div>
-          <button onClick={onClose} className="p-3 bg-white/5 rounded-full text-slate-500 hover:text-white transition-all hover:rotate-90 duration-300">
-            <X size={20}/>
-          </button>
+          <button onClick={onClose} className="p-2.5 bg-white/5 rounded-full text-slate-400 hover:text-white"><X size={24}/></button>
         </div>
 
-        {/* PESTAÑAS */}
-        <div className="flex p-1 bg-white/5 rounded-2xl mb-6 border border-white/5">
-          <button 
-            type="button"
-            onClick={() => setTab('general')}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'general' ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:text-white'}`}
-          >
-            Datos de Ruta
-          </button>
-          <button 
-            type="button"
-            onClick={() => setTab('financiero')}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tab === 'financiero' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'text-slate-500 hover:text-white'}`}
-          >
-            Costos y Utilidad
-          </button>
+        <div className="flex p-1 bg-slate-950 rounded-2xl mb-8 border border-white/5">
+          <button type="button" onClick={() => setTab('general')} className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${tab === 'general' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-600 hover:text-slate-400'}`}>Operación</button>
+          <button type="button" onClick={() => setTab('financiero')} className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${tab === 'financiero' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-600 hover:text-slate-400'}`}>Finanzas</button>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-6">
-          
-          {/* --- TAB OPERATIVO --- */}
-          {tab === 'general' && (
-            <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-500 uppercase ml-2">Cliente / Dador de Carga</label>
-                    <select className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-4 text-white font-bold focus:border-cyan-500 outline-none uppercase text-xs cursor-pointer" 
-                      value={formData.cliente_id} onChange={e => setFormData({...formData, cliente_id: e.target.value})}>
-                      <option value="">-- PARTICULAR / CONTADO --</option>
-                      {clientes.map((cl: any) => <option key={cl.id} value={cl.id} className="bg-slate-900">{cl.razon_social}</option>)}
-                    </select>
-                 </div>
-                 <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-500 uppercase ml-2">Fecha de Salida</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                      <input required type="date" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-white font-bold outline-none focus:border-cyan-500 text-xs uppercase [&::-webkit-calendar-picker-indicator]:invert" 
-                        value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} />
-                    </div>
-                 </div>
-              </div>
+          <div className={tab === 'general' ? 'block' : 'hidden'}>
+            <ViajeModalOperativo 
+              formData={formData} 
+              setFormData={setFormData} 
+              clientes={clientes} 
+              camiones={camiones} 
+              choferes={choferes}
+              // 🔥 PASAMOS LAS NUEVAS FUNCIONES AL SUB-COMPONENTE
+              onClienteChange={handleClienteChange}
+              onCamionChange={handleCamionChange}
+              onToggleRetorno={handleToggleRetorno}
+            />
+          </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="relative group">
-                    <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" />
-                    <input required placeholder="ORIGEN" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-white font-bold uppercase outline-none focus:border-cyan-500 text-xs placeholder:text-slate-700" 
-                      value={formData.origen} onChange={e => setFormData({...formData, origen: e.target.value.toUpperCase()})} />
-                 </div>
-                 <div className="relative group">
-                    <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500" />
-                    <input required placeholder="DESTINO" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-white font-bold uppercase outline-none focus:border-indigo-500 text-xs placeholder:text-slate-700" 
-                      value={formData.destino} onChange={e => setFormData({...formData, destino: e.target.value.toUpperCase()})} />
-                 </div>
-              </div>
+          <div className={tab === 'financiero' ? 'block' : 'hidden'}>
+            <ViajeModalFinanciero formData={formData} setFormData={setFormData} finanzas={finanzas} />
+          </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                 <select required className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-4 text-xs text-white font-bold outline-none focus:border-cyan-500 uppercase cursor-pointer" 
-                    value={formData.camion_id} onChange={e => setFormData({...formData, camion_id: e.target.value})}>
-                    <option value="">SELECCIONAR CAMIÓN...</option>
-                    {camiones.map((c: any) => <option key={c.id} value={c.id} className="bg-slate-900">{c.patente}</option>)}
-                 </select>
-                 <select required className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-4 text-xs text-white font-bold outline-none focus:border-cyan-500 uppercase cursor-pointer" 
-                    value={formData.chofer_id} onChange={e => setFormData({...formData, chofer_id: e.target.value})}>
-                    <option value="">SELECCIONAR CHOFER...</option>
-                    {choferes.map((ch: any) => <option key={ch.id} value={ch.id} className="bg-slate-900">{ch.nombre}</option>)}
-                 </select>
-              </div>
-
-              <div className="bg-white/5 p-5 rounded-[2rem] border border-white/5 space-y-4 shadow-inner">
-                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                       <label className="text-[8px] font-black text-slate-400 uppercase ml-2">KM Odómetro Salida</label>
-                       <input required type="number" placeholder="0" className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-3 px-4 text-white font-bold outline-none focus:border-cyan-500 text-sm" 
-                         value={formData.km_salida} onChange={e => setFormData({...formData, km_salida: e.target.value})} />
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-[8px] font-black text-indigo-400 uppercase ml-2">KM Odómetro Retorno</label>
-                       <input type="number" placeholder="0" className="w-full bg-slate-950/50 border border-white/10 rounded-2xl py-3 px-4 text-white font-bold outline-none focus:border-indigo-500 text-sm" 
-                         value={formData.km_retorno} onChange={e => setFormData({...formData, km_retorno: e.target.value})} />
-                    </div>
-                 </div>
-                 <div className="flex gap-6 pt-2">
-                    <label className="flex items-center gap-2 cursor-pointer select-none group">
-                      <input type="checkbox" className="accent-indigo-500 w-4 h-4 rounded border-white/10 bg-slate-950" 
-                        checked={formData.es_retorno} onChange={e => setFormData({...formData, es_retorno: e.target.checked})} />
-                      <span className="text-[9px] font-black text-indigo-300 uppercase italic group-hover:text-white transition-colors">¿Es Retorno?</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer select-none group">
-                      <input type="checkbox" className="accent-amber-500 w-4 h-4 rounded border-white/10 bg-slate-950" 
-                        checked={formData.engrase} onChange={e => setFormData({...formData, engrase: e.target.checked})} />
-                      <span className="text-[9px] font-black text-amber-300 uppercase italic group-hover:text-white transition-colors">Service / Engrase</span>
-                    </label>
-                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- TAB FINANZAS --- */}
-          {tab === 'financiero' && (
-            <div className="space-y-5 animate-in slide-in-from-left-4 duration-300">
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-emerald-500 uppercase ml-2 tracking-widest">Facturación Bruta (Flete)</label>
-                    <div className="relative">
-                      <DollarSign size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" />
-                      <input required type="number" placeholder="Monto total" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-white font-bold focus:border-emerald-500 outline-none text-base" 
-                        value={formData.facturacion} onChange={e => setFormData({...formData, facturacion: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-amber-500 uppercase ml-2 tracking-widest">Precio Gasoil Aplicado</label>
-                    <div className="relative">
-                      <Fuel size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500" />
-                      <input required type="number" placeholder="$$ / Litro" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-white font-bold focus:border-amber-500 outline-none text-base" 
-                        value={formData.precio_gasoil} onChange={e => setFormData({...formData, precio_gasoil: e.target.value})} />
-                    </div>
-                  </div>
-               </div>
-
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                     <label className="text-[9px] font-black text-rose-400 uppercase ml-2 tracking-widest">Viático / Pago Chofer</label>
-                     <div className="relative">
-                        <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500" />
-                        <input type="number" placeholder="0.00" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-white font-bold focus:border-rose-500 outline-none text-sm" 
-                            value={formData.pago_chofer} onChange={e => setFormData({...formData, pago_chofer: e.target.value})} />
-                     </div>
-                  </div>
-                  <div className="space-y-1">
-                     <label className="text-[9px] font-black text-amber-500 uppercase ml-2 tracking-widest">Gasoil (Litros Reales)</label>
-                     <div className="relative">
-                        <Fuel size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500" />
-                        <input type="number" placeholder="Total lts" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-10 pr-4 text-white font-bold focus:border-amber-500 outline-none text-sm" 
-                            value={formData.lts_combustible} onChange={e => setFormData({...formData, lts_combustible: e.target.value})} />
-                     </div>
-                  </div>
-               </div>
-
-               <div className="space-y-1">
-                  <label className="text-[9px] font-black text-rose-400 uppercase ml-2 tracking-widest">Gastos Adicionales (Peajes, Descargas, etc)</label>
-                  <div className="relative">
-                     <Wrench size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500" />
-                     <input type="number" placeholder="Suma de otros costos" className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 px-6 text-white font-bold focus:border-rose-500 outline-none" 
-                        value={formData.costos_operativos} onChange={e => setFormData({...formData, costos_operativos: e.target.value})} />
-                  </div>
-               </div>
-
-               {/* CALCULADORA PREVIEW EVOLUCIONADA */}
-               <div className="bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-6 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-4">
-                     <div className={`flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 ${finanzas.margen > 30 ? 'border-emerald-500 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border-amber-500 text-amber-500'} transition-all`}>
-                        <span className="text-[8px] font-black uppercase leading-none">Margen</span>
-                        <span className="text-lg font-black">{Math.round(finanzas.margen)}%</span>
-                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 pr-20">
-                    <div className="space-y-1">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">G. Bruta</p>
-                        <p className="text-lg font-black text-white">${finanzas.bruta.toLocaleString()}</p>
-                    </div>
-                    <div className="space-y-1 border-x border-white/5 px-4">
-                        <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Ganancia Neta</p>
-                        <p className="text-xl font-black text-emerald-400">${finanzas.neta.toLocaleString()}</p>
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-[8px] font-black text-cyan-500 uppercase tracking-widest">Neto s/IVA</p>
-                        <p className="text-lg font-black text-cyan-400">${finanzas.sinIva.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-2">
-                     <div className={`w-1.5 h-1.5 rounded-full ${finanzas.neta > 0 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'}`} />
-                     <p className="text-[9px] font-bold text-slate-500 uppercase italic">
-                        {finanzas.neta > 0 ? 'Rendimiento positivo para la empresa' : 'Cuidado: Gastos superan ingresos'}
-                     </p>
-                  </div>
-               </div>
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            disabled={isSubmitting} 
-            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-5 rounded-[2rem] font-black uppercase text-[11px] tracking-[0.4em] transition-all shadow-xl shadow-cyan-900/20 active:scale-95 mt-4 italic flex items-center justify-center gap-3 group"
-          >
-            {isSubmitting ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <>
-                Confirmar Registro <TrendingUp size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              </>
-            )}
-          </button>
+          <div className="pt-4">
+            <button 
+              type="submit" 
+              disabled={isSubmitting} 
+              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-[0.3em] transition-all shadow-xl shadow-cyan-900/40 active:scale-95 flex items-center justify-center gap-3"
+            >
+              {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <>Sincronizar Ruta <TrendingUp size={18} /></>}
+            </button>
+          </div>
         </form>
       </div>
     </div>

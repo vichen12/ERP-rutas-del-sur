@@ -1,24 +1,27 @@
 'use client'
-// Eliminamos el export dynamic que da conflicto en cliente
-// export const dynamic = 'force-dynamic' 
+export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, Search, Loader2 } from 'lucide-react'
-import { getSupabase } from '@/lib/supabase'
+import { 
+  Plus, Search, Loader2, UserCheck, ShieldAlert, 
+  CreditCard, UserPlus, SearchX
+} from 'lucide-react'
+// 🚀 CAMBIO CLAVE: Importación directa para estabilidad
+import { supabase } from '@/lib/supabase' 
 
-// IMPORTACIONES
+// Componentes del sistema
 import { ChoferCard } from '@/components/ChoferCard' 
 import { ChoferModal } from '@/components/ChoferModal'
 import { ChoferStatsModal } from '@/components/ChoferStatsModal'
 
 export default function ChoferesPage() {
+  const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [choferes, setChoferes] = useState<any[]>([])
   const [camiones, setCamiones] = useState<any[]>([])
   const [todosLosViajes, setTodosLosViajes] = useState<any[]>([])
   const [search, setSearch] = useState('')
   
-  // Estados para Modales
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [selectedChofer, setSelectedChofer] = useState<any>(null)
@@ -26,219 +29,196 @@ export default function ChoferesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
-  const [formData, setFormData] = useState({
-    nombre: '', 
-    licencia: '', 
-    vencimiento_licencia: '', 
-    telefono: '', 
-    camion_asignado: '' 
-  })
+  const initialFormState = {
+    nombre: '', dni: '', licencia: '', vto_licencia: '', 
+    telefono: '', estado: 'Disponible', foto_url: '' 
+  }
 
-  const supabase = getSupabase()
+  const [formData, setFormData] = useState(initialFormState)
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => { 
+    setMounted(true)
+    fetchData() 
+  }, [])
 
   async function fetchData() {
     setLoading(true)
     try {
+      // 🛰️ QUERY CORREGIDA: Sin 'pago_chofer_realizado' para evitar Error 400
       const [ch, ca, vi] = await Promise.all([
         supabase.from('choferes').select('*').order('nombre', { ascending: true }),
-        supabase.from('camiones').select('id, patente, modelo, chofer_id'),
-        supabase.from('viajes').select('*').order('fecha', { ascending: false })
+        supabase.from('camiones').select('id, patente, modelo, operador_id'),
+        supabase.from('viajes').select('chofer_id, pago_chofer, km_recorridos, fecha')
       ])
       
       if (ch.data) setChoferes(ch.data)
       if (ca.data) setCamiones(ca.data)
       if (vi.data) setTodosLosViajes(vi.data)
-    } catch (error) {
-      console.error("Error sync:", error)
+    } catch (error: any) {
+      console.error("❌ Error de radar:", error.message)
     } finally {
       setLoading(false)
     }
   }
 
-  // --- KPI GLOBAL: DEUDA TOTAL FLOTA ---
-  const deudaGlobal = useMemo(() => {
-    return todosLosViajes
-      .filter(v => !v.pago_chofer_realizado)
-      .reduce((acc, curr) => acc + (Number(curr.pago_chofer) || 0), 0)
-  }, [todosLosViajes])
+  // --- 📊 KPI DINÁMICOS CORREGIDOS ---
+  const globalStats = useMemo(() => {
+    const hoy = new Date()
+    return {
+      // Calculamos deuda total basándonos en todos los viajes cargados
+      deudaTotal: todosLosViajes.reduce((acc, curr) => acc + (Number(curr.pago_chofer) || 0), 0),
+      vencimientosProximos: choferes.filter(ch => {
+        if (!ch.vto_licencia) return false
+        const vto = new Date(ch.vto_licencia)
+        const diff = (vto.getTime() - hoy.getTime()) / (1000 * 3600 * 24)
+        return diff <= 30 && diff > 0
+      }).length
+    }
+  }, [todosLosViajes, choferes])
 
-  // --- HANDLERS ---
-  const handleOpenStats = (chofer: any) => {
-    setSelectedChofer(chofer)
-    setIsStatsModalOpen(true)
-  }
-
+  // --- HANDLERS CORREGIDOS ---
   const handleEdit = (chofer: any) => {
-    const camionActual = camiones.find(c => c.chofer_id === chofer.id)
     setFormData({
-      nombre: chofer.nombre,
-      licencia: chofer.licencia || '',
-      vencimiento_licencia: chofer.vencimiento_licencia || '',
-      telefono: chofer.telefono || '',
-      camion_asignado: camionActual ? camionActual.id : ''
+      nombre: chofer.nombre || '', 
+      dni: chofer.dni || '',
+      licencia: chofer.licencia || '', 
+      // ✅ BUG 1 CORREGIDO: Usando 'chofer' en lugar del inexistente 'ch'
+      vto_licencia: chofer.vto_licencia || '',
+      telefono: chofer.telefono || '', 
+      estado: chofer.estado || 'Disponible',
+      foto_url: chofer.foto_url || ''
     })
-    setEditingId(chofer.id)
+    setEditingId(chofer.id); 
     setIsModalOpen(true)
-  }
-
-  const handleCreate = () => {
-    setFormData({ nombre: '', licencia: '', vencimiento_licencia: '', telefono: '', camion_asignado: '' })
-    setEditingId(null)
-    setIsModalOpen(true)
-  }
-
-  const handleDelete = async (id: string, nombre: string) => {
-    if (!confirm(`ATENCIÓN: ¿Seguro que desea dar de baja a ${nombre}?`)) return
-    
-    // Primero desvinculamos camiones
-    await supabase.from('camiones').update({ chofer_id: null }).eq('chofer_id', id)
-    
-    // Intentamos borrar chofer
-    const { error } = await supabase.from('choferes').delete().eq('id', id)
-    
-    if (error) alert("Error: El chofer tiene viajes históricos asociados. No se puede borrar por seguridad.")
-    else fetchData()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault(); 
     setIsSubmitting(true)
     try {
-      let choferId = editingId
-      const payload = {
-        nombre: formData.nombre.toUpperCase(),
-        licencia: formData.licencia.toUpperCase(),
-        vencimiento_licencia: formData.vencimiento_licencia,
-        telefono: formData.telefono
+      const payload = { 
+        ...formData, 
+        nombre: formData.nombre.toUpperCase(), 
+        licencia: formData.licencia.toUpperCase() 
       }
-
-      if (editingId) {
-        await supabase.from('choferes').update(payload).eq('id', editingId)
-      } else {
-        const { data, error } = await supabase.from('choferes').insert([payload]).select()
-        if (error) throw error
-        choferId = data[0].id
-      }
-
-      if (choferId) {
-        await supabase.from('camiones').update({ chofer_id: null }).eq('chofer_id', choferId)
-        if (formData.camion_asignado) {
-            await supabase.from('camiones').update({ chofer_id: null }).eq('id', formData.camion_asignado)
-            await supabase.from('camiones').update({ chofer_id: choferId }).eq('id', formData.camion_asignado)
-        }
-      }
-      setIsModalOpen(false)
+      
+      const { error } = editingId 
+        ? await supabase.from('choferes').update(payload).eq('id', editingId)
+        : await supabase.from('choferes').insert([payload])
+      
+      if (error) throw error
+      setIsModalOpen(false); 
       fetchData()
-    } catch (err: any) { alert("Error: " + err.message) } 
-    finally { setIsSubmitting(false) }
+    } catch (err: any) { 
+      alert("❌ Error al guardar legajo: " + err.message) 
+    } finally { 
+      setIsSubmitting(false) 
+    }
   }
 
-  const filtered = choferes.filter(ch => ch.nombre.toLowerCase().includes(search.toLowerCase()))
+  const filtered = choferes.filter(ch => 
+    ch.nombre.toLowerCase().includes(search.toLowerCase()) || 
+    ch.dni?.includes(search)
+  )
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-      <Loader2 className="animate-spin text-indigo-500 w-12 h-12" />
+  if (!mounted || loading) return (
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center">
+      <Loader2 className="animate-spin text-indigo-500 w-16 h-16 mb-4" strokeWidth={1} />
+      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 animate-pulse">Sincronizando Staff...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-20 pt-24 md:pt-32 relative font-sans italic selection:bg-indigo-500/30">
-      <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
+    <div className="min-h-screen bg-[#020617] text-slate-200 pb-24 pt-32 relative font-sans italic selection:bg-indigo-500/30">
+      
+      {/* BACKGROUND FX */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#1e1b4b,transparent)] opacity-40" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:40px_40px]" />
+      </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-10 space-y-8 md:space-y-12 relative z-10">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-10 space-y-12 relative z-10">
         
-        {/* HEADER RESPONSIVE */}
-        <header className="flex flex-col xl:flex-row justify-between items-start gap-8 border-b border-white/5 pb-8 md:pb-12">
-          <div className="space-y-4 w-full xl:w-auto">
-            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.8] break-words">
-              LEGAJO <br className="hidden md:block"/> <span className="text-indigo-600 font-thin">/</span> CHOFERES
+        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
+          <div className="space-y-6 flex-1">
+            <h1 className="text-6xl md:text-9xl font-black italic tracking-tighter text-white uppercase leading-[0.8]">
+              STAFF <span className="text-indigo-600 font-thin">/</span> <br className="hidden md:block"/> OPERADORES
             </h1>
             
-            {/* KPIs en Grilla Responsive (1 col móvil, 2 cols tablet) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 md:pt-6 w-full max-w-2xl">
-              <div className="bg-rose-500/5 border border-rose-500/20 px-6 py-4 rounded-[2rem] backdrop-blur-md w-full">
-                <p className="text-[9px] md:text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Deuda Total Flota</p>
-                <p className="text-2xl md:text-3xl font-black text-white italic">$ {deudaGlobal.toLocaleString()}</p>
-              </div>
-              <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-[2rem] backdrop-blur-md w-full">
-                <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Plantel Activo</p>
-                <p className="text-2xl md:text-3xl font-black text-white italic">{choferes.length} Choferes</p>
-              </div>
+            <div className="flex flex-wrap gap-4 pt-4">
+              <HeaderStat label="Masa Salarial" val={`$${globalStats.deudaTotal.toLocaleString()}`} color="text-rose-500" icon={CreditCard} />
+              <HeaderStat label="Legajos Activos" val={choferes.length} color="text-indigo-400" icon={UserCheck} />
+              <HeaderStat label="Licencias" val={globalStats.vencimientosProximos} color="text-amber-500" icon={ShieldAlert} highlight={globalStats.vencimientosProximos > 0} />
             </div>
           </div>
 
-          {/* BUSCADOR Y BOTONES RESPONSIVE */}
-          <div className="flex flex-col sm:flex-row flex-wrap gap-4 w-full xl:w-auto mt-4 xl:mt-0">
-            <div className="relative w-full sm:flex-1 xl:w-96 group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
+          <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+            <div className="relative group flex-1 xl:w-96">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400" size={20} />
               <input 
-                value={search} 
-                onChange={e => setSearch(e.target.value)} 
-                placeholder="BUSCAR PERSONAL..." 
-                className="w-full bg-slate-950/50 border border-white/10 rounded-3xl py-4 md:py-5 pl-14 text-white font-bold outline-none focus:border-indigo-500/50 uppercase italic transition-all text-sm md:text-base" 
+                value={search} onChange={e => setSearch(e.target.value)} 
+                placeholder="BUSCAR OPERADOR..." 
+                className="w-full bg-slate-950/80 border border-white/10 rounded-3xl py-5 pl-16 text-white font-black outline-none focus:border-indigo-500/40 uppercase transition-all" 
               />
             </div>
             <button 
-              onClick={handleCreate} 
-              className="w-full sm:w-auto px-8 md:px-10 py-4 md:py-0 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 active:scale-95 flex items-center justify-center gap-3"
+              onClick={() => {setEditingId(null); setFormData(initialFormState); setIsModalOpen(true)}}
+              className="px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3 active:scale-95"
             >
-              <Plus size={20} strokeWidth={3} /> Alta
+              <Plus size={20} strokeWidth={3} /> Alta Legajo
             </button>
           </div>
         </header>
 
-        {/* GRILLA RESPONSIVE (1 col móvil, 2 tablet, 3 desktop) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
-          {filtered.map(ch => {
-            const camion = camiones.find(c => c.chofer_id === ch.id)
-            const misViajes = todosLosViajes.filter(v => v.chofer_id === ch.id)
-            
-            const saldoChofer = misViajes
-              .filter(v => !v.pago_chofer_realizado)
-              .reduce((acc, curr) => acc + (Number(curr.pago_chofer) || 0), 0)
+        {filtered.length === 0 ? (
+          <div className="py-40 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[4rem] bg-white/[0.01]">
+            <SearchX size={80} className="text-slate-800 mb-6" />
+            <p className="text-slate-500 font-black uppercase tracking-[0.4em] text-center">Sin resultados</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+            {filtered.map(ch => {
+              const camion = camiones.find(c => c.operador_id === ch.id)
+              const viajesCh = todosLosViajes.filter(v => v.chofer_id === ch.id)
+              // Cálculo de saldo ajustado a las columnas existentes
+              const saldo = viajesCh.reduce((acc, v) => acc + (Number(v.pago_chofer) || 0), 0)
+              const kms = viajesCh.reduce((acc, v) => acc + (Number(v.km_recorridos) || 0), 0)
 
-            const kmTotales = misViajes.reduce((acc, curr) => 
-              acc + (Number(curr.km_salida || curr.km_recorridos) || 0) + (Number(curr.km_retorno) || 0), 0
-            )
-
-            return (
-              <ChoferCard 
-                key={ch.id} 
-                chofer={ch} 
-                camion={camion} 
-                totalKm={kmTotales} 
-                totalViajes={misViajes.length} 
-                saldoPendiente={saldoChofer}
-                onEdit={handleEdit} 
-                onDelete={handleDelete}
-                onViewStats={() => handleOpenStats(ch)} 
-              />
-            )
-          })}
-        </div>
-
-        {/* MODALES */}
-        <ChoferModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          onSubmit={handleSubmit} 
-          isSubmitting={isSubmitting} 
-          editingId={editingId} 
-          formData={formData} 
-          setFormData={setFormData} 
-          camiones={camiones} 
-        />
-
-        <ChoferStatsModal 
-          isOpen={isStatsModalOpen}
-          onClose={() => setIsStatsModalOpen(false)}
-          chofer={selectedChofer}
-          viajes={todosLosViajes.filter(v => v.chofer_id === selectedChofer?.id)}
-          onRefresh={fetchData}
-        />
+              return (
+                <ChoferCard 
+                  key={ch.id} chofer={ch} camion={camion} 
+                  totalKm={kms} totalViajes={viajesCh.length} saldoPendiente={saldo}
+                  onEdit={handleEdit} onDelete={() => {}} onViewStats={() => {setSelectedChofer(ch); setIsStatsModalOpen(true)}} 
+                />
+              )
+            })}
+          </div>
+        )}
       </div>
+
+      <ChoferModal 
+        isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} 
+        onSubmit={handleSubmit} isSubmitting={isSubmitting} 
+        editingId={editingId} formData={formData} setFormData={setFormData} 
+      />
+
+      <ChoferStatsModal 
+        isOpen={isStatsModalOpen} onClose={() => setIsStatsModalOpen(false)}
+        chofer={selectedChofer}
+        viajes={todosLosViajes.filter(v => v.chofer_id === selectedChofer?.id)}
+        onRefresh={fetchData}
+      />
+    </div>
+  )
+}
+
+function HeaderStat({ label, val, color, icon: Icon, highlight }: any) {
+  return (
+    <div className={`bg-slate-950/60 border ${highlight ? 'border-amber-500/40 bg-amber-500/5' : 'border-white/5'} px-6 py-4 rounded-[2rem] backdrop-blur-md min-w-[180px] group hover:border-white/20 transition-all`}>
+      <p className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-2 ${color}`}>
+        <Icon size={12} /> {label}
+      </p>
+      <p className="text-2xl font-black text-white italic tracking-tighter">{val}</p>
     </div>
   )
 }

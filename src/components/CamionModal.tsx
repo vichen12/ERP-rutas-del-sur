@@ -1,169 +1,144 @@
 'use client'
-import { X, Loader2, CheckCircle2, ChevronRight, Gauge, Droplets, User, Calendar, ShieldCheck } from 'lucide-react'
-
-interface CamionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (e: React.FormEvent) => void;
-  isSubmitting: boolean;
-  editingId: string | null;
-  formData: any;
-  setFormData: (data: any) => void;
-  choferes: any[];
-}
+import { X, Loader2, Truck, User, Gauge, Droplets, ChevronRight } from 'lucide-react'
 
 export function CamionModal({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  isSubmitting, 
-  editingId, 
-  formData, 
-  setFormData,
-  choferes 
-}: CamionModalProps) {
-  
+  isOpen, onClose, onSubmit, isSubmitting, editingId, formData, setFormData, choferes 
+}: any) {
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 backdrop-blur-md bg-black/80 animate-in fade-in zoom-in-95 duration-200">
-      <div className="bg-[#020617] w-full max-w-lg rounded-[3rem] border border-white/10 p-10 shadow-2xl relative overflow-hidden italic font-sans">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500 to-indigo-500" />
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-black/90 backdrop-blur-sm p-4 overflow-y-auto italic">
+      
+      {/* CONTENEDOR PRINCIPAL: 
+         - Quitamos el overflow del hijo para que el scroll sea natural del padre.
+         - 'my-auto' permite que el modal se centre si es corto y scrollee si es largo.
+      */}
+      <div className="bg-[#020617] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
         
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
-            {editingId ? 'Editar Unidad' : 'Alta de Camión'}
-          </h2>
-          <button onClick={onClose} className="p-2 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
-            <X size={20} />
+        {/* Decoración Superior */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-t-full" />
+
+        <header className="flex justify-between items-start mb-8">
+          <div>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">
+              {editingId ? 'Editar' : 'Alta de'} <span className="text-cyan-500">Unidad</span>
+            </h2>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Sincronización técnica de activos</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-slate-500 transition-colors">
+            <X size={24} />
           </button>
-        </div>
-        
-        <form onSubmit={onSubmit} className="space-y-5 uppercase font-black">
+        </header>
+
+        {/* 🚀 FORMULARIO: Llamada directa al prop onSubmit para evitar pérdida de contexto */}
+        <form onSubmit={onSubmit} className="space-y-6">
           
-          {/* PATENTE Y MODELO */}
+          {/* GRUPO 1: IDENTIDAD */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[9px] text-slate-500 tracking-widest pl-2">Patente</label>
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Patente</label>
               <input 
-                required 
-                placeholder="ABC-123" 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold outline-none focus:border-cyan-500 transition-colors uppercase" 
-                value={formData.patente || ''} 
-                onChange={e => setFormData({...formData, patente: e.target.value.toUpperCase()})} 
+                required
+                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none uppercase transition-all"
+                value={formData.patente || ''}
+                onChange={e => setFormData({...formData, patente: e.target.value.toUpperCase()})}
+                placeholder="ABC-123"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[9px] text-slate-500 tracking-widest pl-2">Modelo / Año</label>
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Modelo</label>
               <input 
-                required 
-                placeholder="IVECO 450 - 2024" 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold outline-none focus:border-cyan-500 transition-colors uppercase" 
-                value={formData.modelo || ''} 
-                onChange={e => setFormData({...formData, modelo: e.target.value.toUpperCase()})} 
-              />
-            </div>
-          </div>
-          
-          {/* KILOMETRAJE ACTUAL */}
-          <div className="space-y-1">
-            <label className="text-[9px] text-slate-500 tracking-widest pl-2">Kilometraje Actual</label>
-            <div className="relative">
-              <Gauge className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
-              <input 
-                required 
-                type="number" 
-                placeholder="0" 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-bold outline-none focus:border-cyan-500 transition-colors" 
-                value={formData.km_actual || ''} 
-                onChange={e => setFormData({...formData, km_actual: e.target.value})} 
+                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none uppercase transition-all"
+                value={formData.modelo || ''}
+                onChange={e => setFormData({...formData, modelo: e.target.value.toUpperCase()})}
+                placeholder="SCANIA / VOLVO"
               />
             </div>
           </div>
 
-          {/* SERVICE Y RTO */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[9px] text-amber-500 tracking-widest pl-2">KM Último Aceite</label>
-              <div className="relative">
-                <Droplets className="absolute left-5 top-1/2 -translate-y-1/2 text-amber-600" size={18} />
-                <input 
-                  required 
-                  type="number" 
-                  placeholder="KM Service" 
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-bold outline-none focus:border-amber-500 transition-colors" 
-                  value={formData.ultimo_cambio_aceite || ''} 
-                  onChange={e => setFormData({...formData, ultimo_cambio_aceite: e.target.value})} 
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[9px] text-rose-500 tracking-widest pl-2">Vencimiento RTO</label>
-              <div className="relative">
-                <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-rose-600" size={18} />
-                <input 
-                  required 
-                  type="date" 
-                  /* AGREGAMOS [&::-webkit-calendar-picker-indicator]:invert PARA BLANQUEAR EL ICONO */
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-bold outline-none focus:border-rose-500 transition-colors uppercase [&::-webkit-calendar-picker-indicator]:invert" 
-                  value={formData.vencimiento_rto || ''} 
-                  onChange={e => setFormData({...formData, vencimiento_rto: e.target.value})} 
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* VENCIMIENTO SENASA */}
-          <div className="space-y-1">
-            <label className="text-[9px] text-emerald-500 tracking-widest pl-2 uppercase">Vencimiento SENASA</label>
-            <div className="relative">
-              <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-600" size={18} />
+          {/* GRUPO 2: KILOMETRAJE */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2 text-cyan-500">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
+                <Gauge size={10}/> KM Actual
+              </label>
               <input 
-                required 
-                type="date" 
-                /* AGREGAMOS [&::-webkit-calendar-picker-indicator]:invert PARA BLANQUEAR EL ICONO */
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-bold outline-none focus:border-emerald-500 transition-colors uppercase [&::-webkit-calendar-picker-indicator]:invert" 
-                value={formData.vencimiento_senasa || ''} 
-                onChange={e => setFormData({...formData, vencimiento_senasa: e.target.value})} 
+                type="number"
+                className="w-full bg-slate-900 border border-cyan-500/10 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none transition-all"
+                value={formData.km_actual || ''}
+                onChange={e => setFormData({...formData, km_actual: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2 text-amber-500">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
+                <Droplets size={10}/> Últ. Service
+              </label>
+              <input 
+                type="number"
+                className="w-full bg-slate-900 border border-amber-500/10 rounded-2xl py-4 px-6 text-white font-black focus:border-amber-500 outline-none transition-all"
+                value={formData.km_ultimo_service || ''}
+                onChange={e => setFormData({...formData, km_ultimo_service: e.target.value})}
               />
             </div>
           </div>
 
-          <p className="text-[8px] text-slate-600 -mt-2 pl-2 uppercase font-black">Service recomendado cada 20.000 KM</p>
-
-          {/* ASIGNACIÓN DE CHOFER */}
-          <div className="space-y-1">
-            <label className="text-[9px] text-cyan-500 tracking-widest pl-2 uppercase">Chofer Asignado</label>
-            <div className="relative">
-              <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
-              <select 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-10 text-white font-bold outline-none focus:border-cyan-500 appearance-none cursor-pointer"
-                value={formData.chofer_id || ''} 
-                onChange={e => setFormData({...formData, chofer_id: e.target.value})}
-              >
-                <option value="">DISPONIBLE / SIN CHOFER</option>
-                {choferes?.map((ch: any) => (
-                  <option key={ch.id} value={ch.id}>{ch.nombre}</option>
-                ))}
-              </select>
-              <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={16} />
+          {/* GRUPO 3: DOCUMENTACIÓN */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Vto RTO</label>
+              <input 
+                type="date"
+                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-indigo-500 outline-none [color-scheme:dark]"
+                value={formData.vto_rto || ''}
+                onChange={e => setFormData({...formData, vto_rto: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Vto SENASA</label>
+              <input 
+                type="date"
+                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-indigo-500 outline-none [color-scheme:dark]"
+                value={formData.vto_senasa || ''}
+                onChange={e => setFormData({...formData, vto_senasa: e.target.value})}
+              />
             </div>
           </div>
 
-          <button 
-            disabled={isSubmitting} 
-            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-5 rounded-2xl font-black uppercase tracking-widest mt-4 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 italic"
-          >
-            {isSubmitting ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
-              <>
-                <CheckCircle2 size={20} />
-                {editingId ? 'Guardar Cambios' : 'Registrar Unidad'}
-              </>
-            )}
-          </button>
+          {/* GRUPO 4: RECURSOS HUMANOS */}
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
+              <User size={10}/> Operador Responsable
+            </label>
+            <select 
+              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
+              value={formData.chofer_id || ''}
+              onChange={e => setFormData({...formData, chofer_id: e.target.value})}
+            >
+              <option value="">SIN OPERADOR ASIGNADO</option>
+              {choferes.map((ch: any) => (
+                <option key={ch.id} value={ch.id}>{ch.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* BOTÓN DE ACCIÓN FINAL */}
+          <div className="pt-6">
+            <button 
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-[0.3em] transition-all shadow-xl shadow-cyan-900/20 active:scale-95 flex items-center justify-center gap-3 group"
+            >
+              {isSubmitting ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <>
+                  {editingId ? 'Actualizar Flota' : 'Sincronizar Unidad'}
+                  <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>

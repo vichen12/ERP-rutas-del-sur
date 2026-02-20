@@ -1,59 +1,98 @@
 'use client'
-import { Landmark, Mail, Trash2, Plus, ShieldCheck } from 'lucide-react'
+import { 
+  Landmark, Mail, Trash2, ArrowRightLeft, ShieldCheck, 
+  User, Phone, MapPin, Edit3, Loader2 
+} from 'lucide-react'
 
-export function ClienteHeader({ selected, onBackup, onDelete, onNuevaOp, backupLoading }: any) {
+export function ClienteHeader({ selected, onBackup, onDelete, onEdit, onNuevaOp, backupLoading }: any) {
+  // 🚀 CAMBIO V2.0: Ahora el destino vive directo en el objeto cliente
+  const destinoFinal = selected.ruta_destino || 'SIN DESTINO DEFINIDO'
+
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end bg-slate-900/40 p-8 lg:p-12 rounded-[3.5rem] border border-white/5 gap-8 backdrop-blur-xl relative overflow-hidden group italic">
+    <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-[#020617]/60 backdrop-blur-2xl p-8 lg:p-12 rounded-[3rem] border border-white/5 gap-8 relative overflow-hidden group italic shadow-2xl font-sans">
       
-      {/* Decoración de fondo sutil */}
-      <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-sky-500/5 blur-[100px] rounded-full group-hover:bg-sky-500/10 transition-all duration-700" />
+      {/* Decoración de fondo */}
+      <div className="absolute -right-20 -top-20 w-80 h-80 bg-sky-500/5 blur-[120px] rounded-full group-hover:bg-sky-500/10 transition-all duration-1000 pointer-events-none" />
 
-      <div className="flex items-center gap-6 lg:gap-8 relative z-10">
-        <div className="p-5 bg-sky-600/10 text-sky-500 rounded-3xl shrink-0 shadow-2xl border border-sky-500/20">
-          <Landmark size={36} strokeWidth={2.5} />
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-8 relative z-10 w-full">
+        <div className="p-6 bg-gradient-to-br from-sky-500/20 to-sky-600/5 text-sky-500 rounded-[2rem] shrink-0 border border-sky-500/20 shadow-xl">
+          <Landmark size={42} strokeWidth={2} />
         </div>
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-500/20 flex items-center gap-1">
-              <ShieldCheck size={10} /> Cuenta Verificada
-            </span>
+
+        <div className="space-y-4 w-full">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-[0.3em] rounded-lg border border-emerald-500/20 flex items-center gap-1.5">
+                <ShieldCheck size={12} strokeWidth={3} /> Perfil Maestro V2.0
+              </span>
+            </div>
+            <h2 className="text-4xl lg:text-7xl font-black text-white tracking-tighter uppercase leading-[0.85] py-2">
+              {selected.razon_social}
+            </h2>
           </div>
-          <h2 className="text-4xl lg:text-6xl font-black text-white tracking-tighter uppercase leading-[0.8] mb-3">
-            {selected.razon_social}
-          </h2>
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex flex-wrap gap-x-4 gap-y-1">
-            <span>CUIT: {selected.cuit}</span>
-            <span className="text-slate-700">|</span>
-            <span>DIR: {selected.direccion || 'MENDOZA, ARGENTINA'}</span>
-          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-8 border-t border-white/5 pt-4">
+             <div className="flex items-center gap-3">
+                <User size={14} className="text-sky-500" />
+                <p className="text-[11px] font-bold text-slate-300 uppercase truncate">
+                  {selected.nombre_contacto || 'S/ CONTACTO'}
+                </p>
+             </div>
+             <div className="flex items-center gap-3">
+                <Phone size={14} className="text-emerald-500" />
+                <p className="text-[11px] font-bold text-slate-300 tabular-nums">
+                  {selected.telefono || 'S/ TELÉFONO'}
+                </p>
+             </div>
+             
+             {/* ADN Logístico - Destino directo del cliente */}
+             <div className="flex items-center gap-3">
+                <MapPin size={14} className="text-rose-500" />
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Destino Frecuente</span>
+                  <p className="text-[11px] font-black text-white uppercase truncate">
+                    {destinoFinal}
+                  </p>
+                </div>
+             </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-3 w-full lg:w-auto relative z-10">
-        {/* Botón Backup / Mail */}
-        <button 
-          onClick={onBackup} 
-          title="Enviar Resumen por Mail"
-          className="flex-1 lg:flex-none p-5 bg-white/5 text-slate-400 rounded-[1.5rem] border border-white/5 hover:bg-white/10 hover:text-white active:scale-95 transition-all flex items-center justify-center"
-        >
-          {backupLoading ? <span className="animate-pulse font-black text-[10px]">...</span> : <Mail size={22} />}
-        </button>
+      {/* BOTONERA DE GESTIÓN */}
+      <div className="flex flex-wrap md:flex-nowrap gap-3 w-full xl:w-auto relative z-10">
+        <div className="flex gap-2 w-full md:w-auto">
+          <button 
+            onClick={onEdit}
+            title="Editar datos del cliente"
+            className="flex-1 md:flex-none p-5 bg-white/5 text-sky-500 rounded-2xl border border-white/5 hover:bg-sky-500 hover:text-white transition-all flex items-center justify-center active:scale-95"
+          >
+            <Edit3 size={22} />
+          </button>
 
-        {/* Botón Eliminar Cliente */}
-        <button 
-          onClick={onDelete} 
-          title="Dar de baja cliente"
-          className="flex-1 lg:flex-none p-5 bg-rose-500/5 text-rose-500/50 rounded-[1.5rem] border border-rose-500/10 hover:bg-rose-600 hover:text-white active:scale-95 transition-all flex items-center justify-center"
-        >
-          <Trash2 size={22} />
-        </button>
+          <button 
+            onClick={onBackup} 
+            disabled={backupLoading}
+            title="Exportar Informe PDF / Email"
+            className="flex-1 md:flex-none p-5 bg-white/5 text-slate-400 rounded-2xl border border-white/5 hover:bg-white/10 hover:text-white transition-all flex items-center justify-center active:scale-95"
+          >
+            {backupLoading ? <Loader2 size={22} className="animate-spin" /> : <Mail size={22} />}
+          </button>
 
-        {/* Botón Acción Principal */}
+          <button 
+            onClick={onDelete} 
+            title="Eliminar Cliente"
+            className="flex-1 md:flex-none p-5 bg-rose-500/5 text-rose-500/50 rounded-2xl border border-rose-500/10 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center group active:scale-95"
+          >
+            <Trash2 size={22} className="group-hover:scale-110 transition-transform" />
+          </button>
+        </div>
+
         <button 
           onClick={onNuevaOp}
-          className="flex-[3] lg:flex-none bg-sky-600 hover:bg-sky-500 text-white px-10 py-5 rounded-[1.5rem] font-black text-[11px] transition-all shadow-2xl shadow-sky-900/40 uppercase tracking-[0.2em] active:scale-95 flex items-center justify-center gap-3 border border-sky-400/20"
+          className="w-full md:w-auto bg-sky-600 hover:bg-sky-500 text-white px-10 py-5 rounded-2xl font-black text-[11px] transition-all shadow-xl shadow-sky-900/40 uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 border border-sky-400/20"
         >
-          <Plus size={18} strokeWidth={3} /> Nueva Factura
+          <ArrowRightLeft size={18} strokeWidth={3} /> Registrar Movimiento 
         </button>
       </div>
     </div>
