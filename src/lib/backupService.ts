@@ -18,7 +18,7 @@ export const backupService = {
     doc.text(`RUTAS DEL SUR ERP - ${new Date().toLocaleString('es-AR')}`, 14, 25);
 
     // --- ITERAMOS POR CADA CLIENTE ---
-    todosLosClientes.forEach((cliente) => {
+    todosLosClientes.forEach((cliente: any) => {
       const remitosPendientes = (cliente.historial || []).filter(
         (h: any) => h.estado_gestion === 'por_cobrar'
       );
@@ -71,7 +71,7 @@ export const backupService = {
     });
 
     // --- GRAN TOTAL ---
-    const totalCartera = todosLosClientes.reduce((acc, c) => acc + (c.saldo || 0), 0);
+    const totalCartera = todosLosClientes.reduce((acc: number, c: any) => acc + (c.saldo || 0), 0);
     
     if (currentY > 260) { doc.addPage(); currentY = 20; }
     
@@ -92,7 +92,8 @@ export const backupService = {
     autoTable(doc, {
         startY: 40,
         head: [['Fecha', 'Remito', 'Detalle', 'Precio']],
-        body: porCobrar.map(m => [new Date(m.fecha).toLocaleDateString(), m.remito || 'S/N', m.detalle, `$ ${Number(m.debe).toLocaleString()}`]),
+        // 🚀 ACÁ ESTÁ LA CORRECCIÓN CLAVE QUE PEDÍA NETLIFY: (m: any)
+        body: porCobrar.map((m: any) => [new Date(m.fecha).toLocaleDateString(), m.remito || 'S/N', m.detalle, `$ ${Number(m.debe).toLocaleString()}`]),
         foot: [['', '', 'TOTAL:', `$ ${saldoPendiente.toLocaleString()}`]],
         headStyles: { fillColor: [2, 6, 23] }
     });
