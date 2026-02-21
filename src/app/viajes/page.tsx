@@ -4,13 +4,39 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { 
-  Loader2, Truck, MapPin, SearchX, ArrowRightLeft, 
-  Calendar, ShieldCheck, TrendingUp, Info, FilterX, Trash2
+  Loader2, Truck, SearchX, ArrowRightLeft, 
+  Calendar, Trash2, Users
 } from 'lucide-react'
 
-// Componentes del sistema
 import { ViajesHeader } from '@/components/ViajesHeader'
-import { ViajeModal } from '@/components/ViajeModal'
+import { ViajeModal } from '@/components/ViajeModal' 
+
+// Campos temporales de UI — nunca van a Supabase
+const CAMPOS_TEMPORALES = [
+  'repartos_ida', 'repartos_vuelta', 'precio_gasoil_sugerido',
+  'km_ida', 'km_vuelta', 'lts_ida', 'lts_vuelta'
+];
+
+const INITIAL_FORM_STATE = {
+  chofer_id: '', 
+  camion_id: '', 
+  origen: 'MENDOZA', 
+  destino: '', 
+  fecha: new Date().toISOString().split('T')[0],
+  km_recorridos: '', 
+  km_ida: '',
+  km_vuelta: '',
+  lts_ida: '',
+  lts_vuelta: '',
+  engrase: false,
+  pago_chofer: '', 
+  lts_gasoil: '', 
+  precio_gasoil: '', 
+  costo_descarga: '', 
+  desgaste_por_km: '180',
+  repartos_ida: [],    
+  repartos_vuelta: []  
+};
 
 export default function ViajesPage() {
   const [mounted, setMounted] = useState(false)
@@ -20,7 +46,6 @@ export default function ViajesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
-  // Filtros de fecha (Mes actual por defecto)
   const [dateStart, setDateStart] = useState<string>(() => {
     const d = new Date(); d.setDate(1); 
     return d.toISOString().split('T')[0];
@@ -32,43 +57,39 @@ export default function ViajesPage() {
   const [clientes, setClientes] = useState<any[]>([])
   const [choferes, setChoferes] = useState<any[]>([])
   const [camiones, setCamiones] = useState<any[]>([])
-  const [precioGasoil, setPrecioGasoil] = useState(0)
+  const [precioGasoilGlobal, setPrecioGasoilGlobal] = useState(0)
 
-  const initialFormState = {
-    cliente_id: '', chofer_id: '', camion_id: '', origen: 'MENDOZA', 
-    destino: '', fecha: new Date().toISOString().split('T')[0],
-    km_recorridos: '', es_retorno: false, engrase: false,
-    tarifa_flete: '', pago_chofer: '', lts_gasoil: '',
-    precio_gasoil: '', costo_descarga: '', desgaste_por_km: '180'
-  };
-
-  const [formData, setFormData] = useState<any>(initialFormState)
+  const [formData, setFormData] = useState<any>(INITIAL_FORM_STATE)
 
   useEffect(() => { 
     setMounted(true)
     fetchData() 
   }, [])
 
-  // --- 🛰️ MOTOR DE CARGA SINCRONIZADO CON LA DB REAL ---
+  // --- 🛰️ CARGA DE DATOS ---
   async function fetchData() {
     setLoading(true)
     try {
-      const [v, cl, ch, ca, conf] = await Promise.all([
-        supabase.from('viajes').select('*, clientes(razon_social), choferes(nombre), camiones(patente)').order('fecha', { ascending: false }),
+      const [v, cl, ch, ca, conf, rep] = await Promise.all([
+        supabase.from('viajes').select('*, choferes(nombre), camiones(patente)').order('fecha', { ascending: false }),
         supabase.from('clientes').select('*').order('razon_social'),
         supabase.from('choferes').select('id, nombre, km_recorridos, lts_consumidos').order('nombre'),
         supabase.from('camiones').select('id, patente, km_actual, operador_id, lts_consumidos').order('patente'),
-        supabase.from('configuracion').select('precio_gasoil').single()
+        supabase.from('configuracion').select('precio_gasoil').single(),
+        supabase.from('reparto_viaje').select('*, clientes(razon_social)') 
       ]);
 
-      if (v.error) console.error("❌ Error Viajes:", v.error.message);
-      if (ca.error) console.error("❌ Error Camiones:", ca.error.message);
+      const viajesMapeados = (v.data || []).map((viaje: any) => {
+        const repartosViaje = (rep.data || []).filter((r: any) => r.viaje_id === viaje.id);
+        const tarifaTotal = repartosViaje.reduce((acc: number, r: any) => acc + Number(r.monto_flete_parcial), 0);
+        return { ...viaje, repartos: repartosViaje, tarifa_flete_calculada: tarifaTotal }
+      });
 
-      setViajes(v.data || []);
+      setViajes(viajesMapeados);
       setClientes(cl.data || []);
       setChoferes(ch.data || []);
       setCamiones(ca.data || []);
-      if (conf.data) setPrecioGasoil(conf.data.precio_gasoil);
+      if (conf.data) setPrecioGasoilGlobal(conf.data.precio_gasoil);
     } catch (e) { 
       console.error("❌ Fallo Crítico:", e) 
     } finally { 
@@ -76,141 +97,190 @@ export default function ViajesPage() {
     }
   }
 
-  // --- 🔍 MOTOR DE BÚSQUEDA MULTI-CAMPO (Blindado) ---
+  // --- 🔍 FILTROS ---
   const filteredViajes = useMemo(() => {
     const term = search.toLowerCase().trim();
-    
     return (viajes || []).filter(v => {
-      const searchableText = [
-        v.clientes?.razon_social,
-        v.origen,
-        v.destino,
-        v.camiones?.patente,
-        v.choferes?.nombre
-      ].some(c => String(c || '').toLowerCase().includes(term));
-
+      const clientesTexto = v.repartos?.map((r:any) => r.clientes?.razon_social).join(' ') || '';
+      const searchableText = [clientesTexto, v.origen, v.destino, v.camiones?.patente, v.choferes?.nombre]
+        .some(c => String(c || '').toLowerCase().includes(term));
       const matchesTab = activeTab === 'global' ? true : (activeTab === 'ida' ? !v.es_retorno : v.es_retorno);
       const matchesDate = showAllTime || (v.fecha >= dateStart && v.fecha <= dateEnd);
-
       return searchableText && matchesTab && matchesDate;
     })
   }, [viajes, search, activeTab, dateStart, dateEnd, showAllTime])
 
-  // --- 📈 CÁLCULOS KPI ---
+  // --- 📈 KPIs ---
   const stats = useMemo(() => {
     return filteredViajes.reduce((acc, v) => {
-      const bruta = Number(v.tarifa_flete) || 0;
+      const bruta = Number(v.tarifa_flete_calculada) || 0; 
       const pagoCh = Number(v.pago_chofer) || 0;
-      const costoGas = (Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoil);
+      const pGasoil = Number(v.precio_gasoil) || precioGasoilGlobal;
+      const costoGas = (Number(v.lts_gasoil) || 0) * pGasoil;
       const descarga = Number(v.costo_descarga) || 0;
-      const neta = bruta - pagoCh - costoGas - descarga;
-
+      const costoDesgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
+      const neta = bruta - pagoCh - costoGas - descarga - costoDesgaste;
       return {
-        // 🚀 ASEGURAMOS EXTRAER LOS KMS COMO NÚMEROS
         km: acc.km + (Number(v.km_recorridos) || 0),
         bruta: acc.bruta + bruta,
         neta: acc.neta + neta,
-        totalSiva: acc.totalSiva + (neta / 1.21),
         totalLts: acc.totalLts + (Number(v.lts_gasoil) || 0),
         totalChofer: acc.totalChofer + pagoCh,
-        totalCostos: acc.totalCostos + costoGas + descarga
+        totalCostos: acc.totalCostos + costoGas + descarga + costoDesgaste
       }
-    }, { km: 0, bruta: 0, neta: 0, totalSiva: 0, totalLts: 0, totalChofer: 0, totalCostos: 0 })
-  }, [filteredViajes, precioGasoil])
+    }, { km: 0, bruta: 0, neta: 0, totalLts: 0, totalChofer: 0, totalCostos: 0 })
+  }, [filteredViajes, precioGasoilGlobal])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); 
+  // --- 💾 GUARDADO MAESTRO ---
+  const handleWizardSubmit = async (fd: any) => {
     setIsSubmitting(true);
     try {
-      const { precio_gasoil_sugerido, desgaste_por_km, ...payloadLimpio } = formData;
-      
-      const { data: nV, error: eV } = await supabase
-        .from('viajes')
-        .insert([payloadLimpio])
-        .select()
-        .single();
-      
-      if (eV) throw eV;
+      const hasIda    = (fd.repartos_ida    || []).length > 0;
+      const hasVuelta = (fd.repartos_vuelta || []).length > 0;
 
-      const kmSumar = Number(payloadLimpio.km_recorridos) || 0;
-      const ltsSumar = Number(payloadLimpio.lts_gasoil) || 0;
-      const camionActual = camiones.find(c => c.id === payloadLimpio.camion_id);
-      const choferActual = choferes.find(ch => ch.id === payloadLimpio.chofer_id);
-      
-      await Promise.all([
-        supabase.from('remitos').insert([{ viaje_id: nV.id, cliente_id: payloadLimpio.cliente_id, numero_remito: 'PENDIENTE' }]),
-        payloadLimpio.cliente_id && supabase.from("cuenta_corriente").insert([{ 
-          cliente_id: payloadLimpio.cliente_id, viaje_id: nV.id, fecha: payloadLimpio.fecha, tipo_movimiento: 'DEBE', 
-          detalle: `FLETE: ${payloadLimpio.origen} > ${payloadLimpio.destino}`, debe: Number(payloadLimpio.tarifa_flete) 
-        }]),
-        payloadLimpio.camion_id && supabase.from('camiones').update({ 
-          km_actual: (Number(camionActual?.km_actual) || 0) + kmSumar,
-          lts_consumidos: (Number(camionActual?.lts_consumidos) || 0) + ltsSumar
-        }).eq('id', payloadLimpio.camion_id),
-        payloadLimpio.chofer_id && supabase.from('choferes').update({
-          km_recorridos: (Number(choferActual?.km_recorridos) || 0) + kmSumar,
-          lts_consumidos: (Number(choferActual?.lts_consumidos) || 0) + ltsSumar
-        }).eq('id', payloadLimpio.chofer_id)
-      ]);
+      // Extraer campos temporales y repartos — el resto va a Supabase
+      const { 
+        repartos_ida, repartos_vuelta, precio_gasoil_sugerido,
+        km_ida, km_vuelta, lts_ida, lts_vuelta,
+        ...dataLimpia 
+      } = fd;
 
-      setIsModalOpen(false); 
-      setFormData(initialFormState); 
+      const procesarTramo = async (
+        esRetorno: boolean,
+        repartos: any[],
+        orig: string,
+        dest: string,
+        kmTramo: string,
+        ltsTramo: string
+      ) => {
+        if (!repartos || repartos.length === 0) return 0;
+
+        const viajeObj = {
+          ...dataLimpia,
+          es_retorno:    esRetorno,
+          origen:        orig,
+          destino:       dest,
+          // Cada tramo guarda sus KM y LTS propios (del cliente de ese tramo)
+          km_recorridos: kmTramo  || dataLimpia.km_recorridos,
+          lts_gasoil:    ltsTramo || dataLimpia.lts_gasoil,
+        };
+
+        const { data: nV, error: eV } = await supabase.from('viajes').insert([viajeObj]).select().single();
+        if (eV) throw eV;
+
+        const insertsRep = repartos.map((r: any) => ({
+          viaje_id:            nV.id,
+          cliente_id:          r.cliente_id,
+          monto_flete_parcial: Number(r.monto_flete)
+        }));
+
+        const insertsCta = repartos.map((r: any) => ({
+          cliente_id:      r.cliente_id,
+          viaje_id:        nV.id,
+          fecha:           dataLimpia.fecha,
+          tipo_movimiento: 'DEBE',
+          detalle:         `FLETE C/P: ${orig} > ${dest}`,
+          debe:            Number(r.monto_flete)
+        }));
+
+        await Promise.all([
+          supabase.from('reparto_viaje').insert(insertsRep),
+          supabase.from('cuenta_corriente').insert(insertsCta)
+        ]);
+
+        return 1;
+      };
+
+      let tramosRealizados = 0;
+
+      if (hasIda) {
+        tramosRealizados += await procesarTramo(
+          false,
+          repartos_ida,
+          dataLimpia.origen,
+          dataLimpia.destino,
+          km_ida,
+          lts_ida
+        );
+      }
+
+      if (hasVuelta) {
+        tramosRealizados += await procesarTramo(
+          true,
+          repartos_vuelta,
+          dataLimpia.destino, // origen de vuelta = destino de ida
+          dataLimpia.origen,  // destino de vuelta = origen de ida
+          km_vuelta,
+          lts_vuelta
+        );
+      }
+
+      // Actualizar odómetros con el TOTAL del circuito (km_recorridos y lts_gasoil ya son la suma)
+      if (tramosRealizados > 0) {
+        const cam = camiones.find((c: any) => c.id === dataLimpia.camion_id);
+        const cho = choferes.find((ch: any) => ch.id === dataLimpia.chofer_id);
+        const kSum = Number(dataLimpia.km_recorridos) || 0;
+        const lSum = Number(dataLimpia.lts_gasoil)    || 0;
+
+        await Promise.all([
+          supabase.from('camiones').update({
+            km_actual:      (Number(cam?.km_actual)      || 0) + kSum,
+            lts_consumidos: (Number(cam?.lts_consumidos) || 0) + lSum
+          }).eq('id', dataLimpia.camion_id),
+          supabase.from('choferes').update({
+            km_recorridos:  (Number(cho?.km_recorridos)  || 0) + kSum,
+            lts_consumidos: (Number(cho?.lts_consumidos) || 0) + lSum
+          }).eq('id', dataLimpia.chofer_id)
+        ]);
+      }
+
+      setIsModalOpen(false);
+      setFormData(INITIAL_FORM_STATE);
       fetchData();
+      alert("✅ Operación sincronizada.");
     } catch (err: any) { 
-      alert("Error: " + err.message);
+      alert("❌ Error: " + err.message);
     } finally { 
       setIsSubmitting(false);
     }
   }
 
-  // 🚀 NUEVA FUNCIÓN: BORRADO REVERSO
+  // --- 🗑️ ELIMINACIÓN ---
   const handleDeleteViaje = async (viaje: any) => {
-    if (!confirm(`⚠️ ¿Eliminar viaje a ${viaje.destino}? Esto anulará el remito y la deuda del cliente.`)) return;
-    
+    if (!confirm(`⚠️ ¿Eliminar viaje? Se borrarán repartos y deudas asociadas.`)) return;
     try {
-      const kmRestar = Number(viaje.km_recorridos) || 0;
-      const ltsRestar = Number(viaje.lts_gasoil) || 0;
-      const camionActual = camiones.find(c => c.id === viaje.camion_id);
-      const choferActual = choferes.find(ch => ch.id === viaje.chofer_id);
+      const kmRestar  = Number(viaje.km_recorridos) || 0;
+      const ltsRestar = Number(viaje.lts_gasoil)    || 0;
+      const cam = camiones.find(c => c.id === viaje.camion_id);
+      const cho = choferes.find(ch => ch.id === viaje.chofer_id);
 
-      // 1. Borramos la cuenta corriente y el remito asociados a este viaje
       await Promise.all([
-        supabase.from('cuenta_corriente').delete().eq('viaje_id', viaje.id),
-        supabase.from('remitos').delete().eq('viaje_id', viaje.id)
+        supabase.from('reparto_viaje').delete().eq('viaje_id', viaje.id),
+        supabase.from('cuenta_corriente').delete().eq('viaje_id', viaje.id)
       ]);
-
-      // 2. Le restamos los km y litros al camión y chofer (si existen)
-      const updates = [];
-      if (viaje.camion_id && camionActual) {
-        updates.push(supabase.from('camiones').update({ 
-          km_actual: Math.max(0, (Number(camionActual.km_actual) || 0) - kmRestar),
-          lts_consumidos: Math.max(0, (Number(camionActual.lts_consumidos) || 0) - ltsRestar)
-        }).eq('id', viaje.camion_id));
-      }
       
-      if (viaje.chofer_id && choferActual) {
-        updates.push(supabase.from('choferes').update({
-          km_recorridos: Math.max(0, (Number(choferActual.km_recorridos) || 0) - kmRestar),
-          lts_consumidos: Math.max(0, (Number(choferActual.lts_consumidos) || 0) - ltsRestar)
-        }).eq('id', viaje.chofer_id));
-      }
-      
+      const updates: any[] = [];
+      if (cam) updates.push(supabase.from('camiones').update({ 
+        km_actual:      Math.max(0, cam.km_actual      - kmRestar), 
+        lts_consumidos: Math.max(0, cam.lts_consumidos - ltsRestar) 
+      }).eq('id', viaje.camion_id));
+      if (cho) updates.push(supabase.from('choferes').update({ 
+        km_recorridos:  Math.max(0, cho.km_recorridos  - kmRestar), 
+        lts_consumidos: Math.max(0, cho.lts_consumidos - ltsRestar) 
+      }).eq('id', viaje.chofer_id));
       await Promise.all(updates);
 
-      // 3. Finalmente, borramos el viaje
       const { error } = await supabase.from('viajes').delete().eq('id', viaje.id);
       if (error) throw error;
 
       fetchData();
-    } catch (err: any) {
-      alert("Error al eliminar el viaje: " + err.message);
-    }
+    } catch (err: any) { alert(err.message); }
   }
 
   if (!mounted || loading) return (
     <div className="h-screen bg-[#020617] flex flex-col items-center justify-center">
       <Loader2 className="animate-spin text-cyan-500 w-12 h-12 mb-4" />
-      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 animate-pulse">Sincronizando Bitácora...</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 animate-pulse">Refrescando Inteligencia...</p>
     </div>
   )
 
@@ -222,16 +292,13 @@ export default function ViajesPage() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 space-y-12 relative z-10">
         
         <ViajesHeader 
-          search={search} setSearch={setSearch} onOpenModal={() => {
-            setFormData(initialFormState); 
-            setIsModalOpen(true);
-          }} 
-          {...stats} // Pasa km, totalLts, etc.
-          totalKm={stats.km} // Forzamos el mapeo explícito por las dudas
-          totalFacturado={stats.bruta} 
-          totalNeto={stats.neta}
-          activeTab={activeTab} setActiveTab={setActiveTab} precioGasoil={precioGasoil} setPrecioGasoil={setPrecioGasoil}
-          dateStart={dateStart} setDateStart={setDateStart} dateEnd={dateEnd} setDateEnd={setDateEnd}
+          search={search} setSearch={setSearch} 
+          onOpenModal={() => { setFormData(INITIAL_FORM_STATE); setIsModalOpen(true); }} 
+          {...stats} totalKm={stats.km} totalFacturado={stats.bruta} totalNeto={stats.neta}
+          activeTab={activeTab} setActiveTab={setActiveTab} 
+          precioGasoil={precioGasoilGlobal} setPrecioGasoil={setPrecioGasoilGlobal}
+          dateStart={dateStart} setDateStart={setDateStart} 
+          dateEnd={dateEnd} setDateEnd={setDateEnd}
           showAllTime={showAllTime} setShowAllTime={setShowAllTime}
         />
         
@@ -239,47 +306,63 @@ export default function ViajesPage() {
           <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-white/5 rounded-[3rem] bg-slate-900/10 backdrop-blur-sm mx-4">
             <SearchX size={64} className="text-slate-800 mb-6" />
             <h3 className="text-xl font-black text-slate-500 uppercase tracking-widest text-center">Sin Coincidencias</h3>
-            <button onClick={() => {setSearch(''); setShowAllTime(true)}} className="mt-8 px-8 py-4 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-500 rounded-2xl text-[9px] font-black uppercase border border-cyan-500/20 transition-all active:scale-95">Limpiar Filtros</button>
+            <button onClick={() => {setSearch(''); setShowAllTime(true)}} className="mt-8 px-8 py-4 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-500 rounded-2xl text-[9px] font-black uppercase border border-cyan-500/20 transition-all">Limpiar Filtros</button>
           </div>
         ) : (
           <div className="space-y-10 animate-in fade-in duration-700">
+
             {/* TABLA DESKTOP */}
             <div className="hidden xl:block overflow-hidden rounded-[3rem] border border-white/10 bg-slate-900/20 backdrop-blur-xl shadow-2xl">
               <table className="w-full text-left">
                 <thead className="bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                   <tr>
                     <th className="p-7">Fecha / Ruta</th>
-                    <th className="p-7">Cliente</th>
+                    <th className="p-7">Clientes (Carga Consolidada)</th>
                     <th className="p-7">Activos</th>
-                    <th className="p-7 text-right">Flete</th>
-                    <th className="p-7 text-right">Utilidad</th>
+                    <th className="p-7 text-right">Flete Total</th>
+                    <th className="p-7 text-right">Utilidad Neta</th>
                     <th className="p-7 text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {filteredViajes.map(v => {
-                    const netaViaje = (Number(v.tarifa_flete) || 0) - (Number(v.pago_chofer) || 0) - ((Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoil)) - (Number(v.costo_descarga) || 0);
+                    const pGasoil   = Number(v.precio_gasoil) || precioGasoilGlobal;
+                    const costoGas  = (Number(v.lts_gasoil) || 0) * pGasoil;
+                    const desgaste  = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
+                    const netaViaje = Number(v.tarifa_flete_calculada) - (Number(v.pago_chofer) + costoGas + Number(v.costo_descarga) + desgaste);
+                    
                     return (
                       <tr key={v.id} className="hover:bg-white/[0.03] transition-all group">
                         <td className="p-7">
                           <div className="flex items-center gap-5">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border border-white/5 ${v.es_retorno ? 'bg-indigo-500/10 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-emerald-500/10 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]'}`}>
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border border-white/5 ${v.es_retorno ? 'bg-indigo-500/10 text-indigo-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
                               <Calendar size={20} />
                             </div>
                             <div>
                               <p className="text-sm font-black text-white">{new Date(v.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
                               <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter flex items-center gap-2">
-                                {v.origen || '---'} <ArrowRightLeft size={10} className="text-slate-700" /> {v.destino || '---'}
+                                {v.origen} <ArrowRightLeft size={10} /> {v.destino}
                               </p>
                             </div>
                           </div>
                         </td>
-                        <td className="p-7 text-xs font-black text-indigo-400 uppercase tracking-widest">{v.clientes?.razon_social || 'SIN DATO'}</td>
                         <td className="p-7">
-                          <p className="text-xs font-black text-slate-200">{v.camiones?.patente || 'S/P'}</p>
-                          <p className="text-[10px] text-slate-500 uppercase font-bold">{v.choferes?.nombre || 'S/C'}</p>
+                          <div className="flex flex-col gap-1">
+                            {v.repartos?.map((r:any) => (
+                              <div key={r.id} className="flex justify-between items-center bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+                                <span className="text-[10px] font-black text-indigo-300 uppercase truncate pr-4">{r.clientes?.razon_social}</span>
+                                <span className="text-[10px] font-bold text-emerald-400 italic">${Number(r.monto_flete_parcial).toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
                         </td>
-                        <td className="p-7 text-right font-black text-white tabular-nums text-sm">$ {Number(v.tarifa_flete || 0).toLocaleString()}</td>
+                        <td className="p-7">
+                          <p className="text-xs font-black text-slate-200">{v.camiones?.patente}</p>
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">{v.choferes?.nombre}</p>
+                        </td>
+                        <td className="p-7 text-right font-black text-white tabular-nums text-lg">
+                          $ {Number(v.tarifa_flete_calculada || 0).toLocaleString()}
+                        </td>
                         <td className={`p-7 text-right font-black tabular-nums text-sm ${netaViaje > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                           $ {Math.round(netaViaje).toLocaleString()}
                         </td>
@@ -288,11 +371,7 @@ export default function ViajesPage() {
                             <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border ${v.es_retorno ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
                               {v.es_retorno ? 'Ret' : 'Ida'}
                             </span>
-                            <button 
-                              onClick={() => handleDeleteViaje(v)}
-                              className="p-1.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all"
-                              title="Anular Viaje"
-                            >
+                            <button onClick={() => handleDeleteViaje(v)} className="p-1.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 rounded-lg transition-all">
                               <Trash2 size={14} />
                             </button>
                           </div>
@@ -310,54 +389,56 @@ export default function ViajesPage() {
                 <div key={v.id} className="bg-slate-900/60 border border-white/10 p-8 rounded-[3rem] space-y-6 backdrop-blur-md relative overflow-hidden active:scale-[0.98] transition-all">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">{v.clientes?.razon_social || 'CLIENTE S/D'}</span>
-                      <h4 className="text-lg font-black text-white uppercase leading-tight">{v.origen || '---'} → {v.destino || '---'}</h4>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users size={14} className="text-indigo-400" />
+                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">{v.repartos?.length || 0} Clientes</span>
+                      </div>
+                      <h4 className="text-lg font-black text-white uppercase leading-tight">{v.origen} → {v.destino}</h4>
                     </div>
                     <div className="text-right">
-                       <p className="text-[10px] font-bold text-slate-500 tabular-nums">{new Date(v.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
-                       <div className="flex items-center justify-end gap-1 mt-1">
-                         <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${v.es_retorno ? 'text-indigo-400 border-indigo-400/20' : 'text-emerald-400 border-emerald-400/20'}`}>
-                          {v.es_retorno ? 'Retorno' : 'Ida'}
-                         </span>
-                       </div>
+                      <p className="text-[10px] font-bold text-slate-500 tabular-nums">{new Date(v.fecha).toLocaleDateString()}</p>
+                      <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${v.es_retorno ? 'text-indigo-400 border-indigo-400/20' : 'text-emerald-400 border-emerald-400/20'}`}>
+                        {v.es_retorno ? 'Ret' : 'Ida'}
+                      </span>
                     </div>
                   </div>
-                  
                   <div className="grid grid-cols-2 gap-4 relative z-10">
                     <div className="bg-black/30 p-5 rounded-[2.2rem] border border-white/5 shadow-inner">
-                      <p className="text-[8px] font-black text-slate-500 uppercase mb-1 tracking-widest">Flete</p>
-                      <p className="text-xl font-black text-emerald-400 tabular-nums">$ {Number(v.tarifa_flete || 0).toLocaleString()}</p>
+                      <p className="text-[8px] font-black text-slate-500 uppercase mb-1 tracking-widest">Flete Bruto</p>
+                      <p className="text-xl font-black text-emerald-400 tabular-nums">$ {Number(v.tarifa_flete_calculada || 0).toLocaleString()}</p>
                     </div>
                     <div className="bg-black/30 p-5 rounded-[2.2rem] border border-white/5 shadow-inner">
                       <p className="text-[8px] font-black text-slate-500 uppercase mb-1 tracking-widest">Unidad</p>
-                      <p className="text-lg font-black text-white uppercase">{v.camiones?.patente || '---'}</p>
+                      <p className="text-lg font-black text-white uppercase">{v.camiones?.patente || 'S/P'}</p>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-white/5 relative z-10">
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400"><Truck size={14} /></div>
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest truncate max-w-[120px]">{v.choferes?.nombre || 'S/C'}</p>
-                     </div>
-                     <button 
-                        onClick={() => handleDeleteViaje(v)}
-                        className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400"><Truck size={14} /></div>
+                      <p className="text-[10px] font-black text-slate-300 uppercase truncate max-w-[120px]">{v.choferes?.nombre || 'S/C'}</p>
+                    </div>
+                    <button onClick={() => handleDeleteViaje(v)} className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 rounded-xl transition-all">
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
+
           </div>
         )}
       </div>
       
       <ViajeModal 
-        isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} 
-        onSubmit={(e: React.FormEvent) => handleSubmit(e)} isSubmitting={isSubmitting} 
-        formData={formData} setFormData={setFormData} 
-        clientes={clientes} choferes={choferes} camiones={camiones} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onWizardSubmit={handleWizardSubmit} 
+        isSubmitting={isSubmitting} 
+        formData={formData} 
+        setFormData={setFormData}
+        clientes={clientes} 
+        choferes={choferes} 
+        camiones={camiones} 
       />
     </div>
   )

@@ -5,7 +5,6 @@ import {
   DollarSign, Calculator, TrendingUp, Percent, Gauge 
 } from 'lucide-react'
 
-// Paleta táctica optimizada para el ERP V2.0
 const THEMES = {
   ida: {
     bgActive: 'bg-emerald-600 shadow-emerald-600/30 text-white',
@@ -39,7 +38,25 @@ const THEMES = {
   }
 }
 
-export function ViajesGeneral({ stats }: { stats: any }) {
+// ✅ FIX #9: Definimos la interfaz correcta que recibe stats como objeto plano
+// y calculamos las vistas por separado desde los viajes
+interface ViajesGeneralProps {
+  // Stats plano (todos los viajes filtrados consolidados)
+  stats: {
+    km: number;
+    bruta: number;
+    neta: number;
+    totalSiva: number;
+    totalLts: number;
+    totalChofer: number;
+    totalCostos: number;
+  };
+  // Viajes filtrados para calcular ida/retorno por separado
+  viajes: any[];
+  precioGasoil: number;
+}
+
+export function ViajesGeneral({ stats, viajes = [], precioGasoil = 0 }: ViajesGeneralProps) {
   const [activeView, setActiveView] = useState<'ida' | 'retorno' | 'total'>('total')
 
   const views = [
@@ -48,17 +65,54 @@ export function ViajesGeneral({ stats }: { stats: any }) {
     { id: 'retorno', label: 'Operación Retorno', icon: <ArrowLeft size={14} /> },
   ] as const;
 
-  const currentData = stats[activeView] || { km: 0, totalLts: 0, totalChofer: 0, totalCostos: 0, bruta: 0, siva: 0, neta: 0 }
+  // ✅ FIX #9: Calculamos stats por tramo desde los viajes directamente
+  const calcularStats = (viajesFiltrados: any[]) => {
+    return viajesFiltrados.reduce((acc, v) => {
+      const bruta = Number(v.tarifa_flete_calculada) || 0;
+      const pagoCh = Number(v.pago_chofer) || 0;
+      const costoGas = (Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoil);
+      const descarga = Number(v.costo_descarga) || 0;
+      const costoDesgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
+      const neta = bruta - pagoCh - costoGas - descarga - costoDesgaste;
+
+      return {
+        km: acc.km + (Number(v.km_recorridos) || 0),
+        bruta: acc.bruta + bruta,
+        neta: acc.neta + neta,
+        siva: acc.siva + (neta / 1.21),
+        totalLts: acc.totalLts + (Number(v.lts_gasoil) || 0),
+        totalChofer: acc.totalChofer + pagoCh,
+        totalCostos: acc.totalCostos + costoGas + descarga + costoDesgaste,
+      }
+    }, { km: 0, bruta: 0, neta: 0, siva: 0, totalLts: 0, totalChofer: 0, totalCostos: 0 })
+  }
+
+  const viajesIda = viajes.filter(v => !v.es_retorno)
+  const viajesRetorno = viajes.filter(v => v.es_retorno)
+
+  const statsIda = calcularStats(viajesIda)
+  const statsRetorno = calcularStats(viajesRetorno)
+  const statsTotal = {
+    ...stats,
+    siva: stats.totalSiva,
+  }
+
+  const viewData: Record<string, any> = {
+    ida: statsIda,
+    retorno: statsRetorno,
+    total: statsTotal,
+  }
+
+  const currentData = viewData[activeView] || { km: 0, totalLts: 0, totalChofer: 0, totalCostos: 0, bruta: 0, siva: 0, neta: 0 }
   const t = THEMES[activeView]
   
-  // Lógica de Rentabilidad
   const eficiencia = currentData.bruta > 0 ? (currentData.neta / currentData.bruta) * 100 : 0
   const rendimientoCombustible = currentData.km > 0 ? (currentData.totalLts / currentData.km) * 100 : 0
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 italic font-sans">
       
-      {/* --- SELECTOR TÁCTICO --- */}
+      {/* SELECTOR TÁCTICO */}
       <div className="flex flex-col sm:flex-row p-1.5 bg-slate-950/80 border border-white/5 rounded-[2rem] w-full sm:w-fit backdrop-blur-md mx-auto lg:mx-0 shadow-2xl">
         {views.map((view) => (
           <button
@@ -75,13 +129,12 @@ export function ViajesGeneral({ stats }: { stats: any }) {
         ))}
       </div>
 
-      {/* --- PANEL DE CONTROL DE RESULTADOS --- */}
+      {/* PANEL DE CONTROL */}
       <div className={`
         relative bg-slate-900/40 rounded-[2.5rem] md:rounded-[3.5rem] border p-6 md:p-10 lg:p-14 backdrop-blur-xl transition-all duration-700 overflow-hidden shadow-2xl
         ${activeView === 'total' ? `${t.border} ring-1 ${t.ring} ${t.shadow}` : 'border-white/5'}
       `}>
         
-        {/* Glow Decorativo de fondo */}
         <div className={`absolute -right-10 -top-10 opacity-[0.04] transition-colors duration-700 ${t.textMain} pointer-events-none`}>
            {activeView === 'total' ? <Globe size={300}/> : activeView === 'ida' ? <ArrowRight size={300}/> : <ArrowLeft size={300}/>}
         </div>
@@ -107,7 +160,6 @@ export function ViajesGeneral({ stats }: { stats: any }) {
               <MetricBox label="Costos / Desgaste" value={currentData.totalCostos} prefix="$ " icon={<Calculator size={16}/>} />
             </div>
 
-            {/* Rendimiento Energético */}
             <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Gauge size={16} className="text-slate-500" />
@@ -117,7 +169,7 @@ export function ViajesGeneral({ stats }: { stats: any }) {
             </div>
           </div>
 
-          {/* BALANCE FINANCIERO (THE MONEY STUFF) */}
+          {/* BALANCE FINANCIERO */}
           <div className="bg-slate-950/80 border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 flex flex-col justify-center space-y-10 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
               <DollarSign size={100} className="text-white" />
@@ -132,7 +184,7 @@ export function ViajesGeneral({ stats }: { stats: any }) {
               </div>
               <div className="text-right space-y-1">
                 <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Utilidad s/IVA</span>
-                <p className="text-xl md:text-2xl font-black text-slate-400 italic tabular-nums">$ {Math.round(currentData.siva).toLocaleString('es-AR')}</p>
+                <p className="text-xl md:text-2xl font-black text-slate-400 italic tabular-nums">$ {Math.round(currentData.siva || 0).toLocaleString('es-AR')}</p>
               </div>
             </div>
 
@@ -188,7 +240,6 @@ function MetricBox({ label, value, prefix = "", suffix = "", icon }: any) {
       <p className="text-2xl font-black text-white italic tracking-tighter tabular-nums">
         {prefix}{Math.round(value).toLocaleString('es-AR')}<span className="text-[10px] ml-1 text-slate-600 not-italic uppercase">{suffix}</span>
       </p>
-      {/* Línea decorativa */}
       <div className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full bg-sky-500/30 transition-all duration-500" />
     </div>
   )

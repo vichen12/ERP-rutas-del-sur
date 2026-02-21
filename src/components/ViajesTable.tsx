@@ -28,14 +28,14 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
   return (
     <div className="bg-slate-900/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-md relative z-20 font-sans italic">
       
-      {/* ===== VISTA MÓVIL (Tarjetas de Control) ===== */}
+      {/* ===== VISTA MÓVIL ===== */}
       <div className="md:hidden divide-y divide-white/[0.05]">
          {viajes.map(v => {
              const isRetorno = v.es_retorno;
              const themeColor = isRetorno ? 'text-indigo-400' : 'text-emerald-400';
              
-             // 🚀 LÓGICA FINANCIERA V2.0
-             const bruta = Number(v.tarifa_flete) || 0;
+             // ✅ FIX #1: Usar tarifa_flete_calculada en vez de tarifa_flete
+             const bruta = Number(v.tarifa_flete_calculada) || 0;
              const costoGasoil = (Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoilActual);
              const costoDesgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
              const totalCostos = (Number(v.pago_chofer) || 0) + (Number(v.costo_descarga) || 0) + costoGasoil + costoDesgaste;
@@ -73,7 +73,8 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
                         </div>
                         <div className="flex items-end gap-1">
                            <span className="text-white font-black text-lg leading-none">{Number(v.km_recorridos).toLocaleString()}</span>
-                           <span className="text-[8px] text-slate-600 font-black mb-0.5 uppercase">Km Totales</span>
+                           {/* ✅ FIX #11: Label correcto - es el km del tramo, no el total */}
+                           <span className="text-[8px] text-slate-600 font-black mb-0.5 uppercase">Km Tramo</span>
                         </div>
                      </div>
 
@@ -93,7 +94,7 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
          })}
       </div>
 
-      {/* ===== VISTA DESKTOP (Grilla Maestra) ===== */}
+      {/* ===== VISTA DESKTOP ===== */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1100px]">
           <thead className="bg-white/[0.02] text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5">
@@ -111,8 +112,8 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
             {viajes.map(v => {
               const isRetorno = v.es_retorno;
               
-              // 🚀 LÓGICA FINANCIERA V2.0 (Sync con Modal)
-              const bruta = Number(v.tarifa_flete) || 0;
+              // ✅ FIX #1: Usar tarifa_flete_calculada en vez de tarifa_flete
+              const bruta = Number(v.tarifa_flete_calculada) || 0;
               const costoGasoil = (Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoilActual);
               const costoDesgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
               const totalCostos = (Number(v.pago_chofer) || 0) + (Number(v.costo_descarga) || 0) + costoGasoil + costoDesgaste;
@@ -154,7 +155,8 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
                     <div className="flex flex-col items-center gap-2">
                       <div className="px-5 py-2 bg-slate-950 border border-white/5 rounded-2xl shadow-inner">
                          <span className="text-white font-black text-xl tabular-nums">{Number(v.km_recorridos).toLocaleString()}</span>
-                         <span className="text-[10px] text-slate-600 font-black ml-1 uppercase">KM</span>
+                         {/* ✅ FIX #11: Label correcto */}
+                         <span className="text-[10px] text-slate-600 font-black ml-1 uppercase">KM Tramo</span>
                       </div>
                       <div className="flex items-center gap-3 text-[11px] text-slate-500 font-bold">
                         <span className="flex items-center gap-1"><Fuel size={14} className="text-amber-500/50"/> {v.lts_gasoil}L</span>

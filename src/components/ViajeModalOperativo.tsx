@@ -1,8 +1,11 @@
 "use client";
 import {
-  Calendar, MapPin, TrendingUp, RefreshCw, Truck, User, 
-  Hash, ChevronRight, Info, AlertCircle, CheckCircle2, ShieldCheck
+  Calendar, MapPin, Truck, User, 
+  Hash, ChevronRight,
+  PlusCircle, Trash2, Star, CheckCircle2,
+  ArrowUpCircle, ArrowDownCircle, Info, Fuel
 } from "lucide-react";
+import { useEffect } from "react";
 
 export function ViajeModalOperativo({
   formData,
@@ -10,231 +13,324 @@ export function ViajeModalOperativo({
   clientes = [],
   camiones = [],
   choferes = [],
+  onCamionChange,
+  agregarCliente,
+  actualizarReparto,
+  eliminarReparto
 }: any) {
   
-  // ==========================================
-  // 🔄 FUNCIÓN DE SWAP (INVERSIÓN DE RUTA)
-  // ==========================================
-  const handleToggleRetorno = (sentido: boolean) => {
-    // Solo invertimos si realmente estamos cambiando el estado
-    if (formData.es_retorno !== sentido) {
-      setFormData((prev: any) => ({
-        ...prev,
-        es_retorno: sentido,
-        // 🔥 LA MAGIA: El origen pasa a ser el destino y viceversa
-        origen: prev.destino || "",
-        destino: prev.origen || "",
-      }));
-    }
-  };
+  const tieneVuelta = formData.repartos_vuelta && formData.repartos_vuelta.length > 0;
 
-  // ==========================================
-  // 🚀 MOTOR DE ADN LOGÍSTICO (AUTOPRECIADO)
-  // ==========================================
-  const handleClienteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedClienteId = e.target.value;
-    if (!selectedClienteId) {
-      setFormData((prev: any) => ({ ...prev, cliente_id: "" }));
-      return;
-    }
+  // 📐 Valores parciales guardados por tramo
+  const kmIda     = Number(formData.km_ida)    || 0;
+  const kmVuelta  = Number(formData.km_vuelta)  || 0;
+  const ltsIda    = Number(formData.lts_ida)   || 0;
+  const ltsVuelta = Number(formData.lts_vuelta) || 0;
 
-    const cl = clientes.find((c: any) => c.id === selectedClienteId);
-
-    if (cl) {
-      const cfg = cl.cliente_rutas_config?.[0] || {};
-      
-      // Obtenemos los valores base
-      let origenBase = (cfg.origen || cl.ruta_origen || "MENDOZA");
-      let destinoBase = (cfg.destino || cl.ruta_destino || "");
-
-      // 💡 Si ya está marcado como retorno, invertimos los valores del cliente al cargar
-      const origenFinal = formData.es_retorno ? destinoBase : origenBase;
-      const destinoFinal = formData.es_retorno ? origenBase : destinoBase;
-
-      setFormData((prev: any) => ({
-        ...prev,
-        cliente_id: selectedClienteId,
-        origen: origenFinal.toUpperCase(),
-        destino: destinoFinal.toUpperCase(),
-        km_recorridos: String(cfg.km_estimados || cl.ruta_km_estimados || ""),
-        tarifa_flete: String(cfg.tarifa_flete_sugerida || cl.tarifa_flete || ""),
-        pago_chofer: String(cfg.pago_chofer_estimado || cl.pago_chofer || ""),
-        lts_gasoil: String(cfg.lts_combustible_estimado || cl.lts_gasoil_estimado || ""),
-        costo_descarga: String(cfg.costo_descarga_sugerido || cl.costo_descarga || "0"),
-        desgaste_por_km: String(cfg.desgaste_por_km || cl.desgaste_por_km || "180"),
-      }));
-    }
-  };
-
-  // ==========================================
-  // 🚛 VÍNCULO UNIDAD -> OPERADOR
-  // ==========================================
-  const handleCamionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const unidad = camiones.find((c: any) => c.id === selectedId);
-    
+  // 🔄 Recalcular totales cuando cambian los parciales o el estado de vuelta
+  useEffect(() => {
+    const kmTotal  = tieneVuelta ? kmIda + kmVuelta   : kmIda;
+    const ltsTotal = tieneVuelta ? ltsIda + ltsVuelta : ltsIda;
     setFormData((prev: any) => ({
       ...prev,
-      camion_id: selectedId,
-      // 🤝 Si la unidad tiene un operador_id (chofer fijo), lo asignamos al toque
-      chofer_id: unidad?.operador_id || unidad?.chofer_id || prev.chofer_id,
+      ...(kmTotal  > 0 ? { km_recorridos: String(kmTotal)  } : {}),
+      ...(ltsTotal > 0 ? { lts_gasoil:    String(ltsTotal) } : {}),
     }));
-  };
+  }, [kmIda, kmVuelta, ltsIda, ltsVuelta, tieneVuelta]);
+
+  // 🧹 Limpiar parciales de vuelta si no hay clientes de vuelta
+  useEffect(() => {
+    if (!tieneVuelta && (formData.km_vuelta || formData.lts_vuelta)) {
+      setFormData((prev: any) => ({
+        ...prev,
+        km_vuelta:     "",
+        lts_vuelta:    "",
+        km_recorridos: prev.km_ida  || prev.km_recorridos,
+        lts_gasoil:    prev.lts_ida || prev.lts_gasoil,
+      }));
+    }
+  }, [tieneVuelta]);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500 font-sans italic pb-4">
+    <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500 font-sans italic pb-4">
       
-      {/* 1. SELECTOR DE SENTIDO - CON LÓGICA DE SWAP */}
-      <div className={`p-1.5 rounded-[2rem] flex flex-col sm:flex-row items-stretch border transition-all duration-700 bg-slate-950/50 shadow-inner gap-1 ${!!formData.es_retorno ? "border-indigo-500/30" : "border-emerald-500/30"}`}>
-        <button
-          type="button"
-          onClick={() => handleToggleRetorno(false)}
-          className={`flex-1 py-3.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${!formData.es_retorno ? "bg-emerald-600 text-white shadow-lg scale-[1.02]" : "text-slate-600 hover:text-slate-400"}`}
-        >
-          <TrendingUp size={14} /> Operación Ida
-        </button>
-        <button
-          type="button"
-          onClick={() => handleToggleRetorno(true)}
-          className={`flex-1 py-3.5 rounded-[1.4rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${formData.es_retorno ? "bg-indigo-600 text-white shadow-lg scale-[1.02]" : "text-slate-600 hover:text-slate-400"}`}
-        >
-          <RefreshCw size={14} className={formData.es_retorno ? "animate-spin-slow" : ""} /> Logística Retorno
-        </button>
-      </div>
+      {/* 1. CONFIGURACIÓN DE RUTA INTEGRAL */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        
+        {/* Fecha */}
+        <div className="space-y-2 md:col-span-1">
+          <label className="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Fecha Salida</label>
+          <div className="relative group">
+            <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500/50" />
+            <input 
+              required type="date" 
+              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black outline-none focus:border-cyan-500 text-sm uppercase [color-scheme:dark] shadow-inner transition-all hover:bg-slate-900/80" 
+              value={formData.fecha || ""} 
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, fecha: e.target.value }))} 
+            />
+          </div>
+        </div>
 
-      {/* 2. IDENTIDAD: CLIENTE Y FECHA */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-1.5">
-          <label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-widest flex items-center justify-between">
-            Dador de Carga
-            {clientes.length > 0 && (
-              <span className="text-emerald-500 text-[8px] font-black uppercase">Data Sync Active</span>
+        {/* Origen */}
+        <div className="space-y-2 md:col-span-1">
+          <label className="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Origen Base</label>
+          <div className="relative">
+             <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500/50" />
+             <input 
+               required placeholder="MENDOZA" 
+               className="w-full bg-slate-900 border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black uppercase outline-none focus:border-emerald-500/50 text-sm shadow-inner transition-all hover:bg-slate-900/80" 
+               value={formData.origen || ""} 
+               onChange={(e) => setFormData((prev: any) => ({ ...prev, origen: e.target.value.toUpperCase() }))} 
+             />
+          </div>
+        </div>
+
+        {/* Destino */}
+        <div className="space-y-2 md:col-span-1">
+          <label className="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">Destino Base</label>
+          <div className="relative">
+            <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500/50" />
+            <input 
+              required placeholder="EJ: BS AS" 
+              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black uppercase outline-none focus:border-rose-500/50 text-sm shadow-inner transition-all hover:bg-slate-900/80" 
+              value={formData.destino || ""} 
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, destino: e.target.value.toUpperCase() }))} 
+            />
+          </div>
+        </div>
+
+        {/* 🚀 KM TOTAL con desglose ida + vuelta */}
+        <div className="space-y-2 md:col-span-1">
+          <label className="text-[10px] font-black uppercase ml-2 tracking-widest flex items-center gap-2">
+            <span className={tieneVuelta ? "text-indigo-400" : "text-slate-500"}>
+              KM {tieneVuelta ? "Circuito" : "Tramo"}
+            </span>
+            {tieneVuelta && kmIda > 0 && (
+              <span className="text-[8px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-black whitespace-nowrap">
+                {kmIda} + {kmVuelta || "?"} km
+              </span>
             )}
           </label>
-          <div className="relative group">
-            <select
-              required
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4.5 px-6 text-white font-black focus:border-cyan-500 outline-none uppercase text-xs appearance-none cursor-pointer transition-all shadow-xl"
-              value={formData.cliente_id || ""}
-              onChange={handleClienteChange}
-            >
-              <option value="">-- SELECCIONAR CLIENTE --</option>
-              {clientes.map((cl: any) => (
-                <option key={cl.id} value={cl.id} className="bg-[#020617]">{cl.razon_social}</option>
-              ))}
-            </select>
-            <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-700 rotate-90 pointer-events-none" size={18} />
+          <div className="relative">
+            <Hash size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 ${tieneVuelta ? "text-indigo-500" : "text-indigo-500/40"}`} />
+            <input 
+              required type="number" 
+              placeholder="Km Totales" 
+              className={`w-full bg-slate-900 rounded-2xl py-5 pl-12 pr-4 text-white font-black outline-none text-sm tabular-nums shadow-inner transition-all hover:bg-slate-900/80 ${
+                tieneVuelta ? "border border-indigo-500/50 focus:border-indigo-400" : "border border-indigo-500/20 focus:border-indigo-500"
+              }`}
+              value={formData.km_recorridos || ""} 
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, km_recorridos: e.target.value }))} 
+            />
+            <div className="absolute -bottom-5 left-2 right-2">
+              {tieneVuelta && kmIda > 0 ? (
+                <span className="text-[8px] text-indigo-400/60 font-black uppercase flex items-center gap-1">
+                  <ArrowUpCircle size={8} className="text-emerald-400" /> {kmIda}
+                  <span className="text-slate-600 mx-0.5">+</span>
+                  <ArrowDownCircle size={8} className="text-indigo-400" /> {kmVuelta || "?"}
+                </span>
+              ) : (
+                <span className="text-[8px] text-slate-600 font-black uppercase flex items-center gap-1">
+                  <Info size={8} /> Auto al elegir cliente
+                </span>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-widest">Fecha Operativa</label>
-          <input
-            required
-            type="date"
-            className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4.5 px-6 text-white font-black outline-none focus:border-cyan-500 text-xs uppercase [color-scheme:dark]"
-            value={formData.fecha || ""}
-            onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-          />
+      {/* 🔥 FILA SECUNDARIA: Litros con desglose (aparece siempre, resaltada al haber vuelta) */}
+      <div className={`rounded-2xl px-6 py-4 flex items-center gap-4 border transition-all ${
+        tieneVuelta 
+          ? "bg-amber-500/5 border-amber-500/20" 
+          : "bg-slate-900/20 border-white/5"
+      }`}>
+        <Fuel size={16} className={tieneVuelta ? "text-amber-500 shrink-0" : "text-slate-600 shrink-0"} />
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+          {/* Litros Ida */}
+          <div className="flex items-center gap-2">
+            <ArrowUpCircle size={12} className="text-emerald-400 shrink-0" />
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Lts Ida</span>
+            <span className="text-sm font-black text-emerald-400 tabular-nums ml-auto">{ltsIda || "—"}</span>
+          </div>
+          {/* Litros Vuelta */}
+          <div className={`flex items-center gap-2 ${!tieneVuelta ? "opacity-30" : ""}`}>
+            <ArrowDownCircle size={12} className="text-indigo-400 shrink-0" />
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Lts Vuelta</span>
+            <span className="text-sm font-black text-indigo-400 tabular-nums ml-auto">{ltsVuelta || (tieneVuelta ? "?" : "—")}</span>
+          </div>
+          {/* Total Litros */}
+          <div className={`flex items-center gap-2 ${tieneVuelta ? "border-l border-amber-500/20 pl-4" : ""}`}>
+            <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap" 
+              style={{ color: tieneVuelta ? '#f59e0b' : '#475569' }}>
+              Total Lts
+            </span>
+            <span className={`text-base font-black tabular-nums ml-auto ${tieneVuelta ? "text-amber-400" : "text-slate-500"}`}>
+              {formData.lts_gasoil || "—"}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* 3. LOGÍSTICA DE TRAYECTO (ORIGEN, DESTINO, KM) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative group">
-          <MapPin size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-500/50" />
-          <input
-            required
-            placeholder="ORIGEN"
-            className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-black uppercase outline-none focus:border-emerald-500/30 text-xs"
-            value={formData.origen || ""}
-            onChange={(e) => setFormData({ ...formData, origen: e.target.value.toUpperCase() })}
-          />
+      {/* 2. CARGA DE IDA (EMERALD THEME) */}
+      <div className="bg-emerald-900/10 border border-emerald-500/20 rounded-[2.5rem] p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 border-b border-emerald-500/10 pb-6 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-emerald-500/20 rounded-2xl text-emerald-500 shadow-lg shadow-emerald-500/10"><ArrowUpCircle size={24} /></div>
+            <div>
+              <h3 className="text-base font-black text-white uppercase tracking-widest">Carga de Ida</h3>
+              <p className="text-[9px] font-bold text-emerald-500/70 uppercase tracking-tighter">
+                Primer cliente define ruta técnica
+                {kmIda > 0 && <span className="ml-2 text-emerald-400 font-black">· {kmIda} KM · {ltsIda} lts</span>}
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => agregarCliente('ida')}
+            className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+          >
+            <PlusCircle size={16} /> Sumar Cliente
+          </button>
         </div>
-        <div className="relative group">
-          <MapPin size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-rose-500/50" />
-          <input
-            required
-            placeholder="DESTINO"
-            className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-black uppercase outline-none focus:border-rose-500/30 text-xs"
-            value={formData.destino || ""}
-            onChange={(e) => setFormData({ ...formData, destino: e.target.value.toUpperCase() })}
-          />
-        </div>
-        <div className="relative group">
-          <Hash size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-cyan-500/50" />
-          <input
-            required
-            type="number"
-            placeholder="KMS"
-            className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-black outline-none focus:border-cyan-500 text-xs tabular-nums"
-            value={formData.km_recorridos || ""}
-            onChange={(e) => setFormData({ ...formData, km_recorridos: e.target.value })}
-          />
+
+        <div className="space-y-3 pt-6">
+          {formData.repartos_ida.length === 0 ? (
+            <div className="py-8 text-center bg-black/20 rounded-2xl border border-dashed border-emerald-500/10">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Sin asignación de salida</p>
+            </div>
+          ) : (
+            formData.repartos_ida.map((rep: any, idx: number) => (
+              <div key={`ida-${idx}`} className={`flex gap-3 p-3 border rounded-2xl items-center animate-in fade-in slide-in-from-left-4 ${idx === 0 ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-slate-900/50 border-white/5'}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${idx === 0 ? 'bg-emerald-600 text-white shadow-md' : 'bg-black/50 text-slate-500 border border-white/5'}`}>
+                  {idx === 0 ? <Star size={18} fill="currentColor" /> : idx + 1}
+                </div>
+                <div className="relative flex-1">
+                  <select
+                    required
+                    className="w-full bg-black/40 border border-white/5 rounded-xl py-3.5 px-4 pr-10 text-[11px] text-white font-black outline-none focus:border-emerald-500 appearance-none cursor-pointer uppercase transition-colors"
+                    value={rep.cliente_id || ""}
+                    onChange={(e) => actualizarReparto('ida', idx, 'cliente_id', e.target.value)}
+                  >
+                    <option value="">-- SELECCIONAR CLIENTE --</option>
+                    {clientes.map((cl: any) => <option key={cl.id} value={cl.id}>{cl.razon_social}</option>)}
+                  </select>
+                  <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={16} />
+                </div>
+                <button type="button" onClick={() => eliminarReparto('ida', idx)} className="p-3.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all border border-rose-500/20"><Trash2 size={18}/></button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      {/* 4. RECURSOS ASIGNADOS (CAMIÓN / CHOFER) */}
-      <div className="bg-white/[0.02] border border-white/5 p-5 rounded-[2.2rem] space-y-4 shadow-inner">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[9px] font-black text-slate-500 uppercase ml-4 flex items-center gap-2">
-              <Truck size={12} /> Unidad de Transporte
-            </label>
-            <div className="relative">
-              <select
-                required
-                className="w-full bg-slate-950 border border-white/5 rounded-xl py-3.5 px-5 text-xs text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer"
-                value={formData.camion_id || ""}
-                onChange={handleCamionChange}
+      {/* 3. CARGA DE RETORNO (INDIGO THEME) */}
+      <div className="bg-indigo-900/10 border border-indigo-500/20 rounded-[2.5rem] p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 border-b border-indigo-500/10 pb-6 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-500/20 rounded-2xl text-indigo-500 shadow-lg shadow-indigo-500/10"><ArrowDownCircle size={24} /></div>
+            <div>
+              <h3 className="text-base font-black text-white uppercase tracking-widest">Carga de Retorno</h3>
+              <p className="text-[9px] font-bold text-indigo-500/70 uppercase tracking-tighter">
+                Optimización de rentabilidad de vuelta
+                {tieneVuelta && kmVuelta > 0 && <span className="ml-2 text-indigo-400 font-black">· {kmVuelta} KM · {ltsVuelta} lts</span>}
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => agregarCliente('vuelta')}
+            className="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+          >
+            <PlusCircle size={16} /> Sumar Retorno
+          </button>
+        </div>
+
+        <div className="space-y-3 pt-6">
+          {formData.repartos_vuelta.length === 0 ? (
+            <div className="py-8 text-center bg-black/20 rounded-2xl border border-dashed border-indigo-500/10">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic opacity-50">Regreso en vacío (Solo flete de ida)</p>
+            </div>
+          ) : (
+            formData.repartos_vuelta.map((rep: any, idx: number) => (
+              <div key={`vuelta-${idx}`} className="flex gap-3 p-3 bg-slate-900/50 border border-white/5 rounded-2xl items-center animate-in fade-in slide-in-from-right-4 shadow-md">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-black/50 text-indigo-400 border border-indigo-500/20 font-black">
+                  {idx + 1}
+                </div>
+                <div className="relative flex-1">
+                  <select
+                    required
+                    className="w-full bg-black/40 border border-white/5 rounded-xl py-3.5 px-4 pr-10 text-[11px] text-white font-black outline-none focus:border-indigo-500 appearance-none cursor-pointer uppercase transition-colors"
+                    value={rep.cliente_id || ""}
+                    onChange={(e) => actualizarReparto('vuelta', idx, 'cliente_id', e.target.value)}
+                  >
+                    <option value="">-- SELECCIONAR CLIENTE --</option>
+                    {clientes.map((cl: any) => <option key={cl.id} value={cl.id}>{cl.razon_social}</option>)}
+                  </select>
+                  <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={16} />
+                </div>
+                <button type="button" onClick={() => eliminarReparto('vuelta', idx)} className="p-3.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all border border-rose-500/20"><Trash2 size={18}/></button>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* 4. RECURSOS ASIGNADOS */}
+      <div className="bg-slate-900/30 border border-white/5 p-6 sm:p-8 rounded-[2.5rem] space-y-6 shadow-inner">
+        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5 pb-4">Recursos de Flota</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-slate-600 uppercase ml-2 flex items-center gap-1">Unidad <Truck size={10} /></label>
+            <div className="relative group/unidad">
+              <Truck size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-sky-500/50 z-10 transition-colors group-focus-within/unidad:text-sky-400" />
+              <select 
+                required 
+                className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 pl-14 pr-12 text-sm text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer relative z-0 transition-colors hover:bg-slate-900" 
+                value={formData.camion_id || ""} 
+                onChange={onCamionChange}
               >
-                <option value="">-- UNIDAD --</option>
+                <option value="">-- SELECCIONAR UNIDAD --</option>
                 {camiones.map((c: any) => <option key={c.id} value={c.id}>{c.patente}</option>)}
               </select>
-              <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-700 rotate-90 pointer-events-none" size={14} />
+              <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none z-10" size={16} />
             </div>
           </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[9px] font-black text-slate-500 uppercase ml-4 flex items-center gap-2">
-              <User size={12} /> Operador Responsable
-            </label>
-            <div className="relative">
-              <select
-                required
-                className="w-full bg-slate-950 border border-white/5 rounded-xl py-3.5 px-5 text-xs text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer"
-                value={formData.chofer_id || ""}
-                onChange={(e) => setFormData({ ...formData, chofer_id: e.target.value })}
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-slate-600 uppercase ml-2 flex items-center gap-1">Responsable <User size={10} /></label>
+            <div className="relative group/chofer">
+              <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-sky-500/50 z-10 transition-colors group-focus-within/chofer:text-sky-400" />
+              <select 
+                required 
+                className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 pl-14 pr-12 text-sm text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer relative z-0 transition-colors hover:bg-slate-900" 
+                value={formData.chofer_id || ""} 
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, chofer_id: e.target.value }))}
               >
-                <option value="">-- CHOFER --</option>
+                <option value="">-- SELECCIONAR CHOFER --</option>
                 {choferes.map((ch: any) => <option key={ch.id} value={ch.id}>{ch.nombre}</option>)}
               </select>
-              <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-700 rotate-90 pointer-events-none" size={14} />
+              <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none z-10" size={16} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* 5. PROTOCOLO TÉCNICO */}
+      {/* 5. MANTENIMIENTO PREVENTIVO */}
       <div 
-        onClick={() => setFormData({ ...formData, engrase: !formData.engrase })}
-        className={`flex items-center gap-4 cursor-pointer select-none p-5 rounded-2xl border transition-all duration-300 ${!!formData.engrase ? "bg-amber-500/10 border-amber-500/40 shadow-lg shadow-amber-900/10" : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05]"}`}
+        onClick={() => setFormData((prev: any) => ({ ...prev, engrase: !prev.engrase }))}
+        className={`flex items-center justify-between cursor-pointer select-none p-6 rounded-[2rem] border transition-all duration-300 shadow-sm ${!!formData.engrase ? "bg-amber-500/10 border-amber-500/40" : "bg-slate-900/30 border-white/5 hover:bg-white/[0.05]"}`}
       >
-        <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${!!formData.engrase ? "bg-amber-500 border-amber-500 rotate-12 scale-110" : "border-slate-700 bg-slate-900"}`}>
-          {!!formData.engrase && <div className="w-2.5 h-2.5 bg-[#020617] rounded-sm" />}
-        </div>
-        <div className="flex flex-col">
-          <span className={`text-[10px] font-black uppercase tracking-widest ${!!formData.engrase ? "text-amber-500" : "text-slate-400"}`}>Engrase y Mantenimiento</span>
-          <span className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">¿Se realizó servicio técnico en ruta?</span>
+        <div className="flex items-center gap-5">
+           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${!!formData.engrase ? "bg-amber-500 text-black rotate-12 scale-110 shadow-lg shadow-amber-500/20" : "bg-black/50 border border-white/10 text-transparent"}`}>
+             <CheckCircle2 size={24} />
+           </div>
+           <div className="flex flex-col">
+             <span className={`text-xs font-black uppercase tracking-widest ${!!formData.engrase ? "text-amber-500" : "text-slate-400"}`}>Protocolo de Engrase</span>
+             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">¿La unidad recibió mantenimiento para este circuito completo?</span>
+           </div>
         </div>
       </div>
       
-      <div className="flex items-center gap-2 px-4 py-3 bg-cyan-500/5 rounded-xl border border-cyan-500/10">
-        <ShieldCheck size={14} className="text-cyan-500" />
-        <p className="text-[8px] font-black text-cyan-600 uppercase tracking-widest leading-none">
-          Carga inteligente: Datos vinculados dinámicamente
-        </p>
-      </div>
     </div>
   );
 }

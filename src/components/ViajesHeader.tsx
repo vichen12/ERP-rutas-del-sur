@@ -59,13 +59,11 @@ export function ViajesHeader({
   const handleAddRecordatorio = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!nuevoRecordatorio.trim()) return
-
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('recordatorios')
         .insert([{ descripcion: nuevoRecordatorio.toUpperCase() }])
         .select() 
-
       if (error) throw error;
       setNuevoRecordatorio('')
       fetchRecordatorios()
@@ -96,12 +94,10 @@ export function ViajesHeader({
     }
   }
 
-  // --- 🚀 FILTROS RÁPIDOS DE FECHA ---
   const setFilterEsteMes = () => {
     const today = new Date()
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-    
     setDateStart(firstDay.toISOString().split('T')[0])
     setDateEnd(lastDay.toISOString().split('T')[0])
     setShowAllTime(false)
@@ -109,13 +105,29 @@ export function ViajesHeader({
 
   const setFilterEsteAno = () => {
     const today = new Date()
-    const firstDay = new Date(today.getFullYear(), 0, 1) // 1 de Enero
-    const lastDay = new Date(today.getFullYear(), 11, 31) // 31 de Diciembre
-    
+    const firstDay = new Date(today.getFullYear(), 0, 1)
+    const lastDay = new Date(today.getFullYear(), 11, 31)
     setDateStart(firstDay.toISOString().split('T')[0])
     setDateEnd(lastDay.toISOString().split('T')[0])
     setShowAllTime(false)
   }
+
+  // ✅ FIX #6: Lógica de activo robusta para botones de período
+  const isEsteMesActive = (() => {
+    if (showAllTime) return false;
+    const today = new Date()
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]
+    return dateStart === firstDayOfMonth && dateEnd === lastDayOfMonth
+  })()
+
+  const isEsteAnoActive = (() => {
+    if (showAllTime) return false;
+    const today = new Date()
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0]
+    const lastDayOfYear = new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0]
+    return dateStart === firstDayOfYear && dateEnd === lastDayOfYear
+  })()
 
   const themeColor = activeTab === 'global' ? 'text-cyan-500' : activeTab === 'retorno' ? 'text-indigo-500' : 'text-emerald-500'
   const buttonColor = activeTab === 'global' ? 'bg-cyan-600 hover:bg-cyan-500' : activeTab === 'retorno' ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-emerald-600 hover:bg-emerald-500'
@@ -123,7 +135,6 @@ export function ViajesHeader({
   const formatCurrency = (val: number) => `$ ${(val || 0).toLocaleString('es-AR', { minimumFractionDigits: 0 })}`
   const formatNumber = (val: number) => (val || 0).toLocaleString('es-AR')
   
-  // 🚀 CÁLCULO DE RENDIMIENTO PROMEDIO
   const consumoPromedio = totalKm > 0 ? ((totalLts / totalKm) * 100).toFixed(1) : '0.0'
 
   return (
@@ -191,16 +202,25 @@ export function ViajesHeader({
         </div>
       </header>
 
-      {/* 🚀 BARRA DE FILTROS SUPERIOR POTENCIADA */}
+      {/* BARRA DE FILTROS */}
       <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 bg-slate-950/40 p-2 rounded-[2.2rem] border border-white/5">
         
-        {/* BOTONES DE PERIODO RÁPIDO */}
+        {/* ✅ FIX #6: Botones de período con lógica de activo robusta */}
         <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 shadow-inner">
-           <button onClick={setFilterEsteMes} className={`px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${!showAllTime && new Date(dateStart).getDate() === 1 && new Date(dateEnd).getMonth() === new Date().getMonth() ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>Este Mes</button>
-           <button onClick={setFilterEsteAno} className={`px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${!showAllTime && new Date(dateStart).getMonth() === 0 && new Date(dateEnd).getMonth() === 11 ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>Este Año</button>
+           <button 
+             onClick={setFilterEsteMes} 
+             className={`px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${isEsteMesActive ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+           >
+             Este Mes
+           </button>
+           <button 
+             onClick={setFilterEsteAno} 
+             className={`px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${isEsteAnoActive ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+           >
+             Este Año
+           </button>
         </div>
 
-        {/* SELECTOR DE FECHAS MANUAL */}
         <div className={`flex-1 flex flex-col sm:flex-row items-center gap-4 px-4 transition-all duration-700 ${showAllTime ? 'opacity-20 grayscale pointer-events-none' : 'opacity-100'}`}>
           <div className="flex items-center gap-3 w-full sm:w-auto border-b sm:border-b-0 sm:border-r border-white/10 pb-2 sm:pb-0 sm:pr-4">
             <Calendar className="text-cyan-500" size={16} />
@@ -223,19 +243,17 @@ export function ViajesHeader({
         </button>
       </div>
 
-      {/* 🚀 TARJETAS PRINCIPALES (AGREGADA KMs) */}
+      {/* TARJETAS PRINCIPALES */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Facturación Bruta" value={formatCurrency(totalFacturado)} icon={Receipt} color="text-white" />
         <StatCard title="Ganancia Neta" value={formatCurrency(totalNeto)} icon={DollarSign} color="text-emerald-400" highlight />
         <StatCard title="Sujeto a IVA" value={formatCurrency(totalSiva)} icon={Percent} color="text-cyan-500" />
-        {/* Usamos el valor real de totalKm que calcularemos en el padre */}
         <StatCard title="Kms en Ruta" value={`${formatNumber(totalKm)} KM`} icon={TrendingUp} color="text-slate-300" />
       </div>
 
-      {/* 🚀 TARJETAS SECUNDARIAS (AGREGADO RENDIMIENTO MEDIO) */}
+      {/* TARJETAS SECUNDARIAS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <SubStat label="Combustible" value={`${formatNumber(totalLts)} LTS`} icon={Droplets} color="text-amber-500" />
-        {/* Tarjeta de Rendimiento */}
         <SubStat label="Rendimiento Medio" value={`${consumoPromedio} L/100`} icon={Gauge} color="text-emerald-500" />
         <SubStat label="Liq. Choferes" value={formatCurrency(totalChofer)} icon={UserCheck} color="text-rose-500" />
         <SubStat label="Gastos / Manten." value={formatCurrency(totalCostos)} icon={Wrench} color="text-indigo-500" />
