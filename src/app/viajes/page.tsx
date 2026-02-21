@@ -8,8 +8,8 @@ import {
   Calendar, Trash2, Users
 } from 'lucide-react'
 
-import { ViajesHeader } from '@/components/ViajesHeader'
-import { ViajeModal } from '@/components/ViajeModal' 
+import { ViajesHeader } from '@/components/viajes/ViajesHeader'
+import { ViajeModal } from '@/components/viajes/ViajeModal' 
 
 // Campos temporales de UI — nunca van a Supabase
 const CAMPOS_TEMPORALES = [

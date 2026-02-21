@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { getSupabase } from '@/lib/supabase'
-import { CajaHeader } from '@/components/CajaHeader'
-import { CajaResumenGeneral } from '@/components/CajaResumenGeneral'
-import { CajaMovimientosTable } from '@/components/CajaMovimientosTable'
-import { CajaModal } from '@/components/CajaModal'
-import { CajaDolarPanel } from '@/components/CajaDolarPanel'
+import { CajaHeader } from '@/components/caja/CajaHeader'
+import { CajaResumenGeneral } from '@/components/caja/CajaResumenGeneral'
+import { CajaMovimientosTable } from '@/components/caja/CajaMovimientosTable'
+import { CajaModal } from '@/components/caja/CajaModal'
+import { CajaDolarPanel } from '@/components/caja/CajaDolarPanel'
 
 export default function CajaBancoPage() {
   const supabase = getSupabase()

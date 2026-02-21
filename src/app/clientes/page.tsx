@@ -6,15 +6,15 @@ import { supabase } from "@/lib/supabase";
 import { backupService } from "@/lib/backupService";
 import { Plus, Loader2, Bell } from "lucide-react";
 
-import { ClienteSidebar } from "@/components/ClienteSidebar";
-import { ClienteHeader } from "@/components/ClienteHeader";
-import { ClientesLibroMayor } from "@/components/ClientesLibroMayor";
-import { ClientesDashboardGeneral } from "@/components/ClientesDashboardGeneral";
-import { ClienteViewSelector } from "@/components/ClienteViewSelector";
-import { ClienteModal } from "@/components/ClienteModal";
-import { ClienteBackUp } from "@/components/ClienteBackUp";
-import { RegistrarMovimientoModal } from "@/components/RegistrarMovimientoModal";
-import { CompletarRemitoModal } from "@/components/CompletarRemitoModal";
+import { ClienteSidebar } from "@/components/clientes/ClienteSidebar";
+import { ClienteHeader } from "@/components/clientes/ClienteHeader";
+import { ClientesLibroMayor } from "@/components/clientes/ClientesLibroMayor";
+import { ClientesDashboardGeneral } from "@/components/clientes/ClientesDashboardGeneral";
+import { ClienteViewSelector } from "@/components/clientes/ClienteViewSelector";
+import { ClienteModal } from "@/components/clientes/ClienteModal";
+import { ClienteBackUp } from "@/components/clientes/ClienteBackUp";
+import { RegistrarMovimientoModal } from "@/components/clientes/RegistrarMovimientoModal";
+import { CompletarRemitoModal } from "@/components/clientes/CompletarRemitoModal";
 
 export default function ClientesPage() {
   const [viewMode, setViewMode] = useState<"general" | "individual">("general");

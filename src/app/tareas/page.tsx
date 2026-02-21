@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { getSupabase } from '@/lib/supabase'
-import { TareasHeader } from '@/components/TareasHeader'
-import { TareasKpis } from '@/components/TareasKpis'
-import { TareasGrid } from '@/components/TareasGrid'
-import { TareaModal } from '@/components/TareaModal'
-import { NotifConfigModal } from '@/components/NotifConfigModal'
+import { TareasHeader } from '@/components/tareas/TareasHeader'
+import { TareasKpis } from '@/components/tareas/TareasKpis'
+import { TareasGrid } from '@/components/tareas/TareasGrid'
+import { TareaModal } from '@/components/tareas/TareaModal'
+import { NotifConfigModal } from '@/components/tareas/NotifConfigModal'
 import { checkAndSendNotificaciones } from '@/lib/tareasNotificaciones'
 
 export default function TareasPage() {
