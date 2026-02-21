@@ -6,7 +6,8 @@ import {
   Truck, Users, LayoutDashboard, LogOut, 
   Settings, Bell, UserCircle, MapPin, 
   AlertTriangle, CheckCircle2, X,
-  FileText, Wrench, Menu, ShieldCheck
+  FileText, Wrench, Menu, ShieldCheck,
+  Landmark,ClipboardList,DollarSign  // ← NUEVO
 } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
 
@@ -103,12 +104,15 @@ export function Navbar() {
   if (!mounted || pathname === '/' || pathname === '/login') return null
 
   const navItems = [
-    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'Clientes', href: '/clientes', icon: Users },
-    { label: 'Flota', href: '/camiones', icon: Truck },
-    { label: 'Choferes', href: '/choferes', icon: UserCircle },
-    { label: 'Viajes', href: '/viajes', icon: MapPin },
-    { label: 'Remitos', href: '/remitos', icon: FileText },
+    { label: 'Dashboard', href: '/dashboard',  icon: LayoutDashboard },
+    { label: 'Clientes',  href: '/clientes',   icon: Users },
+    { label: 'Flota',     href: '/camiones',   icon: Truck },
+    { label: 'Choferes',  href: '/choferes',   icon: UserCircle },
+    { label: 'Viajes',    href: '/viajes',     icon: MapPin },
+    { label: 'Remitos',   href: '/remitos',    icon: FileText },
+    { label: 'Caja',      href: '/banco', icon: Landmark },
+    { label: 'Tareas', href: '/tareas', icon: ClipboardList },
+    { label: 'Costos', href: '/costos-multas', icon: DollarSign },  // ← NUEVO
   ]
 
   const handleLogout = async () => {
