@@ -112,7 +112,8 @@ export function Navbar() {
     { label: 'Remitos',   href: '/remitos',    icon: FileText },
     { label: 'Caja',      href: '/banco', icon: Landmark },
     { label: 'Tareas', href: '/tareas', icon: ClipboardList },
-    { label: 'Costos', href: '/costos-multas', icon: DollarSign },  // ← NUEVO
+    { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
+    { label: 'Facturas', href: '/facturacion', icon: FileText }, // ← NUEVO
   ]
 
   const handleLogout = async () => {
