@@ -95,9 +95,9 @@ export async function POST(req: Request) {
 
     const wsaaText = await wsaaResponse.text()
 
-    // Parsear respuesta XML
-    const tokenMatch = wsaaText.match(/<token>(.*?)<\/token>/s)
-    const signMatch  = wsaaText.match(/<sign>(.*?)<\/sign>/s)
+    // Parsear respuesta XML (CORREGIDO PARA NETLIFY)
+    const tokenMatch = wsaaText.match(/<token>([\s\S]*?)<\/token>/)
+    const signMatch  = wsaaText.match(/<sign>([\s\S]*?)<\/sign>/)
 
     if (!tokenMatch || !signMatch) {
       console.error('Respuesta WSAA:', wsaaText)
