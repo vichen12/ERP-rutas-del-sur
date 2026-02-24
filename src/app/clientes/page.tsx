@@ -15,14 +15,20 @@ import { ClienteModal } from "@/components/clientes/ClienteModal";
 import { ClienteBackUp } from "@/components/clientes/ClienteBackUp";
 import { RegistrarMovimientoModal } from "@/components/clientes/RegistrarMovimientoModal";
 import { CompletarRemitoModal } from "@/components/clientes/CompletarRemitoModal";
+import { ClienteUbicaciones } from "@/components/clientes/ClienteUbicaciones";
+
+// ─── Integración con Caja ─────────────────────────────────────────────────────
+import { registrarMovimiento } from "@/lib/cajaService";
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function ClientesPage() {
-  const [viewMode, setViewMode] = useState<"general" | "individual">("general");
+  const [viewMode, setViewMode] = useState<"general" | "individual" | "ubicaciones">("general");
   const [clientes, setClientes] = useState<any[]>([]);
   const [selected, setSelected] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
+  const [ubicaciones, setUbicaciones] = useState<any[]>([]);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -57,7 +63,6 @@ export default function ClientesPage() {
 
       if (errClientes) throw errClientes;
 
-      // 🚀 CAMBIO 1: Buscamos remitos con numero_remito = 'PENDIENTE'
       const { data: remitosData, error: errRemitos } = await supabase
         .from('remitos')
         .select('cliente_id, numero_remito')
@@ -69,10 +74,7 @@ export default function ClientesPage() {
         const procesados = clientesData.map((c: any) => {
           const historial = c.cuenta_corriente || [];
           const saldoTotal = historial.reduce((acc: number, m: any) => acc + (Number(m.debe || 0) - Number(m.haber || 0)), 0);
-          
-          // 🚀 CAMBIO 1: Detectamos si este cliente tiene remitos pendientes
           const tieneRemitosPendientes = remitosData?.some(r => r.cliente_id === c.id) || false;
-          
           return { ...c, historial, saldo: saldoTotal, alertaRemito: tieneRemitosPendientes };
         });
         
@@ -83,6 +85,23 @@ export default function ClientesPage() {
         }
       }
     } catch (error) { console.error("Error fetching:", error); } finally { setLoading(false); }
+  }
+
+  async function fetchUbicaciones(clienteId: string) {
+    const { data } = await supabase
+      .from('destinos_cliente')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .eq('activo', true)
+      .order('nombre');
+    setUbicaciones(data || []);
+  }
+
+  function handleSelectCliente(cliente: any) {
+    setSelected(cliente);
+    setViewMode("individual");
+    setIsSidebarOpen(false);
+    fetchUbicaciones(cliente.id);
   }
 
   const handleSaveCliente = async (e: React.FormEvent) => {
@@ -132,28 +151,73 @@ export default function ClientesPage() {
     else { setSelected(null); setViewMode("general"); fetchClientes(); }
   };
 
+  // ─── GUARDAR MOVIMIENTO CON IMPACTO EN CAJA ──────────────────────────────────
   const handleSaveMovimiento = async (formData: any) => {
     if (!selected) return;
     setIsSaving(true);
     try {
       const isCargo = formData.tipo_movimiento === 'cargo';
+      const monto = Number(formData.monto);
+      const uuid = (v: any) => (v && String(v).trim() !== '' ? v : null);
+
       const payload: any = {
         cliente_id: selected.id, 
         fecha: formData.fecha, 
         detalle: formData.detalle.toUpperCase(),
         tipo_movimiento: isCargo ? 'Cargo por Flete' : 'Cobro Transferencia',
-        debe: isCargo ? Number(formData.monto) : 0, 
-        haber: isCargo ? 0 : Number(formData.monto),
+        debe: isCargo ? monto : 0, 
+        haber: isCargo ? 0 : monto,
         remito: formData.remito || null
       };
 
+      let movimientoCtaId: string | null = null;
+
       if (formData.id) {
+        // EDICIÓN — actualizamos cuenta corriente
         const { error } = await supabase.from("cuenta_corriente").update(payload).eq("id", formData.id);
         if (error) throw error;
+        movimientoCtaId = formData.id;
+
+        // Actualizamos también el movimiento de caja vinculado si existe
+        await supabase
+          .from('movimientos_caja')
+          .update({ monto, descripcion: payload.detalle, fecha: formData.fecha })
+          .eq('referencia_origen_id', formData.id)
+          .eq('modulo_origen', 'clientes');
+
       } else {
+        // NUEVO — insertamos en cuenta corriente
         payload.estado_gestion = 'maestro';
-        const { error } = await supabase.from("cuenta_corriente").insert([payload]);
+        const { data: insertado, error } = await supabase
+          .from("cuenta_corriente")
+          .insert([payload])
+          .select('id')
+          .single();
         if (error) throw error;
+        movimientoCtaId = insertado?.id || null;
+
+        // ── Impacto en Caja ────────────────────────────────────────────────────
+        if (monto > 0 && movimientoCtaId) {
+          if (!isCargo) {
+            // COBRO: el cliente nos pagó → INGRESO en caja (banco)
+            await registrarMovimiento({
+              tipo:                 'ingreso',
+              categoria:            'cobro_flete',
+              descripcion:          `COBRO — ${selected.razon_social}${formData.detalle ? ' | ' + formData.detalle.toUpperCase() : ''}`,
+              monto,
+              fecha:                formData.fecha,
+              tipo_cuenta:          'banco',
+              cliente_id:           uuid(selected.id),
+              referencia_origen_id: movimientoCtaId,
+              modulo_origen:        'clientes',
+            });
+          } else {
+            // CARGO MANUAL: le facturamos algo extra → no es movimiento de caja real todavía
+            // Solo se impacta en caja cuando el cliente PAGUE ese cargo.
+            // No registramos nada en caja por ahora.
+          }
+        }
+        // ──────────────────────────────────────────────────────────────────────
       }
       
       setIsMovimientoModalOpen(false); 
@@ -161,6 +225,24 @@ export default function ClientesPage() {
       fetchClientes();
     } catch (err: any) { alert("Error al registrar: " + err.message); } finally { setIsSaving(false); }
   };
+
+  // ─── ELIMINAR MOVIMIENTO CON LIMPIEZA EN CAJA ─────────────────────────────
+  const eliminarOperacion = async (id: string) => {
+    if (!confirm("¿Eliminar este movimiento permanentemente? Afectará los saldos.")) return;
+    try {
+      // Borramos primero el movimiento de caja vinculado (si existe)
+      await supabase
+        .from('movimientos_caja')
+        .delete()
+        .eq('referencia_origen_id', id)
+        .eq('modulo_origen', 'clientes');
+
+      // Luego borramos de cuenta corriente
+      await supabase.from("cuenta_corriente").delete().eq("id", id);
+      fetchClientes();
+    } catch (err: any) { alert("Error al eliminar: " + err.message); }
+  };
+  // ──────────────────────────────────────────────────────────────────────────
 
   const gestion = useMemo(() => {
     if (!selected) return { maestro: [], deudaActiva: [], historial: [], pagos: [], saldoPendiente: 0, saldoAFavor: 0 };
@@ -205,7 +287,6 @@ export default function ClientesPage() {
     if (error) alert(error.message); else fetchClientes();
   };
 
-  // 🚀 CAMBIO 2: Contador global de alertas para el navbar
   const totalAlertas = clientes.filter(c => c.alertaRemito).length;
 
   return (
@@ -213,7 +294,7 @@ export default function ClientesPage() {
       <ClienteSidebar
         clientes={clientes.filter((c) => c.razon_social.toLowerCase().includes(searchTerm.toLowerCase()))}
         selectedId={selected?.id}
-        onSelect={(c: any) => { setSelected(c); setViewMode("individual"); setIsSidebarOpen(false); }}
+        onSelect={handleSelectCliente}
         loading={loading} searchTerm={searchTerm} setSearchTerm={setSearchTerm}
         onAdd={() => { setClientForm(emptyForm); setIsClientModalOpen(true); }}
         isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen}
@@ -221,7 +302,6 @@ export default function ClientesPage() {
 
       <main className="flex-1 overflow-y-auto relative custom-scrollbar">
         <div className="pt-24 pb-4 text-slate-100">
-          {/* 🚀 CAMBIO 2: Pasamos totalAlertas al ViewSelector */}
           <ClienteViewSelector 
             viewMode={viewMode} 
             setViewMode={setViewMode} 
@@ -231,33 +311,48 @@ export default function ClientesPage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 pb-32">
-          {viewMode === "general" ? (
+          
+          {viewMode === "general" && (
             <div className="animate-in fade-in duration-500 space-y-8 text-right">
               <button onClick={() => { setClientForm(emptyForm); setIsClientModalOpen(true); }} className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-black text-[11px] uppercase flex items-center gap-3 transition-all ml-auto active:scale-95 shadow-xl shadow-sky-900/20">
                 <Plus size={18} /> Nuevo Cliente
               </button>
-              <ClientesDashboardGeneral clientes={clientes} onExportAll={() => backupService.downloadResumenGeneral(clientes)} onSelectClient={(c: any) => { setSelected(c); setViewMode("individual"); }} />
+              <ClientesDashboardGeneral 
+                clientes={clientes} 
+                onExportAll={() => backupService.downloadResumenGeneral(clientes)} 
+                onSelectClient={handleSelectCliente}
+              />
             </div>
-          ) : (
-            selected && (
-              <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <ClienteHeader 
-                  selected={selected} onBackup={() => setIsBackupModalOpen(true)} onEdit={handlePrepareEdit} onDelete={handleDeleteCliente} 
-                  onNuevaOp={() => { setMovimientoAEditar(null); setIsMovimientoModalOpen(true); }} 
-                />
-                
-                <ClientesLibroMayor
-                  gestion={gestion} 
-                  aprobarViaje={aprobarViaje}
-                  onEditOperacion={(mov: any) => { setMovimientoAEditar(mov); setIsMovimientoModalOpen(true); }} 
-                  eliminarOperacion={async (id: any) => { 
-                    if (confirm("¿Eliminar este movimiento permanentemente? Afectará los saldos.")) { await supabase.from("cuenta_corriente").delete().eq("id", id); fetchClientes(); }
-                  }}
-                  onCompletarRemito={(id: string, remitoActual: string) => setRemitoModalConfig({ isOpen: true, opId: id, remitoActual })} 
-                />
-              </div>
-            )
           )}
+
+          {viewMode === "individual" && selected && (
+            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <ClienteHeader 
+                selected={selected} onBackup={() => setIsBackupModalOpen(true)} onEdit={handlePrepareEdit} onDelete={handleDeleteCliente} 
+                onNuevaOp={() => { setMovimientoAEditar(null); setIsMovimientoModalOpen(true); }} 
+              />
+              <ClientesLibroMayor
+                gestion={gestion} 
+                aprobarViaje={aprobarViaje}
+                onEditOperacion={(mov: any) => { setMovimientoAEditar(mov); setIsMovimientoModalOpen(true); }} 
+                eliminarOperacion={eliminarOperacion}
+                onCompletarRemito={(id: string, remitoActual: string) => setRemitoModalConfig({ isOpen: true, opId: id, remitoActual })} 
+              />
+            </div>
+          )}
+
+          {viewMode === "ubicaciones" && selected && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <ClienteUbicaciones
+                clienteId={selected.id}
+                clienteNombre={selected.razon_social}
+                tarifaDefault={Number(selected.tarifa_flete || 0)}
+                ubicaciones={ubicaciones}
+                onRefresh={() => fetchUbicaciones(selected.id)}
+              />
+            </div>
+          )}
+
         </div>
       </main>
 

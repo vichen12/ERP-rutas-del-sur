@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DollarSign, Save, TrendingUp, Zap } from 'lucide-react'
 
 interface CajaDolarPanelProps {
@@ -21,11 +21,24 @@ export function CajaDolarPanel({
 }: CajaDolarPanelProps) {
   const [localTipoCambio, setLocalTipoCambio] = useState(tipoCambio)
   const [guardando, setGuardando] = useState(false)
+  
+  // 1. Estado para saber si el componente ya se montó en el cliente
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSave = async () => {
     setGuardando(true)
     onSaveTipoCambio(localTipoCambio)
     setTimeout(() => setGuardando(false), 800)
+  }
+
+  // 2. Función segura contra errores de hidratación
+  const formatCurrency = (val: number, maxFrac = 0) => {
+    if (!mounted) return val; // Renderizado inicial seguro para el servidor
+    return val.toLocaleString('es-AR', { maximumFractionDigits: maxFrac });
   }
 
   return (
@@ -74,14 +87,14 @@ export function CajaDolarPanel({
         <div className="relative z-10">
           <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">Total Corriente</p>
           <p className="text-[8px] font-black text-yellow-500/60 uppercase tracking-widest mb-4">
-            A Dólar {localTipoCambio.toLocaleString()}
+            A Dólar {formatCurrency(localTipoCambio)}
           </p>
           <p className="text-3xl md:text-4xl font-black text-yellow-400 italic tabular-nums tracking-tighter">
-            U$D {totalEnDolar.toLocaleString('es-AR', { maximumFractionDigits: 2 })}
+            U$D {formatCurrency(totalEnDolar, 2)}
           </p>
           <div className="mt-4 pt-4 border-t border-white/5">
             <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">En pesos:</p>
-            <p className="text-lg font-black text-slate-400 tabular-nums">$ {totalCorriente.toLocaleString('es-AR')}</p>
+            <p className="text-lg font-black text-slate-400 tabular-nums">$ {formatCurrency(totalCorriente)}</p>
           </div>
         </div>
       </div>
@@ -94,18 +107,18 @@ export function CajaDolarPanel({
             <Zap size={16} className="text-yellow-400" />
             <p className="text-[9px] font-black text-yellow-500 uppercase tracking-[0.3em]">Total General</p>
             <span className="ml-auto px-2 py-1 bg-yellow-500/20 text-yellow-400 text-[7px] font-black uppercase rounded-lg border border-yellow-500/20">
-              USD {localTipoCambio.toLocaleString()}
+              USD {formatCurrency(localTipoCambio)}
             </span>
           </div>
           <p className="text-[8px] font-black text-yellow-500/60 uppercase tracking-widest mb-2">
             Patrimonio total convertido
           </p>
           <p className="text-4xl md:text-5xl font-black text-yellow-300 italic tabular-nums tracking-tighter leading-none">
-            U$D {totalEnDolarTotal.toLocaleString('es-AR', { maximumFractionDigits: 2 })}
+            U$D {formatCurrency(totalEnDolarTotal, 2)}
           </p>
           <div className="mt-4 pt-4 border-t border-yellow-500/10">
             <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Patrimonio en ARS:</p>
-            <p className="text-xl font-black text-slate-300 tabular-nums">$ {totalGeneral.toLocaleString('es-AR')}</p>
+            <p className="text-xl font-black text-slate-300 tabular-nums">$ {formatCurrency(totalGeneral)}</p>
           </div>
         </div>
       </div>

@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { 
   Plus, Search, TrendingUp, DollarSign, ArrowRight, ArrowLeft, 
   Fuel, CalendarClock, Trash2, Save, Calendar, Globe, 
-  Droplets, UserCheck, Wrench, Receipt, Percent, FilterX, Gauge
+  Droplets, UserCheck, Wrench, Receipt, Percent, FilterX, Gauge,
+  Navigation // ← Agregado
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -11,6 +12,7 @@ interface ViajesHeaderProps {
   search: string;
   setSearch: (val: string) => void;
   onOpenModal: () => void;
+  onOpenTraccar?: () => void; // ← Agregado (opcional por ahora)
   totalKm: number;
   totalFacturado: number; 
   totalNeto: number;      
@@ -31,7 +33,7 @@ interface ViajesHeaderProps {
 }
 
 export function ViajesHeader({ 
-  search, setSearch, onOpenModal, 
+  search, setSearch, onOpenModal, onOpenTraccar, // ← Agregado
   totalKm = 0, totalFacturado = 0, totalNeto = 0, totalSiva = 0,
   totalLts = 0, totalChofer = 0, totalCostos = 0,
   activeTab, setActiveTab,
@@ -236,6 +238,13 @@ export function ViajesHeader({
             </div>
           </div>
         </div>
+
+        {/* ← Agregado Botón Traccar/GPS aquí */}
+        <button
+          onClick={onOpenTraccar}
+          className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 border border-white/10 rounded-[1.8rem] text-slate-400 hover:text-white font-black uppercase text-[9px] tracking-widest transition-all">
+          <Navigation size={14} /> GPS / Traccar
+        </button>
 
         <button onClick={() => setShowAllTime(!showAllTime)} className={`flex items-center justify-center gap-3 px-8 py-4 rounded-[1.8rem] text-[9px] font-black uppercase tracking-[0.2em] transition-all border ${showAllTime ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-slate-900 border-white/10 text-slate-500 hover:text-white'}`}>
             <Globe size={16} className={showAllTime ? 'animate-spin-slow' : ''} />

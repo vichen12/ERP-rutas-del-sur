@@ -10,8 +10,12 @@ import {
 
 import { ViajesHeader } from '@/components/viajes/ViajesHeader'
 import { ViajeModal } from '@/components/viajes/ViajeModal' 
+import { TraccarSetupModal } from '@/components/viajes/TraccarSetupModal'
 
-// Campos temporales de UI — nunca van a Supabase
+// ─── Importamos el servicio de caja ──────────────────────────────────────────
+import { registrarMovimiento } from '@/lib/cajaService'
+// ─────────────────────────────────────────────────────────────────────────────
+
 const CAMPOS_TEMPORALES = [
   'repartos_ida', 'repartos_vuelta', 'precio_gasoil_sugerido',
   'km_ida', 'km_vuelta', 'lts_ida', 'lts_vuelta'
@@ -43,7 +47,9 @@ export default function ViajesPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'ida' | 'retorno' | 'global'>('global')
   const [search, setSearch] = useState('')
+  
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isTraccarModalOpen, setIsTraccarModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [dateStart, setDateStart] = useState<string>(() => {
@@ -53,12 +59,13 @@ export default function ViajesPage() {
   const [dateEnd, setDateEnd] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [showAllTime, setShowAllTime] = useState(false)
 
-  const [viajes, setViajes] = useState<any[]>([])
+  const [viajes, setViajes]   = useState<any[]>([])
   const [clientes, setClientes] = useState<any[]>([])
   const [choferes, setChoferes] = useState<any[]>([])
   const [camiones, setCamiones] = useState<any[]>([])
+  const [destinos, setDestinos] = useState<any[]>([])
   const [precioGasoilGlobal, setPrecioGasoilGlobal] = useState(0)
-
+  const [appConfig, setAppConfig] = useState<any>(null)
   const [formData, setFormData] = useState<any>(INITIAL_FORM_STATE)
 
   useEffect(() => { 
@@ -66,17 +73,17 @@ export default function ViajesPage() {
     fetchData() 
   }, [])
 
-  // --- 🛰️ CARGA DE DATOS ---
   async function fetchData() {
     setLoading(true)
     try {
-      const [v, cl, ch, ca, conf, rep] = await Promise.all([
+      const [v, cl, ch, ca, conf, rep, dest] = await Promise.all([
         supabase.from('viajes').select('*, choferes(nombre), camiones(patente)').order('fecha', { ascending: false }),
         supabase.from('clientes').select('*').order('razon_social'),
         supabase.from('choferes').select('id, nombre, km_recorridos, lts_consumidos').order('nombre'),
         supabase.from('camiones').select('id, patente, km_actual, operador_id, lts_consumidos').order('patente'),
-        supabase.from('configuracion').select('precio_gasoil').single(),
-        supabase.from('reparto_viaje').select('*, clientes(razon_social)') 
+        supabase.from('configuracion').select('*').single(),
+        supabase.from('reparto_viaje').select('*, clientes(razon_social)'),
+        supabase.from('destinos_cliente').select('*').eq('activo', true).order('cliente_id').order('nombre')
       ]);
 
       const viajesMapeados = (v.data || []).map((viaje: any) => {
@@ -89,7 +96,11 @@ export default function ViajesPage() {
       setClientes(cl.data || []);
       setChoferes(ch.data || []);
       setCamiones(ca.data || []);
-      if (conf.data) setPrecioGasoilGlobal(conf.data.precio_gasoil);
+      setDestinos(dest.data || []);
+      if (conf.data) {
+        setAppConfig(conf.data);
+        setPrecioGasoilGlobal(conf.data.precio_gasoil);
+      }
     } catch (e) { 
       console.error("❌ Fallo Crítico:", e) 
     } finally { 
@@ -97,7 +108,23 @@ export default function ViajesPage() {
     }
   }
 
-  // --- 🔍 FILTROS ---
+  async function handleGuardarTraccar(configData: any) {
+    try {
+      const { error } = await supabase.from('configuracion').update({
+        traccar_url:      configData.traccar_url,
+        traccar_email:    configData.traccar_email,
+        traccar_password: configData.traccar_password,
+        traccar_activo:   configData.traccar_activo,
+      }).eq('id', 1)
+      if (error) throw error;
+      setAppConfig({ ...appConfig, ...configData });
+      setIsTraccarModalOpen(false);
+      alert("✅ Configuración de GPS guardada correctamente.");
+    } catch (err: any) {
+      alert("❌ Error al guardar Traccar: " + err.message);
+    }
+  }
+
   const filteredViajes = useMemo(() => {
     const term = search.toLowerCase().trim();
     return (viajes || []).filter(v => {
@@ -110,7 +137,6 @@ export default function ViajesPage() {
     })
   }, [viajes, search, activeTab, dateStart, dateEnd, showAllTime])
 
-  // --- 📈 KPIs ---
   const stats = useMemo(() => {
     return filteredViajes.reduce((acc, v) => {
       const bruta = Number(v.tarifa_flete_calculada) || 0; 
@@ -131,14 +157,13 @@ export default function ViajesPage() {
     }, { km: 0, bruta: 0, neta: 0, totalLts: 0, totalChofer: 0, totalCostos: 0 })
   }, [filteredViajes, precioGasoilGlobal])
 
-  // --- 💾 GUARDADO MAESTRO ---
+  // ─── GUARDADO MAESTRO ─────────────────────────────────────────────────────────
   const handleWizardSubmit = async (fd: any) => {
     setIsSubmitting(true);
     try {
       const hasIda    = (fd.repartos_ida    || []).length > 0;
       const hasVuelta = (fd.repartos_vuelta || []).length > 0;
 
-      // Extraer campos temporales y repartos — el resto va a Supabase
       const { 
         repartos_ida, repartos_vuelta, precio_gasoil_sugerido,
         km_ida, km_vuelta, lts_ida, lts_vuelta,
@@ -160,7 +185,6 @@ export default function ViajesPage() {
           es_retorno:    esRetorno,
           origen:        orig,
           destino:       dest,
-          // Cada tramo guarda sus KM y LTS propios (del cliente de ese tramo)
           km_recorridos: kmTramo  || dataLimpia.km_recorridos,
           lts_gasoil:    ltsTramo || dataLimpia.lts_gasoil,
         };
@@ -171,7 +195,9 @@ export default function ViajesPage() {
         const insertsRep = repartos.map((r: any) => ({
           viaje_id:            nV.id,
           cliente_id:          r.cliente_id,
-          monto_flete_parcial: Number(r.monto_flete)
+          monto_flete_parcial: Number(r.monto_flete),
+          destino_id:          r.destino_id   || null,
+          destino_nombre:      r.destino_nombre || null
         }));
 
         const insertsCta = repartos.map((r: any) => ({
@@ -179,7 +205,7 @@ export default function ViajesPage() {
           viaje_id:        nV.id,
           fecha:           dataLimpia.fecha,
           tipo_movimiento: 'DEBE',
-          detalle:         `FLETE C/P: ${orig} > ${dest}`,
+          detalle:         `FLETE C/P: ${orig} > ${r.destino_nombre || dest}`,
           debe:            Number(r.monto_flete)
         }));
 
@@ -188,34 +214,65 @@ export default function ViajesPage() {
           supabase.from('cuenta_corriente').insert(insertsCta)
         ]);
 
+        // Sanitizamos UUIDs: "" → null para que Supabase no explote
+        const uuid = (v: any) => (v && String(v).trim() !== '' ? v : null)
+        const camionId = uuid(dataLimpia.camion_id)
+        const choferIdLimpio = uuid(dataLimpia.chofer_id)
+        const cam = camiones.find((c: any) => c.id === dataLimpia.camion_id);
+
+        // 1. INGRESO DE FLETE: NO impacta en caja (Va a cuenta corriente cliente)
+        // 2. PAGO CHOFER: NO impacta en caja (Va a saldo del chofer para liquidar a fin de mes)
+
+        // 3. COMBUSTIBLE: NO impacta en caja -> SE INYECTA EN EL MÓDULO DE COMBUSTIBLE
+        const lts      = Number(ltsTramo || dataLimpia.lts_gasoil || 0);
+        const pGasoil  = Number(dataLimpia.precio_gasoil || precioGasoilGlobal || 0);
+        const costoGas = lts * pGasoil;
+        
+        if (lts > 0) {
+          await supabase.from('cargas_combustible').insert([{
+            fecha: dataLimpia.fecha,
+            camion_id: camionId,
+            chofer_id: choferIdLimpio,
+            responsable_externo: null,
+            litros: lts,
+            precio_litro: pGasoil,
+            total: costoGas,
+            estacion: 'CARGA EN VIAJE',
+            pagado: false,
+            viaje_id: nV.id // Vinculado para que se borre si eliminás el viaje
+          }]);
+        }
+
+        // 4. COSTO DE DESCARGA: SÍ impacta en caja (porque suele ser efectivo en el momento)
+        const descarga = Number(dataLimpia.costo_descarga || 0);
+        if (descarga > 0) {
+          await registrarMovimiento({
+            tipo:                 'egreso',
+            categoria:            'egreso_otro',
+            descripcion:          `DESCARGA — ${cam?.patente || 'CAMION'} | ${orig} → ${dest}`,
+            monto:                descarga,
+            fecha:                dataLimpia.fecha,
+            tipo_cuenta:          'caja',
+            camion_id:            camionId,
+            referencia_origen_id: nV.id,
+            modulo_origen:        'viajes',
+          });
+        }
+        // ────────────────────────────────────────────────────────────────────────
+
         return 1;
       };
 
       let tramosRealizados = 0;
 
       if (hasIda) {
-        tramosRealizados += await procesarTramo(
-          false,
-          repartos_ida,
-          dataLimpia.origen,
-          dataLimpia.destino,
-          km_ida,
-          lts_ida
-        );
+        tramosRealizados += await procesarTramo(false, repartos_ida, dataLimpia.origen, dataLimpia.destino, km_ida, lts_ida);
       }
 
       if (hasVuelta) {
-        tramosRealizados += await procesarTramo(
-          true,
-          repartos_vuelta,
-          dataLimpia.destino, // origen de vuelta = destino de ida
-          dataLimpia.origen,  // destino de vuelta = origen de ida
-          km_vuelta,
-          lts_vuelta
-        );
+        tramosRealizados += await procesarTramo(true, repartos_vuelta, dataLimpia.destino, dataLimpia.origen, km_vuelta, lts_vuelta);
       }
 
-      // Actualizar odómetros con el TOTAL del circuito (km_recorridos y lts_gasoil ya son la suma)
       if (tramosRealizados > 0) {
         const cam = camiones.find((c: any) => c.id === dataLimpia.camion_id);
         const cho = choferes.find((ch: any) => ch.id === dataLimpia.chofer_id);
@@ -245,9 +302,9 @@ export default function ViajesPage() {
     }
   }
 
-  // --- 🗑️ ELIMINACIÓN ---
+  // ─── ELIMINACIÓN ─────────────────────────────────────────────────────────────
   const handleDeleteViaje = async (viaje: any) => {
-    if (!confirm(`⚠️ ¿Eliminar viaje? Se borrarán repartos y deudas asociadas.`)) return;
+    if (!confirm(`⚠️ ¿Eliminar viaje? Se borrarán repartos, deudas (combustible/clientes) y movimientos asociados.`)) return;
     try {
       const kmRestar  = Number(viaje.km_recorridos) || 0;
       const ltsRestar = Number(viaje.lts_gasoil)    || 0;
@@ -256,7 +313,10 @@ export default function ViajesPage() {
 
       await Promise.all([
         supabase.from('reparto_viaje').delete().eq('viaje_id', viaje.id),
-        supabase.from('cuenta_corriente').delete().eq('viaje_id', viaje.id)
+        supabase.from('cuenta_corriente').delete().eq('viaje_id', viaje.id),
+        supabase.from('movimientos_caja').delete().eq('referencia_origen_id', viaje.id),
+        // 🔥 Eliminamos también la carga de combustible generada
+        supabase.from('cargas_combustible').delete().eq('viaje_id', viaje.id)
       ]);
       
       const updates: any[] = [];
@@ -294,6 +354,7 @@ export default function ViajesPage() {
         <ViajesHeader 
           search={search} setSearch={setSearch} 
           onOpenModal={() => { setFormData(INITIAL_FORM_STATE); setIsModalOpen(true); }} 
+          onOpenTraccar={() => setIsTraccarModalOpen(true)}
           {...stats} totalKm={stats.km} totalFacturado={stats.bruta} totalNeto={stats.neta}
           activeTab={activeTab} setActiveTab={setActiveTab} 
           precioGasoil={precioGasoilGlobal} setPrecioGasoil={setPrecioGasoilGlobal}
@@ -439,6 +500,14 @@ export default function ViajesPage() {
         clientes={clientes} 
         choferes={choferes} 
         camiones={camiones} 
+        destinos={destinos} 
+      />
+
+      <TraccarSetupModal
+        isOpen={isTraccarModalOpen}
+        onClose={() => setIsTraccarModalOpen(false)}
+        onSave={handleGuardarTraccar}
+        initialConfig={appConfig}
       />
     </div>
   )

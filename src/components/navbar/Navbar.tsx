@@ -7,7 +7,7 @@ import {
   Settings, Bell, UserCircle, MapPin, 
   AlertTriangle, CheckCircle2, X,
   FileText, Wrench, Menu, ShieldCheck,
-  Landmark,ClipboardList,DollarSign  // ← NUEVO
+  Landmark,ClipboardList,DollarSign,Fuel  // ← NUEVO
 } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
 
@@ -113,7 +113,9 @@ export function Navbar() {
     { label: 'Caja',      href: '/banco', icon: Landmark },
     { label: 'Tareas', href: '/tareas', icon: ClipboardList },
     { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
-    { label: 'Facturas', href: '/facturacion', icon: FileText }, // ← NUEVO
+    { label: 'Facturas', href: '/facturacion', icon: FileText }, 
+    { label: 'Combustible', href: '/combustible', icon: Fuel },
+    // ← NUEVO
   ]
 
   const handleLogout = async () => {

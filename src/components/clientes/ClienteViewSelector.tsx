@@ -1,5 +1,7 @@
 'use client'
-import { LayoutDashboard, UserCircle2, BarChart3, Users2, ShieldCheck, Bell } from 'lucide-react'
+// src/components/clientes/ClienteViewSelector.tsx
+// Agregado el tab "Ubicaciones" al switcher existente
+import { LayoutDashboard, UserCircle2, BarChart3, Users2, ShieldCheck, Bell, Map } from 'lucide-react'
 
 export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalAlertas = 0 }: any) {
   return (
@@ -28,38 +30,55 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
       </div>
 
       {/* SWITCHER DE VISTA */}
-      <div className="p-1.5 bg-slate-950/80 rounded-[1.5rem] border border-white/5 flex gap-2 shadow-inner">
+      <div className="p-1.5 bg-slate-950/80 rounded-[1.5rem] border border-white/5 flex gap-1.5 shadow-inner overflow-x-auto no-scrollbar">
+        {/* Visión Global */}
         <button 
           onClick={() => setViewMode('general')}
-          className={`flex items-center gap-3 px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${
+          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
             viewMode === 'general' 
-            ? 'bg-sky-600 text-white shadow-[0_0_25px_rgba(2,132,199,0.4)] scale-105 border border-sky-400/20' 
+            ? 'bg-sky-600 text-white shadow-[0_0_20px_rgba(2,132,199,0.3)] scale-105 border border-sky-400/20' 
             : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
           }`}
         >
-          <Users2 size={16} strokeWidth={2.5} />
+          <Users2 size={14} strokeWidth={2.5} />
           Visión Global
         </button>
 
+        {/* Perfil Individual */}
         <button 
           onClick={() => hasSelected && setViewMode('individual')}
           disabled={!hasSelected}
-          className={`flex items-center gap-3 px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${
+          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
             viewMode === 'individual' 
-            ? 'bg-emerald-600 text-white shadow-[0_0_25px_rgba(16,185,129,0.4)] scale-105 border border-emerald-400/20' 
+            ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-105 border border-emerald-400/20' 
             : hasSelected 
               ? 'text-slate-500 hover:text-slate-300 hover:bg-white/5' 
               : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
           }`}
         >
-          <UserCircle2 size={16} strokeWidth={2.5} />
-          Perfil de Cliente
+          <UserCircle2 size={14} strokeWidth={2.5} />
+          Perfil
+        </button>
+
+        {/* ★ NUEVO: Ubicaciones */}
+        <button 
+          onClick={() => hasSelected && setViewMode('ubicaciones')}
+          disabled={!hasSelected}
+          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
+            viewMode === 'ubicaciones' 
+            ? 'bg-violet-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] scale-105 border border-violet-400/20' 
+            : hasSelected 
+              ? 'text-slate-500 hover:text-slate-300 hover:bg-white/5' 
+              : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
+          }`}
+        >
+          <Map size={14} strokeWidth={2.5} />
+          Ubicaciones
         </button>
       </div>
 
-      {/* 🚀 CAMBIO 2: CAMPANA DE ALERTAS + ACCESO SEGURO */}
+      {/* CAMPANA + ACCESO SEGURO */}
       <div className="hidden xl:flex items-center gap-3">
-        {/* Campana de remitos pendientes */}
         <div className="relative p-2 bg-white/5 rounded-xl border border-white/10">
           <Bell 
             size={20} 
@@ -69,7 +88,6 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_8px_orange]" />
           )}
         </div>
-
         <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
           <ShieldCheck size={14} className="text-slate-600" />
           <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Acceso Encriptado</span>

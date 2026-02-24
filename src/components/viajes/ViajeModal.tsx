@@ -19,7 +19,8 @@ export function ViajeModal({
   setFormData, 
   clientes = [], 
   choferes = [], 
-  camiones = [] 
+  camiones = [],
+  destinos = [] 
 }: any) {
   
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -38,11 +39,15 @@ export function ViajeModal({
     }));
   };
 
+  // ← ACTUALIZADO: Se agregan destino_id y destino_nombre
   const agregarCliente = (tipo: 'ida' | 'vuelta') => {
     const campo = tipo === 'ida' ? 'repartos_ida' : 'repartos_vuelta';
     setFormData((prev: any) => ({ 
       ...prev, 
-      [campo]: [...(prev[campo] || []), { cliente_id: '', monto_flete: '' }] 
+      [campo]: [
+        ...(prev[campo] || []), 
+        { cliente_id: '', destino_id: '', destino_nombre: '', monto_flete: '' } 
+      ] 
     }));
   };
 
@@ -53,13 +58,18 @@ export function ViajeModal({
       const nuevosRepartos = [...(prev[listaCampo] || [])];
       nuevosRepartos[index] = { ...nuevosRepartos[index], [campo]: valor };
 
+      // Si el usuario cambia el cliente_id, limpiamos el destino_id
+      if (campo === 'cliente_id') {
+         nuevosRepartos[index].destino_id = '';
+         nuevosRepartos[index].destino_nombre = '';
+      }
+
       if (campo === 'cliente_id' && valor) {
         const cliente = clientes?.find((c: any) => c.id === valor);
         if (cliente) {
           nuevosRepartos[index].monto_flete = cliente.tarifa_flete || "";
           
           // 🎯 PRIMER CLIENTE DE IDA
-          // Guarda km e lts propios en km_ida / lts_ida y recalcula totales
           if (tipo === 'ida' && index === 0) {
             const kmIda  = cliente.ruta_km_estimados || "";
             const ltsIda = cliente.lts_gasoil_estimado || "";
@@ -87,7 +97,6 @@ export function ViajeModal({
           }
 
           // 🎯 PRIMER CLIENTE DE VUELTA
-          // Guarda km e lts propios en km_vuelta / lts_vuelta y recalcula totales
           if (tipo === 'vuelta' && index === 0) {
             const kmVuelta  = cliente.ruta_km_estimados   || "";
             const ltsVuelta = cliente.lts_gasoil_estimado || "";
@@ -110,6 +119,14 @@ export function ViajeModal({
         }
       }
       
+      // Si actualizan el destino, buscamos el nombre para guardarlo por las dudas
+      if (campo === 'destino_id' && valor) {
+         const dest = destinos?.find((d:any) => d.id === valor);
+         if (dest) {
+             nuevosRepartos[index].destino_nombre = dest.nombre;
+         }
+      }
+
       return { ...prev, [listaCampo]: nuevosRepartos };
     });
   };
@@ -202,7 +219,21 @@ export function ViajeModal({
 
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6 relative">
           
-          {step === 1 && <ViajeModalOperativo formData={formData} setFormData={setFormData} clientes={clientes} camiones={camiones} choferes={choferes} onCamionChange={handleCamionChange} agregarCliente={agregarCliente} actualizarReparto={actualizarReparto} eliminarReparto={eliminarReparto} />}
+          {step === 1 && (
+            <ViajeModalOperativo 
+              formData={formData} 
+              setFormData={setFormData} 
+              clientes={clientes} 
+              camiones={camiones} 
+              choferes={choferes} 
+              destinos={destinos} 
+              onCamionChange={handleCamionChange} 
+              agregarCliente={agregarCliente} 
+              actualizarReparto={actualizarReparto} 
+              eliminarReparto={eliminarReparto} 
+            />
+          )}
+          
           {step === 2 && <ViajeModalFinanciero formData={formData} setFormData={setFormData} finanzas={finanzas} clientes={clientes} actualizarReparto={actualizarReparto} />}
 
           {step === 3 && (
