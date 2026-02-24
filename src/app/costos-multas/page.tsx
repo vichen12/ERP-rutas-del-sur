@@ -1,18 +1,16 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
-import { getSupabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase' // Cambiado a importación directa de supabase para evitar errores de función
 import { CostosFijosSection } from '@/components/costos/CostosFijosSection'
-import { MultasSection } from '@/components/costos/MultasSection'
+import { MultasSection } from '@/components/multas/MultasSection'
 import { PuntoEquilibrioSection } from '@/components/costos/PuntoEquilibrioSection'
 import { CostoModal } from '@/components/costos/CostoModal'
-import { MultaModal } from '@/components/costos/MultaModal'
+import { MultaModal } from '@/components/multas/MultaModal'
 import { LayoutDashboard, AlertOctagon, TrendingUp, DollarSign } from 'lucide-react'
 
 type Tab = 'costos' | 'multas' | 'equilibrio'
 
 export default function CostosMulatasPage() {
-  const supabase = getSupabase()
-
   const [activeTab, setActiveTab] = useState<Tab>('costos')
   const [costos, setCostos] = useState<any[]>([])
   const [multas, setMultas] = useState<any[]>([])
