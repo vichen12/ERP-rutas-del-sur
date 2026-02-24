@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
-import { supabase } from '@/lib/supabase' // Cambiado a importación directa de supabase para evitar errores de función
+import { supabase } from '@/lib/supabase' 
+// Importaciones con rutas de subcarpetas en MINÚSCULAS como me indicaste
 import { CostosFijosSection } from '@/components/costos/CostosFijosSection'
 import { MultasSection } from '@/components/multas/MultasSection'
 import { PuntoEquilibrioSection } from '@/components/costos/PuntoEquilibrioSection'
@@ -10,7 +11,7 @@ import { LayoutDashboard, AlertOctagon, TrendingUp, DollarSign } from 'lucide-re
 
 type Tab = 'costos' | 'multas' | 'equilibrio'
 
-export default function CostosMulatasPage() {
+export default function CostosMultasPage() {
   const [activeTab, setActiveTab] = useState<Tab>('costos')
   const [costos, setCostos] = useState<any[]>([])
   const [multas, setMultas] = useState<any[]>([])
@@ -43,12 +44,14 @@ export default function CostosMulatasPage() {
       setChoferes(choferesRes.data || [])
       setCamiones(camionesRes.data || [])
       setViajes(viajesRes.data || [])
+    } catch (e) {
+        console.error("Error cargando datos:", e)
     } finally {
       setLoading(false)
     }
   }
 
-  // ── COSTOS ──
+  // ── ACCIONES COSTOS ──
   async function handleSaveCosto(data: any) {
     setIsSaving(true)
     try {
@@ -74,7 +77,7 @@ export default function CostosMulatasPage() {
     fetchAll()
   }
 
-  // ── MULTAS ──
+  // ── ACCIONES MULTAS ──
   async function handleSaveMulta(data: any) {
     setIsSaving(true)
     try {
@@ -100,7 +103,6 @@ export default function CostosMulatasPage() {
     fetchAll()
   }
 
-  // ── CÁLCULOS PUNTO DE EQUILIBRIO ──
   const totalCostosFijosMes = useMemo(() => {
     return costos
       .filter(c => c.activo)
@@ -116,23 +118,13 @@ export default function CostosMulatasPage() {
   return (
     <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20 font-sans italic">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 space-y-8">
-
-        {/* TÍTULO */}
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-            <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em]">Gestión Financiera</p>
-          </div>
           <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
             COSTOS <br />
             <span className="text-orange-500 font-thin">/ MULTAS</span>
           </h1>
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">
-            Control de costos fijos · Multas · Punto de equilibrio · Rutas del Sur ERP
-          </p>
         </div>
 
-        {/* TABS */}
         <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 w-fit">
           {tabs.map(t => (
             <button
@@ -140,11 +132,7 @@ export default function CostosMulatasPage() {
               onClick={() => setActiveTab(t.value)}
               className={`flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${
                 activeTab === t.value
-                  ? t.value === 'costos'
-                    ? 'bg-orange-600 text-white shadow-lg'
-                    : t.value === 'multas'
-                    ? 'bg-rose-600 text-white shadow-lg'
-                    : 'bg-emerald-600 text-white shadow-lg'
+                  ? 'bg-orange-600 text-white shadow-lg'
                   : 'text-slate-500 hover:text-white'
               }`}
             >
@@ -154,7 +142,6 @@ export default function CostosMulatasPage() {
           ))}
         </div>
 
-        {/* CONTENIDO */}
         {activeTab === 'costos' && (
           <CostosFijosSection
             costos={costos}
@@ -185,7 +172,6 @@ export default function CostosMulatasPage() {
           />
         )}
 
-        {/* MODALES */}
         <CostoModal
           isOpen={isCostoModalOpen}
           onClose={() => { setIsCostoModalOpen(false); setEditingCosto(null) }}
