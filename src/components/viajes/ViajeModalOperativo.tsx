@@ -1,9 +1,5 @@
 "use client";
 // src/components/viajes/ViajeModalOperativo.tsx
-// ACTUALIZADO V3:
-// - Cada reparto (ida/vuelta) muestra los destinos guardados del cliente
-// - Al elegir destino → autocomplete tarifa, km, lts de ese destino
-// - Tarifa del destino sobreescribe la del cliente (coexistencia)
 import {
   Calendar, MapPin, Truck, User,
   Hash, ChevronRight,
@@ -12,20 +8,13 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 
-interface Reparto {
-  cliente_id:      string
-  destino_id:      string   // ← nuevo: ID del destino_cliente seleccionado
-  destino_nombre:  string   // nombre del destino para mostrar
-  monto_flete:     string
-}
-
 export function ViajeModalOperativo({
   formData,
   setFormData,
   clientes = [],
   camiones = [],
   choferes = [],
-  destinos = [],        // ← nuevo: array de destinos_cliente (todos, filtrados por cliente en render)
+  destinos = [],
   onCamionChange,
   agregarCliente,
   actualizarReparto,
@@ -45,9 +34,9 @@ export function ViajeModalOperativo({
     setFormData((prev: any) => ({
       ...prev,
       ...(kmTotal  > 0 ? { km_recorridos: String(kmTotal)  } : {}),
-      ...(ltsTotal > 0 ? { lts_gasoil:    String(ltsTotal) } : {}),
+      ...(ltsTotal > 0 ? { lts_gasoil:     String(ltsTotal) } : {}),
     }));
-  }, [kmIda, kmVuelta, ltsIda, ltsVuelta, tieneVuelta]);
+  }, [kmIda, kmVuelta, ltsIda, ltsVuelta, tieneVuelta, setFormData]);
 
   useEffect(() => {
     if (!tieneVuelta && (formData.km_vuelta || formData.lts_vuelta)) {
@@ -59,13 +48,11 @@ export function ViajeModalOperativo({
         lts_gasoil:    prev.lts_ida || prev.lts_gasoil,
       }));
     }
-  }, [tieneVuelta]);
+  }, [tieneVuelta, formData.km_vuelta, formData.lts_vuelta, setFormData]);
 
-  // Devuelve los destinos de un cliente específico
   const getDestinos = (clienteId: string) =>
     destinos.filter((d: any) => d.cliente_id === clienteId && d.activo !== false)
 
-  // Devuelve la tarifa efectiva: destino > cliente > 0
   const getTarifaEfectiva = (clienteId: string, destinoId: string) => {
     if (destinoId) {
       const d = destinos.find((x: any) => x.id === destinoId)
@@ -141,19 +128,6 @@ export function ViajeModalOperativo({
               value={formData.km_recorridos || ""}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, km_recorridos: e.target.value }))}
             />
-            <div className="absolute -bottom-5 left-2 right-2">
-              {tieneVuelta && kmIda > 0 ? (
-                <span className="text-[8px] text-indigo-400/60 font-black uppercase flex items-center gap-1">
-                  <ArrowUpCircle size={8} className="text-emerald-400" /> {kmIda}
-                  <span className="text-slate-600 mx-0.5">+</span>
-                  <ArrowDownCircle size={8} className="text-indigo-400" /> {kmVuelta || "?"}
-                </span>
-              ) : (
-                <span className="text-[8px] text-slate-600 font-black uppercase flex items-center gap-1">
-                  <Info size={8} /> Auto al elegir destino
-                </span>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -225,16 +199,14 @@ export function ViajeModalOperativo({
                   clientes={clientes}
                   destinosCliente={destinosCliente}
                   isFirst={idx === 0}
-                  onClienteChange={(clienteId) => actualizarReparto('ida', idx, 'cliente_id', clienteId)}
-                  onDestinoChange={(destinoId) => {
+                  onClienteChange={(clienteId: string) => actualizarReparto('ida', idx, 'cliente_id', clienteId)}
+                  onDestinoChange={(destinoId: string) => {
                     const d = destinos.find((x: any) => x.id === destinoId)
                     actualizarReparto('ida', idx, 'destino_id', destinoId)
                     if (d) {
                       actualizarReparto('ida', idx, 'destino_nombre', d.nombre)
-                      // Tarifa efectiva
                       const tarifa = getTarifaEfectiva(rep.cliente_id, destinoId)
                       actualizarReparto('ida', idx, 'monto_flete', tarifa)
-                      // KM y LTS (solo primer cliente de ida)
                       if (idx === 0 && Number(d.km_desde_base) > 0) {
                         setFormData((prev: any) => ({
                           ...prev,
@@ -245,7 +217,7 @@ export function ViajeModalOperativo({
                       }
                     }
                   }}
-                  onMontoChange={(val) => actualizarReparto('ida', idx, 'monto_flete', val)}
+                  onMontoChange={(val: string) => actualizarReparto('ida', idx, 'monto_flete', val)}
                   onDelete={() => eliminarReparto('ida', idx)}
                 />
               )
@@ -293,8 +265,8 @@ export function ViajeModalOperativo({
                   clientes={clientes}
                   destinosCliente={destinosCliente}
                   isFirst={false}
-                  onClienteChange={(clienteId) => actualizarReparto('vuelta', idx, 'cliente_id', clienteId)}
-                  onDestinoChange={(destinoId) => {
+                  onClienteChange={(clienteId: string) => actualizarReparto('vuelta', idx, 'cliente_id', clienteId)}
+                  onDestinoChange={(destinoId: string) => {
                     const d = destinos.find((x: any) => x.id === destinoId)
                     actualizarReparto('vuelta', idx, 'destino_id', destinoId)
                     if (d) {
@@ -310,7 +282,7 @@ export function ViajeModalOperativo({
                       }
                     }
                   }}
-                  onMontoChange={(val) => actualizarReparto('vuelta', idx, 'monto_flete', val)}
+                  onMontoChange={(val: string) => actualizarReparto('vuelta', idx, 'monto_flete', val)}
                   onDelete={() => eliminarReparto('vuelta', idx)}
                 />
               )
@@ -377,9 +349,6 @@ export function ViajeModalOperativo({
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// Sub-componente: fila de un reparto (cliente + destino + tarifa)
-// ─────────────────────────────────────────────────────────────
 function RepartoRow({
   rep, idx, tipo, clientes, destinosCliente, isFirst,
   onClienteChange, onDestinoChange, onMontoChange, onDelete
@@ -391,10 +360,7 @@ function RepartoRow({
 
   return (
     <div className={`flex flex-col gap-2 p-3 border rounded-2xl animate-in fade-in slide-in-from-left-4 ${borderClass}`}>
-
-      {/* Fila 1: índice + cliente + destino */}
       <div className="flex gap-3 items-center">
-        {/* Ícono de posición */}
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-black ${
           isFirst
             ? `bg-${color}-600 text-white shadow-md`
@@ -403,7 +369,6 @@ function RepartoRow({
           {isFirst ? <Star size={16} fill="currentColor" /> : idx + 1}
         </div>
 
-        {/* Selector de cliente */}
         <div className="relative flex-1">
           <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" />
           <select
@@ -420,7 +385,6 @@ function RepartoRow({
           <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={14} />
         </div>
 
-        {/* Botón eliminar */}
         <button
           type="button"
           onClick={onDelete}
@@ -430,11 +394,8 @@ function RepartoRow({
         </button>
       </div>
 
-      {/* Fila 2: destino + tarifa (solo si hay cliente) */}
       {rep.cliente_id && (
         <div className="flex gap-2 items-center ml-12">
-
-          {/* Selector de destino del cliente */}
           <div className="relative flex-1">
             {destinosCliente.length > 0 ? (
               <>
@@ -465,7 +426,6 @@ function RepartoRow({
             )}
           </div>
 
-          {/* Tarifa */}
           <div className="relative w-36 shrink-0">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500/50 font-black text-sm">$</span>
             <input
