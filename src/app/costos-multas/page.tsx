@@ -1,14 +1,15 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase' 
-// Importaciones con rutas de subcarpetas en MINÚSCULAS como me indicaste
+// Importaciones con rutas de subcarpetas en MINÚSCULAS como me indicastesasda
+
+import { LayoutDashboard, AlertOctagon, TrendingUp, DollarSign } from 'lucide-react'
+
 import { CostosFijosSection } from '@/components/costos/CostosFijosSection'
 import { MultasSection } from '@/components/multas/MultasSection'
 import { PuntoEquilibrioSection } from '@/components/costos/PuntoEquilibrioSection'
 import { CostoModal } from '@/components/costos/CostoModal'
 import { MultaModal } from '@/components/multas/MultaModal'
-import { LayoutDashboard, AlertOctagon, TrendingUp, DollarSign } from 'lucide-react'
-
 type Tab = 'costos' | 'multas' | 'equilibrio'
 
 export default function CostosMultasPage() {
