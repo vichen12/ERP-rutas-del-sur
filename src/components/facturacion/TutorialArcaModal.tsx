@@ -1,6 +1,11 @@
 'use client'
 import { useState } from 'react'
-import { Terminal, Globe, Zap, Upload, CheckCircle2, AlertTriangle, Circle, ChevronDown, ChevronRight, ExternalLink, Copy, Check, X } from 'lucide-react'
+// 🚀 FIX: Agregamos BookOpen a los imports
+import { 
+  BookOpen, Terminal, Globe, Zap, Upload, CheckCircle2, 
+  AlertTriangle, Circle, ChevronDown, ChevronRight, 
+  ExternalLink, Copy, Check, X 
+} from 'lucide-react'
 
 const PASOS_TUTORIAL = [
   {
