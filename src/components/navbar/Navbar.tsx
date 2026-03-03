@@ -109,12 +109,13 @@ export function Navbar() {
     { label: 'Flota',     href: '/camiones',   icon: Truck },
     { label: 'Choferes',  href: '/choferes',   icon: UserCircle },
     { label: 'Viajes',    href: '/viajes',     icon: MapPin },
+     { label: 'Caja',      href: '/banco', icon: Landmark },
+     { label: 'Combustible', href: '/combustible', icon: Fuel },
+     { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
+     { label: 'Tareas', href: '/tareas', icon: ClipboardList },
     { label: 'Remitos',   href: '/remitos',    icon: FileText },
-    { label: 'Caja',      href: '/banco', icon: Landmark },
-    { label: 'Tareas', href: '/tareas', icon: ClipboardList },
-    { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
     { label: 'Facturas', href: '/facturacion', icon: FileText }, 
-    { label: 'Combustible', href: '/combustible', icon: Fuel },
+    
     // ← NUEVO
   ]
 
@@ -130,9 +131,7 @@ export function Navbar() {
           
           {/* LOGO AREA */}
           <Link href="/dashboard" className="flex items-center gap-3 group shrink-0">
-            <div className="p-2 bg-sky-500 rounded-xl shadow-[0_0_20px_rgba(14,165,233,0.3)] group-hover:scale-105 transition-all">
-              <Truck className="text-white" size={20} strokeWidth={2.5} />
-            </div>
+       
             <div className="hidden xs:block">
               <span className="text-lg md:text-xl font-black tracking-tighter italic text-white block leading-none uppercase">
                 Rutas <span className="text-sky-500 font-light">del Sur</span>

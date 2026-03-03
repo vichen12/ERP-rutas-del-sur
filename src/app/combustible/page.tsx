@@ -3,23 +3,24 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
-import { 
-  Loader2, Fuel, Plus, CheckCircle2, AlertCircle, Wallet, 
-  Trash2, Calendar, Archive, AlertTriangle, CheckSquare, 
+import {
+  Loader2, Fuel, Plus, CheckCircle2, AlertCircle, Wallet,
+  Trash2, Calendar, Archive, AlertTriangle, CheckSquare,
   Globe, BarChart3, Truck, Users
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { CargaCombustibleModal } from '@/components/combustible/CargaCombustibleModal'
 import { PagarResumenModal } from '@/components/combustible/PagarResumenModal'
 
 export default function CombustiblePage() {
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(true)
-  
+
   const [cargas, setCargas] = useState<any[]>([])
   const [camiones, setCamiones] = useState<any[]>([])
   const [choferes, setChoferes] = useState<any[]>([])
   const [precioRef, setPrecioRef] = useState(0)
-  
+
   // Filtros de Ciclo
   const [dateStart, setDateStart] = useState<string>(() => {
     const d = new Date(); d.setDate(1); return d.toISOString().split('T')[0];
@@ -50,7 +51,12 @@ export default function CombustiblePage() {
       ]);
       setCamiones(ca.data || []); setChoferes(ch.data || []); setCargas(car.data || []);
       if (conf.data?.precio_gasoil) setPrecioRef(conf.data.precio_gasoil);
-    } catch (e) { console.error(e) } finally { setLoading(false) }
+    } catch (e) {
+      console.error(e);
+      toast.error('Error al cargar datos del servidor');
+    } finally {
+      setLoading(false)
+    }
   }
 
   // --- EXTRACTORES SEGUROS ---
@@ -59,7 +65,7 @@ export default function CombustiblePage() {
     if (Array.isArray(c.camiones)) return c.camiones[0]?.patente || null;
     return c.camiones.patente || null;
   }
-  
+
   const getChofer = (c: any) => {
     if (c.choferes && Array.isArray(c.choferes)) return c.choferes[0]?.nombre;
     if (c.choferes && !Array.isArray(c.choferes)) return c.choferes.nombre;
@@ -70,7 +76,7 @@ export default function CombustiblePage() {
   const cargasFiltradas = useMemo(() => {
     return cargas.filter(c => {
       const inDate = showAllTime || (c.fecha >= dateStart && c.fecha <= dateEnd);
-      if (viewMode === 'impagos') return !c.pagado && (showAllTime || c.fecha <= dateEnd); 
+      if (viewMode === 'impagos') return !c.pagado && (showAllTime || c.fecha <= dateEnd);
       if (viewMode === 'historial') return c.pagado && inDate;
       if (viewMode === 'resumen') return inDate;
       return false;
@@ -107,7 +113,7 @@ export default function CombustiblePage() {
 
   const abrirModalPagoTodoElCiclo = () => {
     const impagas = cargasFiltradas.filter(c => !c.pagado);
-    if (impagas.length === 0) return alert("No hay deuda.");
+    if (impagas.length === 0) return toast.info("No hay deuda pendiente para liquidar.");
     setCargasParaPagar(impagas);
     setIsPagoModalOpen(true);
   }
@@ -115,38 +121,42 @@ export default function CombustiblePage() {
   // --- GUARDADO SEGURO ---
   const handleGuardarCarga = async (payload: any) => {
     const total = Number(payload.litros) * Number(payload.precio_litro);
-    
-    // Forzamos los nulos para que Supabase no se confunda
-    const dataToInsert = { 
-      ...payload, 
-      total, 
+
+    const dataToInsert = {
+      ...payload,
+      total,
       pagado: false,
       camion_id: payload.camion_id || null,
       chofer_id: payload.chofer_id || null
     };
 
-    const { error } = await supabase.from('cargas_combustible').insert([dataToInsert]);
-    if (error) throw error;
-    
-    const ltsNuevos = Number(payload.litros);
-    const updates = [];
-    if (dataToInsert.camion_id) {
-      const cam = camiones.find(c => c.id === dataToInsert.camion_id);
-      if (cam) updates.push(supabase.from('camiones').update({ lts_consumidos: (cam.lts_consumidos || 0) + ltsNuevos }).eq('id', cam.id));
+    try {
+      const { error } = await supabase.from('cargas_combustible').insert([dataToInsert]);
+      if (error) throw error;
+
+      const ltsNuevos = Number(payload.litros);
+      const updates = [];
+      if (dataToInsert.camion_id) {
+        const cam = camiones.find(c => c.id === dataToInsert.camion_id);
+        if (cam) updates.push(supabase.from('camiones').update({ lts_consumidos: (cam.lts_consumidos || 0) + ltsNuevos }).eq('id', cam.id));
+      }
+      if (dataToInsert.chofer_id) {
+        const cho = choferes.find(c => c.id === dataToInsert.chofer_id);
+        if (cho) updates.push(supabase.from('choferes').update({ lts_consumidos: (cho.lts_consumidos || 0) + ltsNuevos }).eq('id', cho.id));
+      }
+      if (updates.length > 0) await Promise.all(updates);
+
+      setIsCargaModalOpen(false);
+      fetchData();
+      toast.success('Remito de combustible guardado con éxito');
+    } catch (e: any) {
+      toast.error('Error al guardar: ' + e.message);
     }
-    if (dataToInsert.chofer_id) {
-      const cho = choferes.find(c => c.id === dataToInsert.chofer_id);
-      if (cho) updates.push(supabase.from('choferes').update({ lts_consumidos: (cho.lts_consumidos || 0) + ltsNuevos }).eq('id', cho.id));
-    }
-    if (updates.length > 0) await Promise.all(updates);
-    
-    setIsCargaModalOpen(false); 
-    fetchData();
   }
 
   const handleDeleteCarga = async (carga: any) => {
-    if (carga.pagado) return alert("❌ No podés eliminar un remito que ya fue pagado.");
-    if (carga.viaje_id) return alert("⚠️ Esta carga viene de un Viaje. Eliminala desde la sección de Viajes.");
+    if (carga.pagado) return toast.error("No podés eliminar un remito que ya fue pagado.");
+    if (carga.viaje_id) return toast.error("Esta carga viene de un Viaje. Eliminala desde la sección de Viajes.");
     if (!confirm(`¿Eliminar remito de ${carga.litros} lts?`)) return;
 
     try {
@@ -162,33 +172,46 @@ export default function CombustiblePage() {
       }
       await Promise.all([...updates, supabase.from('cargas_combustible').delete().eq('id', carga.id)]);
       fetchData();
-    } catch (e: any) { alert("Error: " + e.message) }
+      toast.success('Remito eliminado correctamente');
+    } catch (e: any) {
+      toast.error("Error al eliminar: " + e.message);
+    }
   }
 
+  // --- LIQUIDACIÓN Y PAGO A CAJA ---
   const handleLiquidarSeleccion = async (payloadReal: any) => {
     if (cargasParaPagar.length === 0) return;
     try {
       const idsAPagar = cargasParaPagar.map(c => c.id);
       const montoPagado = Number(payloadReal.montoReal);
       const montoTeorico = cargasParaPagar.reduce((acc, c) => acc + Number(c.total), 0);
-      const diferencia = montoTeorico - montoPagado; 
+      const diferencia = montoTeorico - montoPagado;
 
+      // 1. Insertar el Egreso en la Caja
       const { data: movCaja, error: errCaja } = await supabase.from('movimientos_caja').insert([{
-        fecha: payloadReal.fecha, 
-        tipo_movimiento: 'egreso', 
-        categoria: 'combustible',
-        monto: montoPagado, 
-        moneda: 'ARS', 
-        metodo_pago: payloadReal.metodo,
-        descripcion: `PAGO YPF (${idsAPagar.length} remitos) - Lts reales: ${payloadReal.ltsReales}`
+        fecha: payloadReal.fecha,
+        tipo: 'egreso',
+        tipo_cuenta: payloadReal.metodo === 'EFECTIVO' ? 'caja' : 'banco',
+        categoria: 'combustible_ypf',
+        monto: montoPagado,
+        descripcion: `PAGO YPF (${idsAPagar.length} remitos) - Lts reales: ${payloadReal.ltsReales}`,
+        origen: 'automatico',
+        modulo_origen: 'combustible'
       }]).select().single();
+
       if (errCaja) throw errCaja;
 
-      const updates = idsAPagar.map(id => 
-        supabase.from('cargas_combustible').update({ pagado: true, fecha_pago: payloadReal.fecha, movimiento_caja_id: movCaja.id }).eq('id', id)
+      // 2. Marcar las cargas de combustible como pagadas
+      const updates = idsAPagar.map(id =>
+        supabase.from('cargas_combustible').update({
+          pagado: true,
+          fecha_pago: payloadReal.fecha,
+          movimiento_caja_id: movCaja.id
+        }).eq('id', id)
       );
       await Promise.all(updates);
 
+      // 3. Manejo de diferencias y saldos pendientes
       if (diferencia > 10) {
         await supabase.from('cargas_combustible').insert([{
           fecha: payloadReal.fecha, litros: 0, precio_litro: 0, total: diferencia,
@@ -196,14 +219,19 @@ export default function CombustiblePage() {
         }]);
       } else if (diferencia < -10) {
         await supabase.from('cargas_combustible').insert([{
-          fecha: payloadReal.fecha, litros: 0, precio_litro: 0, total: diferencia, 
+          fecha: payloadReal.fecha, litros: 0, precio_litro: 0, total: Math.abs(diferencia),
           estacion: 'SALDO A FAVOR YPF', responsable_externo: 'SISTEMA', remito_nro: 'PAGO-EXCEDENTE', pagado: false
         }]);
       }
 
-      setSelectedIds([]); setIsPagoModalOpen(false); fetchData();
-      alert(`✅ Liquidación exitosa. Salió $${montoPagado.toLocaleString('es-AR')} de caja.`);
-    } catch (error: any) { alert("❌ Error: " + error.message); }
+      setSelectedIds([]);
+      setIsPagoModalOpen(false);
+      fetchData();
+      toast.success(`Liquidación exitosa. Se descontaron $${montoPagado.toLocaleString('es-AR')} de caja.`);
+    } catch (error: any) {
+      console.error("Error liquidando:", error);
+      toast.error("Error en la liquidación: " + error.message);
+    }
   }
 
   // --- AGRUPACIONES PARA EL RESUMEN ANALÍTICO ---
@@ -216,7 +244,7 @@ export default function CombustiblePage() {
       const stats = map.get(nombre) || { lts: 0, plata: 0 };
       map.set(nombre, { lts: stats.lts + Number(c.litros), plata: stats.plata + Number(c.total) });
     });
-    return Array.from(map, ([nombre, datos]) => ({ nombre, ...datos })).sort((a,b) => b.lts - a.lts);
+    return Array.from(map, ([nombre, datos]) => ({ nombre, ...datos })).sort((a, b) => b.lts - a.lts);
   }, [cargasFiltradas])
 
   const resumenPorChofer = useMemo(() => {
@@ -228,36 +256,36 @@ export default function CombustiblePage() {
       const stats = map.get(nombre) || { lts: 0, plata: 0 };
       map.set(nombre, { lts: stats.lts + Number(c.litros), plata: stats.plata + Number(c.total) });
     });
-    return Array.from(map, ([nombre, datos]) => ({ nombre, ...datos })).sort((a,b) => b.lts - a.lts);
+    return Array.from(map, ([nombre, datos]) => ({ nombre, ...datos })).sort((a, b) => b.lts - a.lts);
   }, [cargasFiltradas])
 
-  if (!mounted || loading) return <div className="h-screen bg-[#020617] flex items-center justify-center"><Loader2 className="animate-spin text-amber-500" /></div>
+  if (!mounted || loading) return <div className="h-screen bg-[#020617] flex items-center justify-center"><Loader2 className="animate-spin text-amber-500 w-12 h-12" /></div>
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 pb-32 pt-24 md:pt-32 font-sans italic selection:bg-amber-500/30">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 space-y-8">
-        
+
         <div className="flex flex-col xl:flex-row justify-between items-start gap-8">
           <div>
             <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none">
-              Cuenta Corriente <br/><span className="text-amber-500">Combustible</span>
+              Cuenta Corriente <br /><span className="text-amber-500">Combustible</span>
             </h1>
             <p className="text-slate-500 uppercase tracking-widest text-[10px] font-bold mt-4">Gestión de Ciclos YPF, Pagos y Conciliación</p>
           </div>
-          
+
           <div className="flex flex-col items-end gap-4 w-full xl:w-auto">
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className={`flex items-center gap-3 bg-slate-900/50 p-2 rounded-2xl border border-white/5 transition-all ${showAllTime ? 'opacity-20 grayscale pointer-events-none' : ''}`}>
                 <Calendar className="text-amber-500 ml-2" size={16} />
-                <div className="flex flex-col"><span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Inicio Ciclo</span><input type="date" value={dateStart} onChange={e=>setDateStart(e.target.value)} className="bg-transparent text-white font-black text-xs outline-none [color-scheme:dark]" /></div>
+                <div className="flex flex-col"><span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Inicio Ciclo</span><input type="date" value={dateStart} onChange={e => setDateStart(e.target.value)} className="bg-transparent text-white font-black text-xs outline-none [color-scheme:dark]" /></div>
                 <div className="w-px h-8 bg-white/10 mx-2"></div>
-                <div className="flex flex-col pr-2"><span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Fin Ciclo</span><input type="date" value={dateEnd} onChange={e=>setDateEnd(e.target.value)} className="bg-transparent text-white font-black text-xs outline-none [color-scheme:dark]" /></div>
+                <div className="flex flex-col pr-2"><span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Fin Ciclo</span><input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} className="bg-transparent text-white font-black text-xs outline-none [color-scheme:dark]" /></div>
               </div>
               <button onClick={() => setShowAllTime(!showAllTime)} className={`px-6 py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border ${showAllTime ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-slate-900 border-white/10 text-slate-500 hover:text-white'}`}>
                 <Globe size={14} className={showAllTime ? 'animate-spin-slow' : ''} /> {showAllTime ? 'Viendo Todo' : 'Ver Todo'}
               </button>
             </div>
-            
+
             <button onClick={() => setIsCargaModalOpen(true)} className="bg-amber-600 hover:bg-amber-500 text-white px-8 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center gap-3 transition-all shadow-lg w-full sm:w-auto justify-center">
               <Plus size={16} /> Cargar Remito Manual
             </button>
@@ -276,25 +304,25 @@ export default function CombustiblePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-rose-500/10 border border-rose-500/20 p-8 rounded-[2.5rem]">
-            <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2 flex items-center gap-2"><AlertCircle size={14}/> Deuda Activa (Filtro)</p>
+            <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2 flex items-center gap-2"><AlertCircle size={14} /> Deuda Activa (Filtro)</p>
             <p className="text-4xl font-black text-rose-400 tabular-nums">${statsCiclo.deuda.toLocaleString('es-AR')}</p>
           </div>
           <div className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2.5rem]">
-            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2 flex items-center gap-2"><CheckCircle2 size={14}/> Pagado (Filtro)</p>
+            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2 flex items-center gap-2"><CheckCircle2 size={14} /> Pagado (Filtro)</p>
             <p className="text-4xl font-black text-emerald-400 tabular-nums">${statsCiclo.pagadoCiclo.toLocaleString('es-AR')}</p>
           </div>
           <div className="bg-amber-500/10 border border-amber-500/20 p-8 rounded-[2.5rem]">
-            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Fuel size={14}/> Litros Totales (Filtro)</p>
+            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2"><Fuel size={14} /> Litros Totales (Filtro)</p>
             <p className="text-4xl font-black text-amber-400 tabular-nums">{statsCiclo.ltsTotales.toLocaleString('es-AR')} Lts</p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-900/30 p-2 rounded-3xl border border-white/5 mt-8">
           <div className="flex bg-slate-950 rounded-2xl p-1 overflow-x-auto w-full sm:w-auto">
-            <button onClick={() => {setViewMode('impagos'); setSelectedIds([])}} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${viewMode === 'impagos' ? 'bg-amber-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+            <button onClick={() => { setViewMode('impagos'); setSelectedIds([]) }} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${viewMode === 'impagos' ? 'bg-amber-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
               <AlertCircle size={14} /> Pendientes
             </button>
-            <button onClick={() => {setViewMode('historial'); setSelectedIds([])}} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${viewMode === 'historial' ? 'bg-emerald-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+            <button onClick={() => { setViewMode('historial'); setSelectedIds([]) }} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${viewMode === 'historial' ? 'bg-emerald-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
               <Archive size={14} /> Historial Pagado
             </button>
             <button onClick={() => setViewMode('resumen')} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${viewMode === 'resumen' ? 'bg-cyan-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
@@ -359,7 +387,7 @@ export default function CombustiblePage() {
                 <tr>
                   {viewMode === 'impagos' && (
                     <th className="p-6 w-16 text-center">
-                      <button onClick={handleSeleccionarTodo} className="text-slate-500 hover:text-amber-500 transition-colors"><CheckSquare size={18} className={selectedIds.length === cargasFiltradas.length && cargasFiltradas.length > 0 ? 'text-amber-500' : ''}/></button>
+                      <button onClick={handleSeleccionarTodo} className="text-slate-500 hover:text-amber-500 transition-colors"><CheckSquare size={18} className={selectedIds.length === cargasFiltradas.length && cargasFiltradas.length > 0 ? 'text-amber-500' : ''} /></button>
                     </th>
                   )}
                   <th className="p-6">Fecha / Remito</th><th className="p-6">Unidad y Responsable</th><th className="p-6">Volumen</th><th className="p-6 text-right">Subtotal ERP</th><th className="p-6 text-center">Acciones</th>
@@ -367,7 +395,7 @@ export default function CombustiblePage() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {cargasFiltradas.length === 0 ? (
-                   <tr><td colSpan={6} className="p-12 text-center text-slate-500 font-bold uppercase tracking-widest text-[10px]">No hay cargas para mostrar en este filtro.</td></tr>
+                  <tr><td colSpan={6} className="p-12 text-center text-slate-500 font-bold uppercase tracking-widest text-[10px]">No hay cargas para mostrar en este filtro.</td></tr>
                 ) : cargasFiltradas.map(c => {
                   const isSelected = selectedIds.includes(c.id);
                   const isSaldoAnterior = c.remito_nro === 'SALDO-ANTERIOR' || c.remito_nro === 'PAGO-EXCEDENTE';

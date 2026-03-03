@@ -4,34 +4,32 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { 
-  TrendingUp, Users, FileSpreadsheet, 
-  X, BadgeDollarSign, Truck, FileText,
-  Loader2, Calendar, PieChart as PieChartIcon, BarChart3,
-  Gauge, Building2, ArrowUpRight, Activity, Search,
-  Zap, Target, DollarSign, Fuel
+import {
+  TrendingUp, Users, FileSpreadsheet,
+  X, Truck, FileText, Loader2, Calendar,
+  PieChart as PieChartIcon, BarChart3,
+  Building2, ArrowUpRight, Search, DollarSign, Fuel,
+  Route, Crown, CircleDollarSign
 } from 'lucide-react'
 
-import { 
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area
+import {
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts'
 
 export default function MainDashboard() {
   const [loading, setLoading] = useState(true)
-  const [data, setData] = useState<any>({ clientes: [], viajes: [], cc: [] })
+  const [data, setData] = useState<any>({ clientes: [], viajes: [], cc: [], camiones: [] })
   const [isDeudaModalOpen, setIsDeudaModalOpen] = useState(false)
   const [searchInModal, setSearchInModal] = useState('')
   const [activeKpi, setActiveKpi] = useState(0)
-  
+
   const [dateStart, setDateStart] = useState(() => {
-    const d = new Date(); d.setDate(1); return d.toISOString().split('T')[0];
+    const d = new Date(); d.setDate(1); return d.toISOString().split('T')[0]
   })
   const [dateEnd, setDateEnd] = useState(() => new Date().toISOString().split('T')[0])
 
   useEffect(() => { fetchDashboardData() }, [])
-
-  // Rotar KPI destacado
   useEffect(() => {
     const t = setInterval(() => setActiveKpi(p => (p + 1) % 4), 4000)
     return () => clearInterval(t)
@@ -40,58 +38,57 @@ export default function MainDashboard() {
   async function fetchDashboardData() {
     setLoading(true)
     try {
-      const [cl, vj, cc] = await Promise.all([
+      const [cl, vj, cc, cam] = await Promise.all([
         supabase.from('clientes').select('*').order('razon_social'),
         supabase.from('viajes').select('*'),
-        supabase.from('cuenta_corriente').select('*')
+        supabase.from('cuenta_corriente').select('*'),
+        supabase.from('camiones').select('*'),
       ])
-      setData({ clientes: cl.data || [], viajes: vj.data || [], cc: cc.data || [] })
+      setData({ clientes: cl.data || [], viajes: vj.data || [], cc: cc.data || [], camiones: cam.data || [] })
     } catch (error) { console.error(error) } finally { setLoading(false) }
   }
 
   const stats = useMemo(() => {
-    const { viajes, cc, clientes } = data;
-    const filtrados = (viajes || []).filter((v: any) => v.fecha >= dateStart && v.fecha <= dateEnd);
+    const { viajes, cc, clientes, camiones } = data
+    const filtrados = (viajes || []).filter((v: any) => v.fecha >= dateStart && v.fecha <= dateEnd)
 
-    let bruta = 0, gasoil = 0, choferes = 0, descargas = 0, kmTotal = 0, ltsTotal = 0, desgasteTotal = 0;
-    
+    let bruta = 0, gasoil = 0, choferes = 0, descargas = 0, kmTotal = 0, ltsTotal = 0, desgasteTotal = 0
+
     filtrados.forEach((v: any) => {
-      bruta     += Number(v.tarifa_flete || 0);
-      gasoil    += (Number(v.lts_gasoil || 0) * Number(v.precio_gasoil || 0));
-      choferes  += Number(v.pago_chofer || 0);
-      descargas += Number(v.costo_descarga || 0);
-      kmTotal   += Number(v.km_recorridos || 0);
-      ltsTotal  += Number(v.lts_gasoil || 0);
-      desgasteTotal += (Number(v.km_recorridos || 0) * Number(v.desgaste_por_km || 0));
-    });
+      bruta += Number(v.tarifa_flete || 0)
+      gasoil += (Number(v.lts_gasoil || 0) * Number(v.precio_gasoil || 0))
+      choferes += Number(v.pago_chofer || 0)
+      descargas += Number(v.costo_descarga || 0)
+      kmTotal += Number(v.km_recorridos || 0)
+      ltsTotal += Number(v.lts_gasoil || 0)
+      desgasteTotal += (Number(v.km_recorridos || 0) * Number(v.desgaste_por_km || 0))
+    })
 
-    const costoTotal = gasoil + choferes + descargas + desgasteTotal;
-    const neta = bruta - costoTotal;
-    const margen = bruta > 0 ? ((neta / bruta) * 100) : 0;
-    const promedioGasoil = kmTotal > 0 ? ((ltsTotal / kmTotal) * 100).toFixed(1) : '0.0';
-    const facturacionPromedio = filtrados.length > 0 ? Math.round(bruta / filtrados.length) : 0;
-    const utilidadPorKm = kmTotal > 0 ? (neta / kmTotal).toFixed(2) : '0';
+    const costoTotal = gasoil + choferes + descargas + desgasteTotal
+    const neta = bruta - costoTotal
+    const margen = bruta > 0 ? ((neta / bruta) * 100) : 0
+    const promedioGasoil = kmTotal > 0 ? ((ltsTotal / kmTotal) * 100).toFixed(1) : '0.0'
+    const facturacionPromedio = filtrados.length > 0 ? Math.round(bruta / filtrados.length) : 0
+    const utilidadPorKm = kmTotal > 0 ? (neta / kmTotal).toFixed(2) : '0'
 
     const pieData = [
-      { name: 'GASOIL',      value: Math.round(gasoil),        color: '#f59e0b', pct: bruta > 0 ? ((gasoil / bruta) * 100).toFixed(1) : 0 },
-      { name: 'CHOFERES',    value: Math.round(choferes),      color: '#818cf8', pct: bruta > 0 ? ((choferes / bruta) * 100).toFixed(1) : 0 },
-      { name: 'OPERATIVO',   value: Math.round(descargas),     color: '#f472b6', pct: bruta > 0 ? ((descargas / bruta) * 100).toFixed(1) : 0 },
-      { name: 'DESGASTE',    value: Math.round(desgasteTotal), color: '#38bdf8', pct: bruta > 0 ? ((desgasteTotal / bruta) * 100).toFixed(1) : 0 },
-      { name: 'UTILIDAD',    value: neta > 0 ? Math.round(neta) : 0, color: '#34d399', pct: margen > 0 ? margen.toFixed(1) : 0 },
-    ];
+      { name: 'GASOIL', value: Math.round(gasoil), color: '#fbbf24', pct: bruta > 0 ? ((gasoil / bruta) * 100).toFixed(1) : 0 },
+      { name: 'CHOFERES', value: Math.round(choferes), color: '#a78bfa', pct: bruta > 0 ? ((choferes / bruta) * 100).toFixed(1) : 0 },
+      { name: 'OPERATIVO', value: Math.round(descargas), color: '#f472b6', pct: bruta > 0 ? ((descargas / bruta) * 100).toFixed(1) : 0 },
+      { name: 'DESGASTE', value: Math.round(desgasteTotal), color: '#38bdf8', pct: bruta > 0 ? ((desgasteTotal / bruta) * 100).toFixed(1) : 0 },
+      { name: 'UTILIDAD', value: neta > 0 ? Math.round(neta) : 0, color: '#4ade80', pct: margen > 0 ? margen.toFixed(1) : 0 },
+    ]
 
-    const totalCostos = pieData.reduce((acc, curr) => acc + curr.value, 0);
-
-    const currentYear = new Date().getFullYear();
-    const mesesAbv = ['E','F','M','A','M','J','J','A','S','O','N','D'];
+    const currentYear = new Date().getFullYear()
+    const mesesAbv = ['E', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
     const viajesPorMes = mesesAbv.map((mes, index) => {
-      const vMes = (viajes || []).filter((v:any) => {
-        const d = new Date(v.fecha);
-        return d.getFullYear() === currentYear && d.getMonth() === index;
-      });
-      const facMes = vMes.reduce((acc:number, v:any) => acc + Number(v.tarifa_flete || 0), 0);
-      return { name: mes, cantidad: vMes.length, facturacion: Math.round(facMes / 1000) };
-    });
+      const vMes = (viajes || []).filter((v: any) => {
+        const d = new Date(v.fecha)
+        return d.getFullYear() === currentYear && d.getMonth() === index
+      })
+      const facMes = vMes.reduce((acc: number, v: any) => acc + Number(v.tarifa_flete || 0), 0)
+      return { name: mes, cantidad: vMes.length, facturacion: Math.round(facMes / 1000) }
+    })
 
     const saldos: Record<string, number> = {}
     ;(cc || []).forEach((m: any) => {
@@ -106,64 +103,77 @@ export default function MainDashboard() {
       .filter((c: any) => c.saldo > 0)
       .reduce((acc: number, c: any) => acc + c.saldo, 0)
 
-    return { 
-      bruta, neta, margen, costoTotal, pieData, totalCostos, 
-      viajesPorMes, totalDeudaGlobal, listaSaldos, 
-      totalViajes: filtrados.length, 
-      kmTotal, ltsTotal,
-      promedioGasoil, facturacionPromedio, utilidadPorKm 
-    };
-  }, [data, dateStart, dateEnd]);
+    // Top 5 clientes
+    const facPorCliente: Record<string, number> = {}
+    filtrados.forEach((v: any) => {
+      if (!facPorCliente[v.cliente_id]) facPorCliente[v.cliente_id] = 0
+      facPorCliente[v.cliente_id] += Number(v.tarifa_flete || 0)
+    })
+    const topClientes = Object.entries(facPorCliente)
+      .map(([id, total]) => {
+        const cl = (clientes || []).find((c: any) => c.id === id)
+        return { nombre: cl?.razon_social || 'N/A', total: total as number }
+      })
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5)
+
+    const camionesActivos = (camiones || []).length
+
+    return {
+      bruta, neta, margen, costoTotal, pieData,
+      viajesPorMes, totalDeudaGlobal, listaSaldos,
+      totalViajes: filtrados.length,
+      gasoil, choferes, descargas, desgasteTotal,
+      kmTotal, ltsTotal, promedioGasoil, facturacionPromedio, utilidadPorKm,
+      topClientes, camionesActivos
+    }
+  }, [data, dateStart, dateEnd])
 
   const setQuickFilter = (type: 'mes' | 'año') => {
-    const d = new Date();
+    const d = new Date()
     if (type === 'mes') {
-      setDateStart(new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]);
-      setDateEnd(new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0]);
+      setDateStart(new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0])
+      setDateEnd(new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0])
     } else {
-      setDateStart(new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0]);
-      setDateEnd(new Date(d.getFullYear(), 11, 31).toISOString().split('T')[0]);
+      setDateStart(new Date(d.getFullYear(), 0, 1).toISOString().split('T')[0])
+      setDateEnd(new Date(d.getFullYear(), 11, 31).toISOString().split('T')[0])
     }
-  };
+  }
 
-  const kpis = [
-    { label: 'Facturación Bruta',   value: `$${Math.round(stats.bruta).toLocaleString('es-AR')}`,        sub: 'ARS PERÍODO',       icon: <DollarSign size={18}/>,   color: '#34d399', bg: 'from-emerald-500/10 to-emerald-500/5',   border: 'border-emerald-500/30' },
-    { label: 'Utilidad Neta',        value: `$${Math.round(stats.neta).toLocaleString('es-AR')}`,          sub: `${Math.round(stats.margen)}% MARGEN`,  icon: <TrendingUp size={18}/>,   color: '#818cf8', bg: 'from-indigo-500/10 to-indigo-500/5',    border: 'border-indigo-500/30'  },
-    { label: 'Km Recorridos',        value: `${stats.kmTotal.toLocaleString('es-AR')}`,                    sub: 'KM TOTALES',        icon: <Gauge size={18}/>,        color: '#38bdf8', bg: 'from-sky-500/10 to-sky-500/5',          border: 'border-sky-500/30'     },
-    { label: 'Eficiencia Gasoil',    value: `${stats.promedioGasoil}`,                                     sub: 'LTS/100 KM',        icon: <Fuel size={18}/>,         color: '#f59e0b', bg: 'from-amber-500/10 to-amber-500/5',      border: 'border-amber-500/30'   },
-  ];
+  const formatK = (n: number) => n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : `${Math.round(n / 1000)}K`
 
+  // ═══ TOOLTIPS ═══
   const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const e = payload[0].payload;
+      const e = payload[0].payload
       return (
-        <div className="bg-[#020617]/95 border border-white/10 p-4 rounded-2xl shadow-2xl backdrop-blur-xl">
+        <div className="bg-[#0a0f1c] border border-white/10 p-4 rounded-2xl shadow-2xl">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: e.color }} />
+            <div className="w-2.5 h-2.5 rounded-full shadow-lg" style={{ backgroundColor: e.color }} />
             <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{e.name}</span>
           </div>
-          <p className="text-lg font-black text-white tabular-nums">${e.value.toLocaleString()}</p>
-          <p className="text-[9px] font-bold text-slate-500 uppercase">{e.pct}% del total</p>
+          <p className="text-xl font-black text-white tabular-nums">${e.value.toLocaleString('es-AR')}</p>
+          <p className="text-[9px] font-bold text-slate-500 uppercase">{e.pct}% del bruto</p>
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   const CustomBarTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#020617]/95 border border-white/10 p-4 rounded-2xl shadow-2xl backdrop-blur-xl">
+        <div className="bg-[#0a0f1c] border border-white/10 p-4 rounded-2xl shadow-2xl">
           <p className="text-[9px] font-black text-slate-500 uppercase mb-1">{payload[0].payload.name}</p>
-          <p className="text-base font-black text-white">{payload[0].value} <span className="text-[9px] text-indigo-400">viajes</span></p>
+          <p className="text-lg font-black text-white tabular-nums">{payload[0].value} <span className="text-[9px] text-indigo-400">viajes</span></p>
           {payload[0].payload.facturacion > 0 && (
-            <p className="text-[9px] font-bold text-emerald-400">${payload[0].payload.facturacion}K fact.</p>
+            <p className="text-[9px] font-bold text-emerald-400 tabular-nums">${payload[0].payload.facturacion}K facturado</p>
           )}
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   if (loading) return (
     <div className="h-screen bg-[#020617] flex flex-col items-center justify-center gap-4">
@@ -175,39 +185,67 @@ export default function MainDashboard() {
     </div>
   )
 
+  const kpiConfig = [
+    {
+      label: 'Facturación Bruta', value: `$${formatK(stats.bruta)}`, sub: `${stats.totalViajes} viajes en período`,
+      icon: <DollarSign size={20} />, color: '#4ade80',
+      gradient: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
+      border: 'border-emerald-500/30', ring: 'ring-emerald-500/10',
+    },
+    {
+      label: 'Utilidad Neta', value: `$${formatK(stats.neta)}`, sub: `${Math.round(stats.margen)}% margen operativo`,
+      icon: <TrendingUp size={20} />, color: '#a78bfa',
+      gradient: 'from-violet-500/20 via-violet-500/5 to-transparent',
+      border: 'border-violet-500/30', ring: 'ring-violet-500/10',
+    },
+    {
+      label: 'Kilómetros', value: `${stats.kmTotal.toLocaleString('es-AR')}`, sub: `$${stats.utilidadPorKm} utilidad / km`,
+      icon: <Route size={20} />, color: '#38bdf8',
+      gradient: 'from-sky-500/20 via-sky-500/5 to-transparent',
+      border: 'border-sky-500/30', ring: 'ring-sky-500/10',
+    },
+    {
+      label: 'Eficiencia Gasoil', value: stats.promedioGasoil, sub: `litros cada 100 km`,
+      icon: <Fuel size={20} />, color: '#fbbf24',
+      gradient: 'from-amber-500/20 via-amber-500/5 to-transparent',
+      border: 'border-amber-500/30', ring: 'ring-amber-500/10',
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 pb-24 pt-28 px-4 lg:px-10 font-sans italic selection:bg-emerald-500/20 overflow-x-hidden">
-      
-      {/* Fondo atmosférico */}
+
+      {/* ═══ ATMOSPHERE ═══ */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[400px] bg-emerald-500/3 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[300px] bg-indigo-500/3 blur-[100px] rounded-full" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:32px_32px]" />
+        <div className="absolute top-[-10%] left-[10%] w-[700px] h-[700px] bg-emerald-500/[0.04] blur-[180px] rounded-full" />
+        <div className="absolute bottom-[-5%] right-[10%] w-[600px] h-[600px] bg-violet-500/[0.04] blur-[160px] rounded-full" />
+        <div className="absolute top-[30%] right-[30%] w-[300px] h-[300px] bg-sky-500/[0.02] blur-[120px] rounded-full" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:44px_44px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#020617]/80" />
       </div>
 
-      <div className="max-w-[1600px] mx-auto space-y-8 relative z-10">
-        
+      <div className="max-w-[1600px] mx-auto space-y-6 relative z-10">
+
         {/* ═══ HEADER ═══ */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 mb-3 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[8px] font-black uppercase tracking-[0.4em] text-emerald-400">Sistema Activo · Tiempo Real</span>
+            <div className="inline-flex items-center gap-2.5 mb-3 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
+              <span className="text-[8px] font-black uppercase tracking-[0.5em] text-emerald-400">Sistema Activo · {stats.camionesActivos} Camiones en Flota</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none">
-              <span className="text-white">PANEL</span>
+            <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
+              PANEL
               <span className="text-slate-700 font-thin mx-3">/</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400">OPERACIONES</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-sky-400">OPERACIONES</span>
             </h1>
-            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.3em] mt-2">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">
               Rutas del Sur · ERP v3.1
             </p>
           </div>
-          
-          {/* Filtro de fechas */}
-          <div className="flex flex-wrap items-center gap-2 bg-black/40 p-2 rounded-2xl border border-white/5 backdrop-blur-xl">
-            <button onClick={() => setQuickFilter('mes')} className="px-4 py-2 text-[9px] font-black uppercase text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all tracking-widest">Mes</button>
-            <button onClick={() => setQuickFilter('año')} className="px-4 py-2 text-[9px] font-black uppercase text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all tracking-widest">Año</button>
+
+          <div className="flex flex-wrap items-center gap-2 bg-black/60 p-2 rounded-2xl border border-white/[0.08] backdrop-blur-xl shadow-2xl shadow-black/30">
+            <button onClick={() => setQuickFilter('mes')} className="px-5 py-2.5 text-[9px] font-black uppercase text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all tracking-widest">Mes</button>
+            <button onClick={() => setQuickFilter('año')} className="px-5 py-2.5 text-[9px] font-black uppercase text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all tracking-widest">Año</button>
             <div className="w-px h-5 bg-white/10" />
             <div className="flex items-center gap-2 px-3">
               <Calendar size={12} className="text-slate-600" />
@@ -218,58 +256,79 @@ export default function MainDashboard() {
           </div>
         </div>
 
-        {/* ═══ KPIs PRINCIPALES ═══ */}
+        {/* ═══ 4 KPIs — con glow, personalidad, rotación ═══ */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {kpis.map((kpi, i) => (
-            <button 
-              key={i} 
-              onClick={() => setActiveKpi(i)}
-              className={`relative text-left p-6 rounded-[2rem] border transition-all duration-500 overflow-hidden group ${
-                activeKpi === i 
-                  ? `bg-gradient-to-br ${kpi.bg} ${kpi.border}` 
-                  : 'bg-black/20 border-white/5 hover:border-white/10'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${kpi.color}15`, color: kpi.color }}>
-                  {kpi.icon}
-                </div>
-                {activeKpi === i && (
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: kpi.color }} />
+          {kpiConfig.map((kpi, i) => {
+            const isActive = activeKpi === i
+            return (
+              <button key={i} onClick={() => setActiveKpi(i)}
+                className={`relative text-left p-6 lg:p-7 rounded-[2.5rem] border overflow-hidden group transition-all duration-500 ${
+                  isActive
+                    ? `bg-gradient-to-br ${kpi.gradient} ${kpi.border} ring-1 ${kpi.ring} shadow-2xl`
+                    : 'bg-black/30 border-white/[0.06] hover:border-white/10 hover:bg-black/40'
+                }`}
+                style={isActive ? { boxShadow: `0 20px 60px -15px ${kpi.color}15` } : {}}
+              >
+                {/* Glow orb */}
+                {isActive && (
+                  <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[70px] opacity-25"
+                    style={{ backgroundColor: kpi.color }} />
                 )}
-              </div>
-              <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">{kpi.label}</p>
-              <p className="text-xl sm:text-2xl font-black tabular-nums" style={{ color: activeKpi === i ? kpi.color : '#e2e8f0' }}>
-                {kpi.value}
-              </p>
-              <p className="text-[8px] font-bold uppercase tracking-widest text-slate-600 mt-1">{kpi.sub}</p>
-            </button>
-          ))}
+
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="p-3 rounded-2xl transition-all duration-500"
+                      style={{
+                        backgroundColor: `${kpi.color}${isActive ? '25' : '10'}`,
+                        color: kpi.color,
+                        transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                        boxShadow: isActive ? `0 0 20px ${kpi.color}20` : 'none'
+                      }}>
+                      {kpi.icon}
+                    </div>
+                    {isActive && (
+                      <div className="w-2 h-2 rounded-full animate-pulse shadow-lg"
+                        style={{ backgroundColor: kpi.color, boxShadow: `0 0 12px ${kpi.color}80` }} />
+                    )}
+                  </div>
+                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1.5">{kpi.label}</p>
+                  <p className="text-2xl sm:text-3xl font-black tabular-nums tracking-tighter leading-none transition-colors duration-500"
+                    style={{ color: isActive ? kpi.color : '#f1f5f9' }}>
+                    {kpi.value}
+                  </p>
+                  <p className="text-[8px] font-bold uppercase tracking-widest text-slate-600 mt-2">{kpi.sub}</p>
+                </div>
+              </button>
+            )
+          })}
         </div>
 
-        {/* ═══ MÉTRICAS SECUNDARIAS (STRIP) ═══ */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* ═══ MÉTRICAS SECUNDARIAS + COSTOS DESGLOSADOS ═══ */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
-            { label: 'Ticket Promedio',  value: `$${stats.facturacionPromedio.toLocaleString()}`, color: 'text-white' },
-            { label: 'Utilidad / KM',    value: `$${stats.utilidadPorKm}`,                        color: 'text-sky-400' },
-            { label: 'Total Litros',     value: `${stats.ltsTotal.toLocaleString()} lts`,          color: 'text-amber-400' },
-            { label: 'Viajes Período',   value: stats.totalViajes,                                 color: 'text-indigo-400' },
+            { label: 'Ticket Promedio', value: `$${stats.facturacionPromedio.toLocaleString('es-AR')}`, color: 'text-white' },
+            { label: 'Utilidad / KM', value: `$${stats.utilidadPorKm}`, color: 'text-sky-400' },
+            { label: 'Total Litros', value: `${stats.ltsTotal.toLocaleString('es-AR')}`, color: 'text-amber-400' },
+            { label: 'Viajes Período', value: stats.totalViajes, color: 'text-indigo-400' },
+            { label: 'Costo Gasoil', value: `$${formatK(stats.gasoil)}`, color: 'text-yellow-300' },
+            { label: 'Costo Choferes', value: `$${formatK(stats.choferes)}`, color: 'text-violet-300' },
+            { label: 'Costo Oper+Desg', value: `$${formatK(stats.descargas + stats.desgasteTotal)}`, color: 'text-pink-300' },
           ].map((m, i) => (
-            <div key={i} className="bg-black/30 border border-white/5 rounded-2xl px-5 py-4 flex items-center justify-between gap-4">
-              <span className="text-[8px] font-black uppercase tracking-widest text-slate-600">{m.label}</span>
-              <span className={`text-sm font-black tabular-nums ${m.color}`}>{m.value}</span>
+            <div key={i} className="bg-black/30 border border-white/[0.06] rounded-2xl px-4 py-3.5 hover:bg-black/40 hover:border-white/10 transition-all group">
+              <span className="text-[7px] font-black uppercase tracking-widest text-slate-600 block mb-0.5">{m.label}</span>
+              <span className={`text-sm font-black tabular-nums tracking-tight ${m.color}`}>{m.value}</span>
             </div>
           ))}
         </div>
 
-        {/* ═══ SECCIÓN CENTRAL ═══ */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          
-          {/* PIE CHART — Distribución */}
-          <div className="xl:col-span-4 bg-black/30 border border-white/5 rounded-[2.5rem] p-8 flex flex-col">
+        {/* ═══ SECCIÓN CENTRAL: PIE | BAR | CC + TOP ═══ */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+
+          {/* PIE CHART */}
+          <div className="xl:col-span-4 bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-8 flex flex-col shadow-2xl shadow-black/20 hover:shadow-black/30 transition-shadow">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                <PieChartIcon size={12} className="text-emerald-500" /> Distribución
+                <PieChartIcon size={12} className="text-emerald-400" /> Distribución
               </h3>
               <span className="text-[8px] font-bold text-slate-600 uppercase">Del bruto</span>
             </div>
@@ -287,34 +346,34 @@ export default function MainDashboard() {
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <p className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Bruto</p>
-                <p className="text-base font-black text-white tabular-nums">${Math.round(stats.bruta / 1000)}K</p>
-                <p className="text-[8px] font-black text-emerald-400">{Math.round(stats.margen)}% neto</p>
+                <p className="text-lg font-black text-white tabular-nums">${formatK(stats.bruta)}</p>
+                <p className="text-[9px] font-black text-emerald-400">{Math.round(stats.margen)}% neto</p>
               </div>
             </div>
 
-            <div className="space-y-2 mt-6">
+            <div className="space-y-2.5 mt-6">
               {stats.pieData.map((item: any) => (
                 <div key={item.name} className="flex items-center justify-between group">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <div className="w-2 h-2 rounded-full shrink-0 shadow-lg"
+                      style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}40` }} />
                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider">{item.name}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {/* Mini barra */}
-                    <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-700" 
+                    <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700"
                         style={{ width: `${item.pct}%`, backgroundColor: item.color }} />
                     </div>
-                    <span className="text-[9px] font-black tabular-nums text-white w-12 text-right">${(item.value / 1000).toFixed(1)}K</span>
-                    <span className="text-[8px] text-slate-600 w-8 text-right">{item.pct}%</span>
+                    <span className="text-[9px] font-black tabular-nums text-white w-12 text-right">${formatK(item.value)}</span>
+                    <span className="text-[8px] font-bold text-slate-600 w-8 text-right tabular-nums">{item.pct}%</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* BAR CHART — Actividad mensual */}
-          <div className="xl:col-span-5 bg-black/30 border border-white/5 rounded-[2.5rem] p-8 flex flex-col">
+          {/* BAR CHART */}
+          <div className="xl:col-span-5 bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-8 flex flex-col shadow-2xl shadow-black/20 hover:shadow-black/30 transition-shadow">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
                 <BarChart3 size={12} className="text-indigo-400" /> Actividad {new Date().getFullYear()}
@@ -323,16 +382,16 @@ export default function MainDashboard() {
             </div>
             <div className="flex-1 min-h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.viajesPorMes} barSize={18}>
+                <BarChart data={stats.viajesPorMes} barSize={20}>
                   <CartesianGrid strokeDasharray="2 6" stroke="#ffffff04" vertical={false} />
                   <XAxis dataKey="name" stroke="#334155" fontSize={9} axisLine={false} tickLine={false} fontWeight="900" />
                   <YAxis stroke="#334155" fontSize={8} axisLine={false} tickLine={false} fontWeight="900" />
                   <Tooltip content={<CustomBarTooltip />} cursor={{ fill: '#ffffff04' }} />
-                  <Bar dataKey="cantidad" radius={[6, 6, 2, 2]}>
+                  <Bar dataKey="cantidad" radius={[8, 8, 2, 2]}>
                     {stats.viajesPorMes.map((entry: any, index: number) => {
-                      const max = Math.max(...stats.viajesPorMes.map((v:any) => v.cantidad));
-                      const intensity = max > 0 ? entry.cantidad / max : 0;
-                      return <Cell key={index} fill={`rgba(99,102,241,${0.3 + intensity * 0.7})`} />;
+                      const max = Math.max(...stats.viajesPorMes.map((v: any) => v.cantidad), 1)
+                      const intensity = entry.cantidad / max
+                      return <Cell key={index} fill={`rgba(129,140,248,${0.25 + intensity * 0.7})`} />
                     })}
                   </Bar>
                 </BarChart>
@@ -340,20 +399,18 @@ export default function MainDashboard() {
             </div>
           </div>
 
-          {/* CARD DEUDA */}
+          {/* COLUMNA DERECHA */}
           <div className="xl:col-span-3 flex flex-col gap-4">
-            
-            {/* Botón Cuentas Corrientes */}
-            <button 
-              onClick={() => setIsDeudaModalOpen(true)}
-              className="flex-1 bg-black/30 border border-white/5 hover:border-indigo-500/30 p-8 rounded-[2.5rem] flex flex-col justify-between transition-all group relative overflow-hidden text-left"
-            >
-              <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.06] group-hover:scale-110 transition-all duration-700">
-                <FileSpreadsheet size={160} />
+
+            {/* CC Card */}
+            <button onClick={() => setIsDeudaModalOpen(true)}
+              className="bg-black/30 border border-white/[0.06] hover:border-indigo-500/30 p-8 rounded-[2.5rem] flex flex-col justify-between transition-all duration-300 group relative overflow-hidden text-left shadow-2xl shadow-black/20 hover:shadow-indigo-500/5">
+              <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.07] group-hover:scale-110 transition-all duration-700">
+                <CircleDollarSign size={160} />
               </div>
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-5">
-                  <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400 group-hover:scale-110 transition-transform">
+                  <div className="p-2.5 bg-indigo-500/15 rounded-xl text-indigo-400 group-hover:scale-110 transition-transform shadow-lg shadow-indigo-500/10">
                     <Users size={18} />
                   </div>
                   <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Cuentas Corrientes</span>
@@ -363,112 +420,121 @@ export default function MainDashboard() {
                   ${Math.round(stats.totalDeudaGlobal).toLocaleString('es-AR')}
                 </p>
                 <div className="flex items-center gap-2 mt-5">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full bg-indigo-500/10">Ver planilla</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-indigo-400 border border-indigo-500/20 px-3 py-1.5 rounded-full bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">Ver planilla</span>
                   <ArrowUpRight size={12} className="text-slate-700 group-hover:text-indigo-400 transition-colors" />
                 </div>
               </div>
             </button>
 
-            {/* Accesos directos compactos */}
+            {/* Top Clientes */}
+            <div className="bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-6 flex-1 shadow-2xl shadow-black/20">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 bg-amber-500/15 rounded-lg shadow-lg shadow-amber-500/5"><Crown size={12} className="text-amber-400" /></div>
+                <h3 className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500">Top Clientes · Período</h3>
+              </div>
+              <div className="space-y-3">
+                {stats.topClientes.length === 0 ? (
+                  <p className="text-[9px] text-slate-700 font-bold uppercase">Sin datos en período</p>
+                ) : (
+                  stats.topClientes.map((c: any, i: number) => {
+                    const maxVal = stats.topClientes[0]?.total || 1
+                    const medals = ['🥇', '🥈', '🥉']
+                    return (
+                      <div key={i}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-[10px] w-5 shrink-0 text-center">{medals[i] || <span className="text-[8px] font-black text-slate-700">#{i + 1}</span>}</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase truncate">{c.nombre}</span>
+                          </div>
+                          <span className="text-[9px] font-black text-white tabular-nums shrink-0 ml-2">${formatK(c.total)}</span>
+                        </div>
+                        <div className="w-full h-1 bg-white/[0.04] rounded-full overflow-hidden ml-7">
+                          <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full transition-all duration-700"
+                            style={{ width: `${(c.total / maxVal) * 100}%`, opacity: 1 - (i * 0.12) }} />
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Links */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { href: '/viajes',   icon: <Truck size={16}/>,    label: 'Viajes',   color: 'hover:border-sky-500/30 hover:text-sky-400' },
-                { href: '/clientes', icon: <Users size={16}/>,    label: 'Clientes', color: 'hover:border-emerald-500/30 hover:text-emerald-400' },
-                { href: '/remitos',  icon: <FileText size={16}/>, label: 'Remitos',  color: 'hover:border-amber-500/30 hover:text-amber-400' },
+                { href: '/viajes', icon: <Truck size={16} />, label: 'Viajes', color: 'hover:border-sky-500/30 hover:text-sky-400' },
+                { href: '/clientes', icon: <Users size={16} />, label: 'Clientes', color: 'hover:border-emerald-500/30 hover:text-emerald-400' },
+                { href: '/remitos', icon: <FileText size={16} />, label: 'Remitos', color: 'hover:border-amber-500/30 hover:text-amber-400' },
               ].map(s => (
-                <Link key={s.href} href={s.href} className={`bg-black/30 border border-white/5 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all group text-slate-500 ${s.color}`}>
-                  <div className="transition-transform group-hover:scale-110">{s.icon}</div>
+                <Link key={s.href} href={s.href} className={`bg-black/30 border border-white/[0.06] rounded-2xl p-4 flex flex-col items-center gap-2 transition-all group text-slate-500 shadow-lg ${s.color}`}>
+                  <div className="transition-transform group-hover:scale-110 group-hover:-translate-y-0.5">{s.icon}</div>
                   <span className="text-[7px] font-black uppercase tracking-widest">{s.label}</span>
                 </Link>
               ))}
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* ═══ MODAL PLANILLA ═══ */}
+      {/* ═══ MODAL PLANILLA — INTACTO ═══ */}
       {isDeudaModalOpen && (
         <div className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
           <div className="bg-[#020617] border border-white/10 w-full max-w-5xl rounded-[3rem] shadow-2xl relative flex flex-col lg:flex-row h-[88vh] overflow-hidden">
-            
-            {/* Lista */}
             <div className="flex-1 flex flex-col min-w-0">
               <div className="p-8 lg:p-10 border-b border-white/5 bg-black/30 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
                   <p className="text-[8px] font-black uppercase tracking-[0.4em] text-indigo-400 mb-1 flex items-center gap-1.5">
-                    <Building2 size={10}/> Auditoría Global
+                    <Building2 size={10} /> Auditoría Global
                   </p>
                   <h2 className="text-3xl font-black italic uppercase text-white tracking-tighter">Planilla de Saldos</h2>
                 </div>
                 <div className="relative w-full lg:w-64">
                   <Search size={12} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
-                  <input 
-                    type="text" placeholder="Buscar cliente..." 
-                    className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-10 pr-4 text-[10px] font-black uppercase outline-none focus:border-indigo-500/50 placeholder:text-slate-700" 
-                    value={searchInModal} onChange={e => setSearchInModal(e.target.value)} 
-                  />
+                  <input type="text" placeholder="Buscar cliente..."
+                    className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-10 pr-4 text-[10px] font-black uppercase outline-none focus:border-indigo-500/50 placeholder:text-slate-700"
+                    value={searchInModal} onChange={e => setSearchInModal(e.target.value)} />
                 </div>
               </div>
-
               <div className="flex-1 overflow-y-auto">
-                {/* Header tabla */}
                 <div className="grid grid-cols-3 bg-white/[0.02] px-8 py-4 text-[8px] font-black text-slate-600 uppercase tracking-widest border-b border-white/5 sticky top-0">
-                  <span>#</span>
-                  <span>Cliente</span>
-                  <span className="text-right">Saldo</span>
+                  <span>#</span><span>Cliente</span><span className="text-right">Saldo</span>
                 </div>
                 <div className="divide-y divide-white/[0.04]">
                   {stats.listaSaldos
-                    .filter((c:any) => c.razon_social.toLowerCase().includes(searchInModal.toLowerCase()))
+                    .filter((c: any) => c.razon_social.toLowerCase().includes(searchInModal.toLowerCase()))
                     .map((c: any, i: number) => (
                       <div key={c.id} className="grid grid-cols-3 px-8 py-5 items-center hover:bg-white/[0.02] transition-colors group">
-                        <span className="text-[9px] font-black text-slate-700">#{String(i+1).padStart(2,'0')}</span>
-                        <span className="text-[10px] font-black text-slate-300 uppercase group-hover:text-white transition-colors truncate pr-4">
-                          {c.razon_social}
-                        </span>
+                        <span className="text-[9px] font-black text-slate-700">#{String(i + 1).padStart(2, '0')}</span>
+                        <span className="text-[10px] font-black text-slate-300 uppercase group-hover:text-white transition-colors truncate pr-4">{c.razon_social}</span>
                         <div className="text-right">
-                          <span className={`text-sm font-black italic tabular-nums ${
-                            c.saldo > 0 ? 'text-rose-400' : c.saldo < 0 ? 'text-emerald-400' : 'text-slate-700'
-                          }`}>
+                          <span className={`text-sm font-black italic tabular-nums ${c.saldo > 0 ? 'text-rose-400' : c.saldo < 0 ? 'text-emerald-400' : 'text-slate-700'}`}>
                             {c.saldo === 0 ? '—' : `$${Math.abs(c.saldo).toLocaleString('es-AR')}`}
                           </span>
-                          {c.saldo !== 0 && (
-                            <p className="text-[7px] font-bold uppercase text-slate-600 mt-0.5">
-                              {c.saldo > 0 ? 'DEBE' : 'A FAVOR'}
-                            </p>
-                          )}
+                          {c.saldo !== 0 && <p className="text-[7px] font-bold uppercase text-slate-600 mt-0.5">{c.saldo > 0 ? 'DEBE' : 'A FAVOR'}</p>}
                         </div>
                       </div>
                     ))}
                 </div>
               </div>
             </div>
-
-            {/* Panel lateral derecho */}
             <div className="w-full lg:w-72 bg-black/60 border-t lg:border-t-0 lg:border-l border-white/5 p-8 flex flex-col justify-between shrink-0">
-              <button 
-                onClick={() => setIsDeudaModalOpen(false)} 
-                className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 border border-white/5 rounded-xl text-slate-400 hover:text-white transition-all"
-              >
+              <button onClick={() => setIsDeudaModalOpen(false)}
+                className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 border border-white/5 rounded-xl text-slate-400 hover:text-white transition-all">
                 <X size={16} />
               </button>
-              
               <div className="space-y-6 mt-8">
                 <div>
                   <p className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-600 mb-3">Resumen Cartera</p>
                   <div className="bg-indigo-500/10 border border-indigo-500/20 p-6 rounded-2xl">
                     <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Exigible</p>
-                    <p className="text-3xl font-black text-indigo-300 tabular-nums tracking-tighter leading-none">
-                      ${Math.round(stats.totalDeudaGlobal).toLocaleString('es-AR')}
-                    </p>
+                    <p className="text-3xl font-black text-indigo-300 tabular-nums tracking-tighter leading-none">${Math.round(stats.totalDeudaGlobal).toLocaleString('es-AR')}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   {[
-                    { label: 'Clientes con deuda', value: stats.listaSaldos.filter((c:any) => c.saldo > 0).length, color: 'text-rose-400' },
-                    { label: 'Al día / a favor',   value: stats.listaSaldos.filter((c:any) => c.saldo <= 0).length, color: 'text-emerald-400' },
-                    { label: 'Total clientes',      value: stats.listaSaldos.length, color: 'text-white' },
+                    { label: 'Clientes con deuda', value: stats.listaSaldos.filter((c: any) => c.saldo > 0).length, color: 'text-rose-400' },
+                    { label: 'Al día / a favor', value: stats.listaSaldos.filter((c: any) => c.saldo <= 0).length, color: 'text-emerald-400' },
+                    { label: 'Total clientes', value: stats.listaSaldos.length, color: 'text-white' },
                   ].map((s, i) => (
                     <div key={i} className="flex items-center justify-between bg-white/[0.02] border border-white/5 px-4 py-3 rounded-xl">
                       <span className="text-[8px] font-black uppercase tracking-widest text-slate-600">{s.label}</span>
@@ -477,7 +543,6 @@ export default function MainDashboard() {
                   ))}
                 </div>
               </div>
-
               <p className="text-[7px] font-black text-slate-700 uppercase tracking-[0.4em]">Rutas del Sur ERP v3.1</p>
             </div>
           </div>

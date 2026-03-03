@@ -4,14 +4,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, Shield, X, Info, BarChart3 } from 'lucide-react'
+import { toast } from 'sonner' // ← Agregamos Sonner
 
-// ─── Componentes existentes ───────────────────────────────────────────────────
 import { CajaHeader }           from '@/components/caja/CajaHeader'
 import { CajaDolarPanel }       from '@/components/caja/CajaDolarPanel'
 import { CajaResumenGeneral }   from '@/components/caja/CajaResumenGeneral'
-import { CajaMovimientosTable } from '@/components/caja/CajaMovimientosTable'
 import { CajaModal }            from '@/components/caja/CajaModal'
-// ─────────────────────────────────────────────────────────────────────────────
 
 const CATEGORIA_LABELS: Record<string, string> = {
   cobro_flete: 'Cobro de Flete', cobro_parcial: 'Cobro Parcial', ingreso_otro: 'Ingreso Varios',
@@ -24,7 +22,6 @@ const CATEGORIA_LABELS: Record<string, string> = {
 }
 
 export default function CajaPage() {
-  // ─── DATOS ─────────────────────────────────────────────────────────────────
   const [movimientos, setMovimientos] = useState<any[]>([])
   const [clientes,    setClientes]    = useState<any[]>([])
   const [choferes,    setChoferes]    = useState<any[]>([])
@@ -32,7 +29,10 @@ export default function CajaPage() {
   const [loading,     setLoading]     = useState(true)
   const [tipoCambioDolar, setTipoCambioDolar] = useState(1200)
 
-  // ─── FILTROS (para la tabla) ────────────────────────────────────────────────
+  // Estados de Deudas (Para saber la plata en la calle y lo que debemos)
+  const [plataEnLaCalle, setPlataEnLaCalle] = useState(0)
+  const [deudaChoferes, setDeudaChoferes] = useState(0)
+
   const [tipoCuenta,  setTipoCuenta]  = useState<'todas' | 'caja' | 'banco'>('todas')
   const [dateStart,   setDateStart]   = useState(() => {
     const d = new Date()
@@ -41,35 +41,44 @@ export default function CajaPage() {
   const [dateEnd,     setDateEnd]     = useState(() => new Date().toISOString().split('T')[0])
   const [showAllTime, setShowAllTime] = useState(false)
 
-  // ─── MODALES ────────────────────────────────────────────────────────────────
   const [isModalOpen,       setIsModalOpen]       = useState(false)
   const [editingMovimiento, setEditingMovimiento] = useState<any>(null)
   const [isSaving,          setIsSaving]          = useState(false)
   const [modalAuditoria,    setModalAuditoria]    = useState<any>(null)
   const [vistaGrafico,      setVistaGrafico]      = useState<'6m' | '12m'>('6m')
 
-  // ─── FETCH ──────────────────────────────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
-      const [movRes, clRes, chRes, caRes, confRes] = await Promise.all([
-        supabase
-          .from('movimientos_caja')
-          .select('*, clientes(razon_social), choferes(nombre), camiones(patente)')
-          .order('fecha', { ascending: false })
-          .order('created_at', { ascending: false }),
+      const [movRes, clRes, chRes, caRes, confRes, ctaCliRes, ctaChoRes] = await Promise.all([
+        supabase.from('movimientos_caja').select('*, clientes(razon_social), choferes(nombre), camiones(patente)').order('fecha', { ascending: false }).order('created_at', { ascending: false }),
         supabase.from('clientes').select('id, razon_social').order('razon_social'),
         supabase.from('choferes').select('id, nombre').order('nombre'),
         supabase.from('camiones').select('id, patente').order('patente'),
         supabase.from('configuracion').select('tipo_cambio_dolar').eq('id', 1).single(),
+        supabase.from('cuenta_corriente').select('debe, haber'), // Deuda de clientes
+        supabase.from('cuenta_corriente_choferes').select('monto').eq('pagado', false) // Deuda a choferes
       ])
+      
       setMovimientos(movRes.data || [])
       setClientes(clRes.data   || [])
       setChoferes(chRes.data   || [])
       setCamiones(caRes.data   || [])
       if (confRes.data?.tipo_cambio_dolar) setTipoCambioDolar(Number(confRes.data.tipo_cambio_dolar))
+
+      // Calcular la plata en la calle (Clientes)
+      let aCobrar = 0;
+      ctaCliRes.data?.forEach(r => aCobrar += (Number(r.debe || 0) - Number(r.haber || 0)));
+      setPlataEnLaCalle(Math.max(0, aCobrar));
+
+      // Calcular deuda a choferes
+      let aPagarCho = 0;
+      ctaChoRes.data?.forEach(r => aPagarCho += Number(r.monto || 0));
+      setDeudaChoferes(aPagarCho);
+
     } catch (e) {
-      console.error('Error cargando caja:', e)
+      toast.error('Error al sincronizar con la base de datos')
+      console.error(e)
     } finally {
       setLoading(false)
     }
@@ -77,8 +86,6 @@ export default function CajaPage() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  // ─── SALDOS REALES (sobre TODO el historial, ignorando filtros) ─────────────
-  // Esto es lo que tiene la empresa HOY, no lo del período seleccionado
   const saldosReales = useMemo(() => {
     let caja = 0, banco = 0
     for (const m of movimientos) {
@@ -89,7 +96,6 @@ export default function CajaPage() {
     return { caja, banco, total: caja + banco }
   }, [movimientos])
 
-  // ─── MOVIMIENTOS FILTRADOS (para la tabla y los KPIs del período) ───────────
   const movimientosFiltrados = useMemo(() => {
     return movimientos.filter(m => {
       if (tipoCuenta !== 'todas' && m.tipo_cuenta !== tipoCuenta) return false
@@ -98,27 +104,20 @@ export default function CajaPage() {
     })
   }, [movimientos, tipoCuenta, dateStart, dateEnd, showAllTime])
 
-  // ─── KPIs DEL PERÍODO SELECCIONADO ─────────────────────────────────────────
   const kpisPeriodo = useMemo(() => {
-    const ingresosMes = movimientosFiltrados
-      .filter(m => m.tipo === 'ingreso')
-      .reduce((a, m) => a + Number(m.monto), 0)
-    const deudasMes = movimientosFiltrados
-      .filter(m => m.tipo === 'egreso')
-      .reduce((a, m) => a + Number(m.monto), 0)
+    const ingresosMes = movimientosFiltrados.filter(m => m.tipo === 'ingreso').reduce((a, m) => a + Number(m.monto), 0)
+    const deudasMes = movimientosFiltrados.filter(m => m.tipo === 'egreso').reduce((a, m) => a + Number(m.monto), 0)
     return { ingresosMes, deudasMes }
   }, [movimientosFiltrados])
 
-  // ─── RESUMEN PARA CajaResumenGeneral ───────────────────────────────────────
-  // totalCaja y totalBanco son los saldos REALES acumulados
-  // facturasImpagas viene de cuenta_corriente (suma de DEBE sin HABER)
+  // Inyectamos las deudas reales calculadas al resumen
   const resumen = useMemo(() => {
     const total         = saldosReales.total
     const totalCorriente = total
     return {
       totalCaja:         saldosReales.caja,
       totalBanco:        saldosReales.banco,
-      facturasImpagas:   0, // se puede calcular aparte desde cuenta_corriente
+      facturasImpagas:   plataEnLaCalle, // Plata real en la calle
       deudasMes:         kpisPeriodo.deudasMes,
       ingresosMes:       kpisPeriodo.ingresosMes,
       total,
@@ -126,9 +125,8 @@ export default function CajaPage() {
       totalEnDolar:      totalCorriente / tipoCambioDolar,
       totalEnDolarTotal: total          / tipoCambioDolar,
     }
-  }, [saldosReales, kpisPeriodo, tipoCambioDolar])
+  }, [saldosReales, kpisPeriodo, tipoCambioDolar, plataEnLaCalle])
 
-  // ─── DATOS DEL GRÁFICO HISTÓRICO ───────────────────────────────────────────
   const datosGrafico = useMemo(() => {
     const meses = vistaGrafico === '6m' ? 6 : 12
     const hoy   = new Date()
@@ -154,13 +152,12 @@ export default function CajaPage() {
     return resultado
   }, [movimientos, vistaGrafico])
 
-  // ─── GUARDAR TIPO DE CAMBIO ─────────────────────────────────────────────────
   async function handleSaveTipoCambio(valor: number) {
     setTipoCambioDolar(valor)
     await supabase.from('configuracion').update({ tipo_cambio_dolar: valor }).eq('id', 1)
+    toast.success(`Tipo de cambio actualizado a $${valor}`)
   }
 
-  // ─── GUARDAR MOVIMIENTO MANUAL ──────────────────────────────────────────────
   async function handleSaveMovimiento(data: any) {
     setIsSaving(true)
     try {
@@ -181,28 +178,33 @@ export default function CajaPage() {
       if (editingMovimiento) {
         const { error } = await supabase.from('movimientos_caja').update(payload).eq('id', editingMovimiento.id)
         if (error) throw error
+        toast.success('Movimiento editado correctamente')
       } else {
         const { error } = await supabase.from('movimientos_caja').insert(payload)
         if (error) throw error
+        toast.success('Movimiento registrado en caja')
       }
       setIsModalOpen(false)
       setEditingMovimiento(null)
       fetchAll()
     } catch (e: any) {
-      alert('Error guardando: ' + e.message)
+      toast.error('Error guardando: ' + e.message)
     } finally {
       setIsSaving(false)
     }
   }
 
   async function handleDeleteMovimiento(id: string) {
-    if (!confirm('¿Eliminar este movimiento?')) return
+    if (!confirm('¿Eliminar este movimiento? Esto afectará el saldo real.')) return
     const { error } = await supabase.from('movimientos_caja').delete().eq('id', id)
-    if (error) { alert('Error: ' + error.message); return }
+    if (error) { 
+      toast.error('Error al eliminar: ' + error.message)
+      return 
+    }
+    toast.success('Movimiento eliminado con éxito')
     fetchAll()
   }
 
-  // ─── RENDER ─────────────────────────────────────────────────────────────────
   if (loading) return (
     <div className="h-screen bg-[#020617] flex flex-col items-center justify-center">
       <Loader2 className="animate-spin text-emerald-500 w-12 h-12 mb-4" />
@@ -210,7 +212,6 @@ export default function CajaPage() {
     </div>
   )
 
-  // Máximo valor para escalar las barras del gráfico
   const maxBarGrafico = Math.max(...datosGrafico.map(d => Math.max(d.ingresos, d.egresos)), 1)
   const maxSaldoGrafico = Math.max(...datosGrafico.map(d => Math.abs(d.saldoFin)), 1)
 
@@ -218,7 +219,6 @@ export default function CajaPage() {
     <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20 font-sans italic">
       <div className="max-w-[1600px] mx-auto px-4 md:px-8 space-y-8">
 
-        {/* ── HEADER CON FILTROS ── */}
         <CajaHeader
           tipoCuenta={tipoCuenta}       setTipoCuenta={setTipoCuenta}
           dateStart={dateStart}         setDateStart={setDateStart}
@@ -229,7 +229,6 @@ export default function CajaPage() {
           totalEgresos={kpisPeriodo.deudasMes}
         />
 
-        {/* ── PANEL DÓLAR (tipo de cambio editable + totales en USD) ── */}
         <CajaDolarPanel
           tipoCambio={tipoCambioDolar}
           onSaveTipoCambio={handleSaveTipoCambio}
@@ -239,7 +238,21 @@ export default function CajaPage() {
           totalEnDolarTotal={resumen.totalEnDolarTotal}
         />
 
-        {/* ── RESUMEN PATRIMONIAL (saldos reales acumulados) ── */}
+        {/* Agregamos una tarjetita extra de alerta si hay deuda con choferes */}
+        {deudaChoferes > 0 && (
+          <div className="bg-indigo-500/10 border border-indigo-500/30 p-4 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Info size={18} className="text-indigo-400" />
+              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                Atención: Hay liquidaciones y viáticos de viajes pendientes de pago a choferes.
+              </p>
+            </div>
+            <p className="text-lg font-black text-white tabular-nums tracking-tighter">
+              $ {deudaChoferes.toLocaleString('es-AR')}
+            </p>
+          </div>
+        )}
+
         <CajaResumenGeneral resumen={resumen} loading={loading} />
 
         {/* ── GRÁFICO HISTÓRICO ── */}
@@ -266,33 +279,23 @@ export default function CajaPage() {
             </div>
           </div>
 
-          {/* Barras SVG */}
           <div className="w-full overflow-x-auto">
             <div style={{ minWidth: datosGrafico.length * 90 }}>
-              <svg
-                viewBox={`0 0 ${datosGrafico.length * 90} 180`}
-                className="w-full"
-                style={{ height: 180 }}
-              >
+              <svg viewBox={`0 0 ${datosGrafico.length * 90} 180`} className="w-full" style={{ height: 180 }}>
                 {datosGrafico.map((d, i) => {
                   const x     = i * 90 + 10
                   const barW  = 28
                   const maxH  = 120
-                  const base  = 130 // línea base (y donde termina la barra)
+                  const base  = 130 
                   const hIng  = Math.round((d.ingresos / maxBarGrafico) * maxH)
                   const hEgr  = Math.round((d.egresos  / maxBarGrafico) * maxH)
-                  // Punto de saldo para la línea
                   const ySaldo = base - Math.round((d.saldoFin / maxSaldoGrafico) * (maxH * 0.7))
 
                   return (
                     <g key={i}>
-                      {/* Barra ingresos */}
                       <rect x={x} y={base - hIng} width={barW} height={hIng} rx={6} fill="#10b981" opacity={0.85} />
-                      {/* Barra egresos */}
                       <rect x={x + barW + 4} y={base - hEgr} width={barW} height={hEgr} rx={6} fill="#f43f5e" opacity={0.75} />
-                      {/* Punto saldo */}
                       <circle cx={x + barW} cy={ySaldo} r={4} fill="#60a5fa" opacity={0.9} />
-                      {/* Línea saldo al siguiente */}
                       {i < datosGrafico.length - 1 && (() => {
                         const next   = datosGrafico[i + 1]
                         const yNext  = base - Math.round((next.saldoFin / maxSaldoGrafico) * (maxH * 0.7))
@@ -304,17 +307,14 @@ export default function CajaPage() {
                           />
                         )
                       })()}
-                      {/* Label mes */}
                       <text x={x + barW} y={150} textAnchor="middle" fontSize={9} fill="#64748b" fontWeight="bold">
                         {d.mes}
                       </text>
-                      {/* Monto ingreso encima de barra (solo si hay espacio) */}
                       {hIng > 20 && (
                         <text x={x + barW / 2} y={base - hIng - 4} textAnchor="middle" fontSize={7} fill="#10b981" fontWeight="bold">
                           {(d.ingresos / 1000).toFixed(0)}k
                         </text>
                       )}
-                      {/* Monto egreso encima de barra */}
                       {hEgr > 20 && (
                         <text x={x + barW + 4 + barW / 2} y={base - hEgr - 4} textAnchor="middle" fontSize={7} fill="#f43f5e" fontWeight="bold">
                           {(d.egresos / 1000).toFixed(0)}k
@@ -325,7 +325,6 @@ export default function CajaPage() {
                 })}
               </svg>
 
-              {/* Leyenda */}
               <div className="flex items-center gap-6 mt-3 justify-end pr-4">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 rounded-sm bg-emerald-500 opacity-85" />
@@ -343,7 +342,6 @@ export default function CajaPage() {
             </div>
           </div>
 
-          {/* Resumen textual del mes actual */}
           <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
             <div className="text-center">
               <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Ingresos período</p>
@@ -371,10 +369,7 @@ export default function CajaPage() {
           </div>
         </div>
 
-        {/* ── TABLA DE MOVIMIENTOS ── */}
-        {/* Agregamos botón de auditoría a cada fila via wrapper */}
         <div className="space-y-4">
-          {/* Tabla con botón de ojo custom — envolvemos la tabla original */}
           <CajaMovimientosTablaConAuditoria
             movimientos={movimientosFiltrados}
             loading={loading}
@@ -386,7 +381,6 @@ export default function CajaPage() {
 
       </div>
 
-      {/* ── MODAL NUEVO / EDITAR ── */}
       <CajaModal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingMovimiento(null) }}
@@ -398,7 +392,6 @@ export default function CajaPage() {
         camiones={camiones}
       />
 
-      {/* ── MODAL AUDITORÍA ── */}
       {modalAuditoria && (
         <ModalAuditoria
           movimiento={modalAuditoria}
@@ -409,8 +402,6 @@ export default function CajaPage() {
   )
 }
 
-// ─── WRAPPER TABLA CON AUDITORÍA ──────────────────────────────────────────────
-// Extiende CajaMovimientosTable sin tocarla: agrega columna de auditoría
 function CajaMovimientosTablaConAuditoria({
   movimientos, loading, onEdit, onDelete, onAuditoria
 }: {
@@ -420,8 +411,6 @@ function CajaMovimientosTablaConAuditoria({
   onDelete: (id: string) => void
   onAuditoria: (m: any) => void
 }) {
-  // Inyectamos un handler para que el click en la fila abra auditoría
-  // Usamos un div wrapper sobre la tabla original y capturamos clicks por data-id
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center px-2">
@@ -433,7 +422,6 @@ function CajaMovimientosTablaConAuditoria({
         </p>
       </div>
 
-      {/* Tabla custom que extiende la visual original con columna de auditoría */}
       <div className="bg-slate-900/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
@@ -512,20 +500,17 @@ function CajaMovimientosTablaConAuditoria({
                     </td>
                     <td className="p-7 pr-10 text-center">
                       <div className="flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        {/* Auditoría — siempre visible */}
                         <button onClick={() => onAuditoria(m)}
                           className="p-2.5 bg-white/5 hover:bg-sky-500/10 text-slate-500 hover:text-sky-400 rounded-xl transition-all border border-white/5"
                           title="Ver detalle / auditoría">
                           <Eye size={15} />
                         </button>
-                        {/* Editar solo si es manual */}
                         {!esAuto && (
                           <button onClick={() => onEdit(m)}
                             className="p-2.5 bg-white/5 hover:bg-amber-500/10 text-slate-500 hover:text-amber-400 rounded-xl transition-all border border-white/5">
                             <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 2a1.41 1.41 0 012 2L4.5 12.5 2 13l.5-2.5L11 2z"/></svg>
                           </button>
                         )}
-                        {/* Eliminar solo si es manual */}
                         {!esAuto && (
                           <button onClick={() => onDelete(m.id)}
                             className="p-2.5 bg-white/5 hover:bg-rose-500/10 text-slate-500 hover:text-rose-500 rounded-xl transition-all border border-white/5">
@@ -608,7 +593,6 @@ function CajaMovimientosTablaConAuditoria({
   )
 }
 
-// ─── MODAL AUDITORÍA ──────────────────────────────────────────────────────────
 function ModalAuditoria({ movimiento: m, onClose }: { movimiento: any; onClose: () => void }) {
   const esAuto    = m.origen === 'automatico'
   const esIngreso = m.tipo   === 'ingreso'
@@ -617,7 +601,6 @@ function ModalAuditoria({ movimiento: m, onClose }: { movimiento: any; onClose: 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm font-sans italic">
       <div className="w-full max-w-md bg-[#020617] border border-white/10 rounded-[3rem] p-8 space-y-6 shadow-2xl">
 
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-sky-500/10 rounded-xl"><Shield size={16} className="text-sky-400" /></div>
@@ -628,7 +611,6 @@ function ModalAuditoria({ movimiento: m, onClose }: { movimiento: any; onClose: 
           </button>
         </div>
 
-        {/* Monto grande */}
         <div className={`text-center py-8 rounded-3xl border ${esIngreso ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-rose-500/5 border-rose-500/20'}`}>
           <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em] mb-3">
             {esIngreso ? '↑ Ingreso' : '↓ Egreso'} · {m.tipo_cuenta?.toUpperCase()}
@@ -638,7 +620,6 @@ function ModalAuditoria({ movimiento: m, onClose }: { movimiento: any; onClose: 
           </p>
         </div>
 
-        {/* Detalle línea a línea */}
         <div className="space-y-2.5">
           {[
             { label: 'Descripción', value: m.descripcion },
@@ -657,7 +638,6 @@ function ModalAuditoria({ movimiento: m, onClose }: { movimiento: any; onClose: 
           ))}
         </div>
 
-        {/* Origen del registro */}
         <div className={`flex items-start gap-3 px-4 py-4 rounded-2xl border ${
           esAuto ? 'bg-violet-500/5 border-violet-500/20' : 'bg-white/5 border-white/10'
         }`}>

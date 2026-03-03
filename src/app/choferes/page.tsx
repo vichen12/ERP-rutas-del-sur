@@ -9,11 +9,12 @@ import {
   UserCheck,
   ShieldAlert,
   CreditCard,
-  UserPlus,
-  SearchX,
   Filter,
+  TrendingDown,
+  TrendingUp
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 // Componentes del sistema
 import { ChoferCard } from "@/components/choferes/ChoferCard";
@@ -26,9 +27,11 @@ export default function ChoferesPage() {
   const [choferes, setChoferes] = useState<any[]>([]);
   const [camiones, setCamiones] = useState<any[]>([]);
   const [todosLosViajes, setTodosLosViajes] = useState<any[]>([]);
+  
+  const [deudasChoferes, setDeudasChoferes] = useState<any[]>([]);
+  
   const [search, setSearch] = useState("");
 
-  // 🚀 NUEVO ESTADO: Filtro de Choferes
   const [filterEstado, setFilterEstado] = useState<
     "TODOS" | "ACTIVOS" | "NO_DISPONIBLES" | "INACTIVOS"
   >("ACTIVOS");
@@ -60,36 +63,40 @@ export default function ChoferesPage() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [ch, ca, vi] = await Promise.all([
-        supabase
-          .from("choferes")
-          .select("*")
-          .order("nombre", { ascending: true }),
+      const [ch, ca, vi, deudas] = await Promise.all([
+        supabase.from("choferes").select("*").order("nombre", { ascending: true }),
         supabase.from("camiones").select("id, patente, modelo, operador_id"),
-        // 👇 ACÁ ESTABA EL ERROR: AGREGAMOS lts_gasoil 👇
-        supabase
-          .from("viajes")
-          .select("chofer_id, pago_chofer, km_recorridos, lts_gasoil, fecha"),
+        supabase.from("viajes").select("id, chofer_id, pago_chofer, km_recorridos, lts_gasoil, fecha"),
+        supabase.from("cuenta_corriente_choferes").select("*").eq('pagado', false)
       ]);
 
       if (ch.data) setChoferes(ch.data);
       if (ca.data) setCamiones(ca.data);
       if (vi.data) setTodosLosViajes(vi.data);
+      if (deudas.data) setDeudasChoferes(deudas.data);
+      
     } catch (error: any) {
-      console.error("❌ Error de radar:", error.message);
+      console.error("Error cargando datos:", error.message);
+      toast.error("Error al cargar la información");
     } finally {
       setLoading(false);
     }
   }
 
-  // --- 📊 KPI DINÁMICOS ---
+  // --- 📊 KPI DINÁMICOS CORREGIDOS ---
   const globalStats = useMemo(() => {
     const hoy = new Date();
+    
+    const balanceCrudo = deudasChoferes.reduce((acc, curr) => acc + (Number(curr.monto) || 0), 0);
+    const esDeudaEmpresa = balanceCrudo > 0;
+    const esAFavorEmpresa = balanceCrudo < 0;
+    const estaAlDia = balanceCrudo === 0;
+
     return {
-      deudaTotal: todosLosViajes.reduce(
-        (acc, curr) => acc + (Number(curr.pago_chofer) || 0),
-        0,
-      ),
+      balanceAbsoluto: Math.abs(balanceCrudo), 
+      esDeudaEmpresa,
+      esAFavorEmpresa,
+      estaAlDia,
       vencimientosProximos: choferes.filter((ch) => {
         if (!ch.vto_licencia) return false;
         const vto = new Date(ch.vto_licencia);
@@ -97,9 +104,9 @@ export default function ChoferesPage() {
         return diff <= 30 && diff > 0;
       }).length,
     };
-  }, [todosLosViajes, choferes]);
+  }, [deudasChoferes, choferes]);
 
-  // --- HANDLERS ---
+  // --- HANDLERS BÁSICOS ---
   const handleEdit = (chofer: any) => {
     setFormData({
       nombre: chofer.nombre || "",
@@ -131,14 +138,14 @@ export default function ChoferesPage() {
       if (error) throw error;
       setIsModalOpen(false);
       fetchData();
+      toast.success("Legajo guardado correctamente");
     } catch (err: any) {
-      alert("❌ Error al guardar legajo: " + err.message);
+      toast.error("Error al guardar legajo: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // 🚀 FUNCIÓN DE BORRADO INTELIGENTE
   const handleDeleteChofer = async (id: string, nombre: string) => {
     if (!confirm(`¿Eliminar el legajo de ${nombre}?`)) return;
     setIsSubmitting(true);
@@ -147,28 +154,46 @@ export default function ChoferesPage() {
 
     if (error) {
       if (error.code === "23503") {
-        alert(
-          `⛔ NO SE PUEDE ELIMINAR:\n\nEl chofer ${nombre} tiene Viajes asignados en el historial.\n\nSOLUCIÓN:\nSi ya no trabaja en la empresa, dale a Editar y cambiá su estado a "Inactivo / Desvinculado".`,
-        );
+        toast.error(`El chofer ${nombre} tiene historial de viajes. Cambiá su estado a "Inactivo" en lugar de eliminarlo.`, { duration: 6000 });
       } else {
-        alert("Error al eliminar: " + error.message);
+        toast.error("Error al eliminar: " + error.message);
       }
     } else {
+      toast.success("Chofer eliminado");
       await fetchData();
     }
     setIsSubmitting(false);
   };
 
-  // 🚀 LÓGICA DE FILTRADO COMBINADO
+  // 🚀 NUEVO: FUNCIÓN PARA ANULAR UN PAGO O ADELANTO EN LA CUENTA CORRIENTE
+  const handleDeleteMovimientoChofer = async (idMovimiento: string) => {
+    if (!confirm("¿Seguro querés anular este pago/movimiento? El saldo del chofer se recalculará al instante.")) return;
+    setIsSubmitting(true);
+    
+    try {
+      // Borramos el movimiento de la cuenta corriente del chofer
+      const { error } = await supabase
+        .from("cuenta_corriente_choferes")
+        .delete()
+        .eq("id", idMovimiento);
+        
+      if (error) throw error;
+      
+      toast.success("Pago anulado exitosamente");
+      await fetchData(); // Recargamos para que el balance vuelva a la normalidad
+    } catch (error: any) {
+      toast.error("Error al anular el pago: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // --- FILTRADO ---
   const filteredData = useMemo(() => {
     const term = search.toLowerCase().trim();
 
     return choferes.filter((ch) => {
-      // 1. Filtro por texto
-      const matchSearch =
-        ch.nombre.toLowerCase().includes(term) || ch.dni?.includes(term);
-
-      // 2. Filtro por Estado
+      const matchSearch = ch.nombre.toLowerCase().includes(term) || ch.dni?.includes(term);
       let matchEstado = true;
       const est = (ch.estado || "Disponible").toLowerCase();
 
@@ -187,10 +212,7 @@ export default function ChoferesPage() {
   if (!mounted || loading)
     return (
       <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center">
-        <Loader2
-          className="animate-spin text-indigo-500 w-16 h-16 mb-4"
-          strokeWidth={1}
-        />
+        <Loader2 className="animate-spin text-indigo-500 w-16 h-16 mb-4" strokeWidth={1} />
         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 animate-pulse">
           Sincronizando Staff...
         </p>
@@ -199,7 +221,6 @@ export default function ChoferesPage() {
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 pb-24 pt-32 relative font-sans italic selection:bg-indigo-500/30">
-      {/* BACKGROUND FX */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#1e1b4b,transparent)] opacity-40" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -214,89 +235,45 @@ export default function ChoferesPage() {
             </h1>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <HeaderStat
-                label="Masa Salarial"
-                val={`$${globalStats.deudaTotal.toLocaleString()}`}
-                color="text-rose-500"
-                icon={CreditCard}
-              />
-              <HeaderStat
-                label="Legajos Activos"
-                val={choferes.length}
-                color="text-indigo-400"
-                icon={UserCheck}
-              />
-              <HeaderStat
-                label="Licencias"
-                val={globalStats.vencimientosProximos}
-                color="text-amber-500"
-                icon={ShieldAlert}
-                highlight={globalStats.vencimientosProximos > 0}
-              />
+              
+              <div className={`bg-slate-950/60 border px-6 py-4 rounded-[2rem] backdrop-blur-md min-w-[180px] group hover:border-white/20 transition-all ${
+                globalStats.esAFavorEmpresa ? "border-emerald-500/40 bg-emerald-500/5" : 
+                globalStats.esDeudaEmpresa ? "border-rose-500/40 bg-rose-500/5" : "border-white/5"
+              }`}>
+                <p className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-2 ${
+                  globalStats.esAFavorEmpresa ? 'text-emerald-400' : 
+                  globalStats.esDeudaEmpresa ? 'text-rose-400' : 'text-slate-400'
+                }`}>
+                  {globalStats.esAFavorEmpresa ? <TrendingUp size={12} /> : globalStats.esDeudaEmpresa ? <TrendingDown size={12} /> : <CreditCard size={12} />} 
+                  {globalStats.esAFavorEmpresa ? 'Adelantos a Favor' : globalStats.esDeudaEmpresa ? 'Sueldos Pendientes' : 'Cuentas Al Día'}
+                </p>
+                <p className={`text-2xl font-black italic tracking-tighter ${globalStats.estaAlDia ? 'text-slate-500' : 'text-white'}`}>
+                  $ {globalStats.balanceAbsoluto.toLocaleString('es-AR')}
+                </p>
+              </div>
+
+              <HeaderStat label="Legajos Activos" val={choferes.length} color="text-indigo-400" icon={UserCheck} />
+              <HeaderStat label="Licencias Próx. Vencer" val={globalStats.vencimientosProximos} color="text-amber-500" icon={ShieldAlert} highlight={globalStats.vencimientosProximos > 0} />
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
             <div className="relative group flex-1 xl:w-96">
-              <Search
-                className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400"
-                size={20}
-              />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="BUSCAR OPERADOR..."
-                className="w-full bg-slate-950/80 border border-white/10 rounded-3xl py-5 pl-16 text-white font-black outline-none focus:border-indigo-500/40 uppercase transition-all"
-              />
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400" size={20} />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="BUSCAR OPERADOR..." className="w-full bg-slate-950/80 border border-white/10 rounded-3xl py-5 pl-16 text-white font-black outline-none focus:border-indigo-500/40 uppercase transition-all" />
             </div>
-            <button
-              onClick={() => {
-                setEditingId(null);
-                setFormData(initialFormState);
-                setIsModalOpen(true);
-              }}
-              className="px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3 active:scale-95"
-            >
+            <button onClick={() => { setEditingId(null); setFormData(initialFormState); setIsModalOpen(true); }} className="px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] flex items-center justify-center gap-3 active:scale-95">
               <Plus size={20} strokeWidth={3} /> Alta Legajo
             </button>
           </div>
         </header>
 
-        {/* 🚀 BOTONERA DE FILTRO DE ESTADOS */}
         <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 pb-4">
-          <StatusFilterBtn
-            active={filterEstado === "ACTIVOS"}
-            onClick={() => setFilterEstado("ACTIVOS")}
-            label="Operativos"
-            color="text-emerald-400"
-            border="border-emerald-500/30"
-            bg="bg-emerald-500/10"
-          />
-          <StatusFilterBtn
-            active={filterEstado === "NO_DISPONIBLES"}
-            onClick={() => setFilterEstado("NO_DISPONIBLES")}
-            label="Franco / Licencia"
-            color="text-amber-400"
-            border="border-amber-500/30"
-            bg="bg-amber-500/10"
-          />
-          <StatusFilterBtn
-            active={filterEstado === "INACTIVOS"}
-            onClick={() => setFilterEstado("INACTIVOS")}
-            label="Inactivos / Bajas"
-            color="text-rose-400"
-            border="border-rose-500/30"
-            bg="bg-rose-500/10"
-          />
+          <StatusFilterBtn active={filterEstado === "ACTIVOS"} onClick={() => setFilterEstado("ACTIVOS")} label="Operativos" color="text-emerald-400" border="border-emerald-500/30" bg="bg-emerald-500/10" />
+          <StatusFilterBtn active={filterEstado === "NO_DISPONIBLES"} onClick={() => setFilterEstado("NO_DISPONIBLES")} label="Franco / Licencia" color="text-amber-400" border="border-amber-500/30" bg="bg-amber-500/10" />
+          <StatusFilterBtn active={filterEstado === "INACTIVOS"} onClick={() => setFilterEstado("INACTIVOS")} label="Inactivos / Bajas" color="text-rose-400" border="border-rose-500/30" bg="bg-rose-500/10" />
           <div className="w-[1px] bg-white/10 mx-2" />
-          <StatusFilterBtn
-            active={filterEstado === "TODOS"}
-            onClick={() => setFilterEstado("TODOS")}
-            label="Ver Todos"
-            color="text-slate-300"
-            border="border-white/10"
-            bg="bg-white/5"
-          />
+          <StatusFilterBtn active={filterEstado === "TODOS"} onClick={() => setFilterEstado("TODOS")} label="Ver Todos" color="text-slate-300" border="border-white/10" bg="bg-white/5" />
         </div>
 
         {filteredData.length === 0 ? (
@@ -310,17 +287,13 @@ export default function ChoferesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
             {filteredData.map((ch) => {
               const camion = camiones.find((c) => c.operador_id === ch.id);
-              const viajesCh = todosLosViajes.filter(
-                (v) => v.chofer_id === ch.id,
-              );
-              const saldo = viajesCh.reduce(
-                (acc, v) => acc + (Number(v.pago_chofer) || 0),
-                0,
-              );
-              const kms = viajesCh.reduce(
-                (acc, v) => acc + (Number(v.km_recorridos) || 0),
-                0,
-              );
+              const viajesCh = todosLosViajes.filter((v) => v.chofer_id === ch.id);
+              
+              const deudaReal = deudasChoferes
+                .filter(d => d.chofer_id === ch.id)
+                .reduce((acc, curr) => acc + Number(curr.monto), 0);
+
+              const kms = viajesCh.reduce((acc, v) => acc + (Number(v.km_recorridos) || 0), 0);
 
               return (
                 <ChoferCard
@@ -329,9 +302,9 @@ export default function ChoferesPage() {
                   camion={camion}
                   totalKm={kms}
                   totalViajes={viajesCh.length}
-                  saldoPendiente={saldo}
+                  saldoPendiente={deudaReal}
                   onEdit={handleEdit}
-                  onDelete={() => handleDeleteChofer(ch.id, ch.nombre)} // 🚀 Función real conectada
+                  onDelete={() => handleDeleteChofer(ch.id, ch.nombre)}
                   onViewStats={() => {
                     setSelectedChofer(ch);
                     setIsStatsModalOpen(true);
@@ -357,10 +330,11 @@ export default function ChoferesPage() {
         isOpen={isStatsModalOpen}
         onClose={() => setIsStatsModalOpen(false)}
         chofer={selectedChofer}
-        viajes={todosLosViajes.filter(
-          (v) => v.chofer_id === selectedChofer?.id,
-        )}
+        viajes={todosLosViajes.filter((v) => v.chofer_id === selectedChofer?.id)}
+        deudasPendientes={deudasChoferes.filter(d => d.chofer_id === selectedChofer?.id)}
         onRefresh={fetchData}
+        // 🚀 NUEVA PROP PASADA AL MODAL:
+        onDeleteMovimiento={handleDeleteMovimientoChofer} 
       />
     </div>
   );
@@ -368,30 +342,21 @@ export default function ChoferesPage() {
 
 function HeaderStat({ label, val, color, icon: Icon, highlight }: any) {
   return (
-    <div
-      className={`bg-slate-950/60 border ${highlight ? "border-amber-500/40 bg-amber-500/5" : "border-white/5"} px-6 py-4 rounded-[2rem] backdrop-blur-md min-w-[180px] group hover:border-white/20 transition-all`}
-    >
-      <p
-        className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-2 ${color}`}
-      >
+    <div className={`bg-slate-950/60 border ${highlight ? "border-amber-500/40 bg-amber-500/5" : "border-white/5"} px-6 py-4 rounded-[2rem] backdrop-blur-md min-w-[180px] group hover:border-white/20 transition-all`}>
+      <p className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-2 ${color}`}>
         <Icon size={12} /> {label}
       </p>
-      <p className="text-2xl font-black text-white italic tracking-tighter">
-        {val}
-      </p>
+      <p className="text-2xl font-black text-white italic tracking-tighter">{val}</p>
     </div>
   );
 }
 
-// 🚀 Componente para los botones de filtro
 function StatusFilterBtn({ active, onClick, label, color, border, bg }: any) {
   return (
     <button
       onClick={onClick}
       className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
-        active
-          ? `${bg} ${border} ${color}`
-          : "border-transparent text-slate-500 hover:bg-white/5"
+        active ? `${bg} ${border} ${color}` : "border-transparent text-slate-500 hover:bg-white/5"
       }`}
     >
       {label}

@@ -1,13 +1,12 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { getSupabase } from '@/lib/supabase'
-import {
-  FacturasHeader,
-  FacturasKpis,
-  FacturasTabla,
-  FacturaModal,
-  ArcaConfigModal,
-} from '@/components/FacturacionComponents'
+import { toast } from 'sonner' // <-- IMPORTANTE: Agregamos Sonner
+import { FacturasHeader } from '@/components/facturacion/FacturasHeader'
+import { FacturasKpis } from '@/components/facturacion/FacturasKpis'
+import { FacturasTabla } from '@/components/facturacion/FacturasTabla'
+import { FacturaModal } from '@/components/facturacion/FacturaModal'
+import { ArcaConfigModal } from '@/components/facturacion/ArcaConfigModal'
 
 export default function FacturacionPage() {
   const supabase = getSupabase()
@@ -46,6 +45,8 @@ export default function FacturacionPage() {
       setViajes(viajesRes.data || [])
       setRemitos(remitosRes.data || [])
       setConfig(configRes.data)
+    } catch (error) {
+      toast.error('Error al cargar los datos de facturación')
     } finally {
       setLoading(false)
     }
@@ -63,33 +64,51 @@ export default function FacturacionPage() {
     return { emitidas: emitidas.length, errores: errores.length, totalMes, totalHist }
   }, [facturas, facturasFiltradas])
 
+  // 🚀 MEJORADO: Manejo de errores y notificaciones profesionales
   async function handleEmitir(data: any) {
     setIsEmitting(true)
-    try {
-      const res = await fetch('/api/arca/facturar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      const result = await res.json()
-      if (!res.ok || result.error) {
-        alert(`Error ARCA: ${result.error}`)
-        return
+    
+    // Usamos toast.promise para mostrar el estado de carga visualmente
+    toast.promise(
+      async () => {
+        const res = await fetch('/api/arca/facturar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        
+        const result = await res.json()
+        
+        if (!res.ok || result.error) {
+          throw new Error(result.error || 'Error desconocido al comunicar con ARCA')
+        }
+        
+        return result;
+      },
+      {
+        loading: 'Conectando con ARCA/AFIP...',
+        success: (result) => {
+          setIsFacturaModalOpen(false);
+          fetchAll(); // Recargamos la tabla
+          return `Comprobante ${result.nroComprobante} emitido con éxito. CAE: ${result.cae}`;
+        },
+        error: (err) => `AFIP Rechazado: ${err.message}`,
+        finally: () => setIsEmitting(false)
       }
-      setIsFacturaModalOpen(false)
-      fetchAll()
-      alert(`✅ Factura emitida\nCAE: ${result.cae}\nNúmero: ${result.nroComprobante}`)
-    } catch (e: any) {
-      alert(`Error: ${e.message}`)
-    } finally {
-      setIsEmitting(false)
-    }
+    )
   }
 
   async function handleSaveConfig(configData: any) {
-    await supabase.from('configuracion').update(configData).eq('id', 1)
-    setIsConfigModalOpen(false)
-    fetchAll()
+    try {
+      const { error } = await supabase.from('configuracion').update(configData).eq('id', 1)
+      if (error) throw error
+      
+      toast.success('Configuración de ARCA guardada exitosamente')
+      setIsConfigModalOpen(false)
+      fetchAll()
+    } catch (e: any) {
+      toast.error('Error al guardar configuración: ' + e.message)
+    }
   }
 
   const arcaConfigurado = !!(config?.arca_cuit && config?.arca_razon_social)

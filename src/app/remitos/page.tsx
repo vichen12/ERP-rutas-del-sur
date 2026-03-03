@@ -1,10 +1,13 @@
 'use client'
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
+import Image from 'next/image' // 🚀 Importamos Image de Next.js para optimización
+import Link from 'next/link'   // 🚀 Importamos Link para navegación rápida
 import { 
   FileText, Search, Loader2,
   Building2, Image as ImageIcon, Camera, CheckCircle2,
-  AlertTriangle, Filter, Truck, Calendar, X, Download
+  AlertTriangle, Filter, Truck, Calendar, X, Download, ArrowRight,
+  Receipt
 } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
 
@@ -31,9 +34,10 @@ export default function RemitosPage() {
       const { data: clientesData } = await supabase.from('clientes').select('id, razon_social').order('razon_social')
       if (clientesData) setClientes(clientesData)
 
+      // 🚀 MEJORA 1: Agregamos la consulta de facturas al select de viajes
       const { data: viajesData, error: errViajes } = await supabase
         .from('viajes')
-        .select('*, clientes(id, razon_social)')
+        .select('*, clientes(id, razon_social), facturas(id, estado, numero_comprobante, tipo_comprobante, punto_venta)')
         .order('fecha', { ascending: false })
 
       if (errViajes) throw errViajes;
@@ -48,7 +52,7 @@ export default function RemitosPage() {
       const tripStatusMap: Record<string, string> = {}
       const tripDebeMap: Record<string, number> = {}
       const tripRemitoMap: Record<string, string> = {}
-      const tripFaltaMap: Record<string, number> = {} // 🚀 NUEVO: Memoria de cuánto falta cobrar
+      const tripFaltaMap: Record<string, number> = {} 
       
       const clientsMap: Record<string, any[]> = {}
 
@@ -75,25 +79,22 @@ export default function RemitosPage() {
         for (const m of viajesValidados) {
           const costo = Number(m.debe)
           if (plataDisponible >= costo) {
-            // Pagado completo
             plataDisponible -= costo
             if (m.viaje_id) {
               tripStatusMap[m.viaje_id] = 'cobrado' 
               tripFaltaMap[m.viaje_id] = 0
             }
           } else if (plataDisponible > 0) {
-            // Pagado a medias
             const falta = costo - plataDisponible
             plataDisponible = 0
             if (m.viaje_id) {
               tripStatusMap[m.viaje_id] = 'deuda_activa' 
-              tripFaltaMap[m.viaje_id] = falta // 🚀 Guardamos lo que falta
+              tripFaltaMap[m.viaje_id] = falta 
             }
           } else {
-            // No se pagó nada
             if (m.viaje_id) {
               tripStatusMap[m.viaje_id] = 'deuda_activa'
-              tripFaltaMap[m.viaje_id] = costo // 🚀 Falta todo
+              tripFaltaMap[m.viaje_id] = costo 
             }
           }
         }
@@ -119,6 +120,9 @@ export default function RemitosPage() {
         const importeReal = tripDebeMap[v.id] || Number(v.monto_total || 0)
         const faltaReal = tripFaltaMap[v.id] !== undefined ? tripFaltaMap[v.id] : importeReal
 
+        // 🚀 Buscamos si hay facturas asociadas a este viaje que estén emitidas
+        const facturaAsociada = v.facturas?.find((f: any) => f.estado === 'emitida') || null;
+
         return {
           id: v.id,
           fecha: v.fecha || '',
@@ -129,8 +133,9 @@ export default function RemitosPage() {
           nro_remito: numeroRemito,
           foto_url: v.foto_url || null,
           importe: importeReal,
-          falta: faltaReal, // 🚀 Pasamos el dato a la tarjeta
-          estado: estadoCalculado
+          falta: faltaReal, 
+          estado: estadoCalculado,
+          factura: facturaAsociada // 🚀 Guardamos la info fiscal
         }
       })
       setRemitos(procesados)
@@ -155,13 +160,12 @@ export default function RemitosPage() {
     return matchSearch && matchCliente && matchEstado;
   })
 
-  // 🚀 AHORA RECIBE TODO EL OBJETO PARA PODER LEER "r.falta"
   const getEstadoBadge = (r: any) => {
     switch(r.estado) {
-      case 'cobrado': return <span className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest"><CheckCircle2 size={12}/> Cobrado 100%</span>
-      case 'deuda_activa': return <span className="flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"><AlertTriangle size={14}/> Falta ${r.falta.toLocaleString('es-AR')}</span>
-      case 'bandeja_entrada': return <span className="flex items-center gap-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest"><FileText size={12}/> En Bandeja</span>
-      case 'sin_remito': return <span className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest animate-pulse"><Camera size={12}/> Falta Remito</span>
+      case 'cobrado': return <span className="flex w-fit items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest"><CheckCircle2 size={12}/> Cobrado 100%</span>
+      case 'deuda_activa': return <span className="flex w-fit items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"><AlertTriangle size={14}/> Falta ${r.falta.toLocaleString('es-AR')}</span>
+      case 'bandeja_entrada': return <span className="flex w-fit items-center gap-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest"><FileText size={12}/> En Bandeja</span>
+      case 'sin_remito': return <span className="flex w-fit items-center gap-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest animate-pulse"><Camera size={12}/> Falta Remito</span>
       default: return null;
     }
   }
@@ -222,29 +226,53 @@ export default function RemitosPage() {
         <div className="space-y-4">
           {filtered.length > 0 ? filtered.map(r => (
             <div key={r.id} className="bg-[#020617] border border-white/5 rounded-[2rem] p-4 pr-6 flex flex-col xl:flex-row items-center gap-6 hover:border-white/20 transition-all shadow-xl group">
-               <div onClick={() => { if(r.foto_url) { setViewImageUrl(r.foto_url); setIsViewOpen(true); } }} className={`w-full xl:w-40 h-32 xl:h-24 rounded-2xl overflow-hidden border border-white/10 flex items-center justify-center relative shrink-0 ${r.foto_url ? 'cursor-pointer hover:border-amber-500' : 'bg-white/5'}`}>
+               
+               {/* 🚀 MEJORA 3: Imagen optimizada con Next/Image y loading perezoso */}
+               <div onClick={() => { if(r.foto_url) { setViewImageUrl(r.foto_url); setIsViewOpen(true); } }} className={`w-full xl:w-40 h-32 xl:h-28 rounded-2xl overflow-hidden border border-white/10 flex items-center justify-center relative shrink-0 ${r.foto_url ? 'cursor-pointer hover:border-amber-500' : 'bg-white/5'}`}>
                  {r.foto_url ? (
-                   <><img src={r.foto_url} alt="Remito" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><Search size={20} className="text-white" /></div></>
+                   <>
+                     <Image src={r.foto_url} alt="Remito" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" sizes="(max-width: 768px) 100vw, 160px" />
+                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><Search size={20} className="text-white" /></div>
+                   </>
                  ) : (
                    <div className="flex flex-col items-center text-slate-700"><ImageIcon size={24} strokeWidth={1.5} /><span className="text-[8px] font-black uppercase mt-1">Sin Foto</span></div>
                  )}
                </div>
+
                <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                  <div>
                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{r.cliente_nombre}</p>
                    <h3 className={`text-xl font-black italic tracking-tighter uppercase leading-none ${r.nro_remito === 'PENDIENTE' ? 'text-amber-500' : 'text-white'}`}>{r.nro_remito === 'PENDIENTE' ? 'S/N' : r.nro_remito}</h3>
-                   <p className="text-[10px] text-slate-500 font-bold uppercase mt-2 flex items-center gap-1.5"><Calendar size={12}/> {new Date(r.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
+                   
+                   {/* 🚀 MEJORA 1: Badge Fiscal alineado con la fecha */}
+                   <div className="flex items-center gap-3 mt-3">
+                     <p className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-1.5"><Calendar size={12}/> {new Date(r.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
+                     <div className="w-1 h-1 bg-white/10 rounded-full" />
+                     {r.factura ? (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1"><Receipt size={10} /> Fact. {r.factura.tipo_comprobante}</span>
+                     ) : (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-1 opacity-70"><Receipt size={10} /> S/Facturar</span>
+                     )}
+                   </div>
                  </div>
-                 <div>
-                    <div className="flex items-center gap-2 mb-1"><Truck size={12} className="text-sky-500" /> <span className="text-[10px] font-bold text-slate-300 uppercase truncate">{r.origen}</span></div>
-                    <div className="flex items-center gap-2"><Truck size={12} className="text-rose-500" /> <span className="text-[10px] font-bold text-slate-300 uppercase truncate">{r.destino}</span></div>
+
+                 <div className="space-y-2">
+                    <div className="flex items-center gap-2"><Truck size={14} className="text-sky-500" /> <span className="text-[11px] font-bold text-slate-300 uppercase truncate">{r.origen}</span></div>
+                    <div className="flex items-center gap-2"><Truck size={14} className="text-rose-500" /> <span className="text-[11px] font-bold text-slate-300 uppercase truncate">{r.destino}</span></div>
                  </div>
-                 <div className="flex flex-row md:flex-col justify-between items-center md:items-end h-full">
-                    {/* 🚀 AHORA EL BADGE RECIBE TODO EL OBJETO "r" PARA SABER LA FALTA */}
+
+                 <div className="flex flex-row md:flex-col justify-between items-center md:items-end h-full w-full">
                     {getEstadoBadge(r)}
-                    <p className="text-2xl font-black italic tabular-nums text-slate-400 tracking-tighter mt-2">
-                       Total: ${r.importe.toLocaleString('es-AR')}
-                    </p>
+                    <div className="text-right mt-3">
+                      <p className="text-2xl font-black italic tabular-nums text-white tracking-tighter">
+                          ${r.importe.toLocaleString('es-AR')}
+                      </p>
+                      
+                      {/* 🚀 MEJORA 2: Botón de acción rápida para abrir el detalle */}
+                      <Link href="/viajes" className="inline-flex items-center gap-1 mt-1 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-amber-500 transition-colors">
+                        Ver Viaje <ArrowRight size={10} />
+                      </Link>
+                    </div>
                  </div>
                </div>
             </div>
