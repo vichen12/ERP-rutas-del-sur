@@ -9,7 +9,7 @@ import {
   X, Truck, FileText, Loader2, Calendar,
   PieChart as PieChartIcon, BarChart3,
   Building2, ArrowUpRight, Search, DollarSign, Fuel,
-  Route, Crown, CircleDollarSign
+  Route, Crown, CircleDollarSign, Calculator, Minus, Equal
 } from 'lucide-react'
 
 import {
@@ -22,7 +22,6 @@ export default function MainDashboard() {
   const [data, setData] = useState<any>({ clientes: [], viajes: [], cc: [], camiones: [] })
   const [isDeudaModalOpen, setIsDeudaModalOpen] = useState(false)
   const [searchInModal, setSearchInModal] = useState('')
-  const [activeKpi, setActiveKpi] = useState(0)
 
   const [dateStart, setDateStart] = useState(() => {
     const d = new Date(); d.setDate(1); return d.toISOString().split('T')[0]
@@ -30,10 +29,6 @@ export default function MainDashboard() {
   const [dateEnd, setDateEnd] = useState(() => new Date().toISOString().split('T')[0])
 
   useEffect(() => { fetchDashboardData() }, [])
-  useEffect(() => {
-    const t = setInterval(() => setActiveKpi(p => (p + 1) % 4), 4000)
-    return () => clearInterval(t)
-  }, [])
 
   async function fetchDashboardData() {
     setLoading(true)
@@ -103,7 +98,6 @@ export default function MainDashboard() {
       .filter((c: any) => c.saldo > 0)
       .reduce((acc: number, c: any) => acc + c.saldo, 0)
 
-    // Top 5 clientes
     const facPorCliente: Record<string, number> = {}
     filtrados.forEach((v: any) => {
       if (!facPorCliente[v.cliente_id]) facPorCliente[v.cliente_id] = 0
@@ -119,13 +113,22 @@ export default function MainDashboard() {
 
     const camionesActivos = (camiones || []).length
 
+    // 🚀 DATOS PARA EL ESTADO DE RESULTADOS
+    const incomeStatement = [
+      { label: 'Facturación Total (Fletes)', amount: bruta, isTotal: true, color: 'text-white' },
+      { label: 'Costo Combustible', amount: -gasoil, isTotal: false, color: 'text-amber-400' },
+      { label: 'Choferes y Viáticos', amount: -choferes, isTotal: false, color: 'text-violet-400' },
+      { label: 'Amortización / Desgaste', amount: -desgasteTotal, isTotal: false, color: 'text-sky-400' },
+      { label: 'Gastos Operativos / Descarga', amount: -descargas, isTotal: false, color: 'text-rose-400' },
+    ];
+
     return {
       bruta, neta, margen, costoTotal, pieData,
       viajesPorMes, totalDeudaGlobal, listaSaldos,
       totalViajes: filtrados.length,
       gasoil, choferes, descargas, desgasteTotal,
       kmTotal, ltsTotal, promedioGasoil, facturacionPromedio, utilidadPorKm,
-      topClientes, camionesActivos
+      topClientes, camionesActivos, incomeStatement
     }
   }, [data, dateStart, dateEnd])
 
@@ -142,7 +145,6 @@ export default function MainDashboard() {
 
   const formatK = (n: number) => n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : `${Math.round(n / 1000)}K`
 
-  // ═══ TOOLTIPS ═══
   const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const e = payload[0].payload
@@ -215,7 +217,6 @@ export default function MainDashboard() {
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 pb-24 pt-28 px-4 lg:px-10 font-sans italic selection:bg-emerald-500/20 overflow-x-hidden">
 
-      {/* ═══ ATMOSPHERE ═══ */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[10%] w-[700px] h-[700px] bg-emerald-500/[0.04] blur-[180px] rounded-full" />
         <div className="absolute bottom-[-5%] right-[10%] w-[600px] h-[600px] bg-violet-500/[0.04] blur-[160px] rounded-full" />
@@ -226,7 +227,6 @@ export default function MainDashboard() {
 
       <div className="max-w-[1600px] mx-auto space-y-6 relative z-10">
 
-        {/* ═══ HEADER ═══ */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
           <div>
             <div className="inline-flex items-center gap-2.5 mb-3 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
@@ -256,76 +256,95 @@ export default function MainDashboard() {
           </div>
         </div>
 
-        {/* ═══ 4 KPIs — con glow, personalidad, rotación ═══ */}
+        {/* ═══ 4 KPIs PRINCIPALES ═══ */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {kpiConfig.map((kpi, i) => {
-            const isActive = activeKpi === i
             return (
-              <button key={i} onClick={() => setActiveKpi(i)}
-                className={`relative text-left p-6 lg:p-7 rounded-[2.5rem] border overflow-hidden group transition-all duration-500 ${
-                  isActive
-                    ? `bg-gradient-to-br ${kpi.gradient} ${kpi.border} ring-1 ${kpi.ring} shadow-2xl`
-                    : 'bg-black/30 border-white/[0.06] hover:border-white/10 hover:bg-black/40'
-                }`}
-                style={isActive ? { boxShadow: `0 20px 60px -15px ${kpi.color}15` } : {}}
+              <button key={i}
+                className={`relative text-left p-6 lg:p-7 rounded-[2.5rem] border overflow-hidden group transition-all duration-300 hover:scale-[1.02]
+                  bg-gradient-to-br ${kpi.gradient} ${kpi.border} ring-1 ${kpi.ring} shadow-2xl`}
+                style={{ boxShadow: `0 20px 60px -15px ${kpi.color}15` }}
               >
-                {/* Glow orb */}
-                {isActive && (
-                  <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[70px] opacity-25"
-                    style={{ backgroundColor: kpi.color }} />
-                )}
+                <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[70px] opacity-25"
+                  style={{ backgroundColor: kpi.color }} />
 
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-5">
-                    <div className="p-3 rounded-2xl transition-all duration-500"
+                    <div className="p-3 rounded-2xl transition-all"
                       style={{
-                        backgroundColor: `${kpi.color}${isActive ? '25' : '10'}`,
+                        backgroundColor: `${kpi.color}25`,
                         color: kpi.color,
-                        transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                        boxShadow: isActive ? `0 0 20px ${kpi.color}20` : 'none'
+                        boxShadow: `0 0 20px ${kpi.color}20`
                       }}>
                       {kpi.icon}
                     </div>
-                    {isActive && (
-                      <div className="w-2 h-2 rounded-full animate-pulse shadow-lg"
-                        style={{ backgroundColor: kpi.color, boxShadow: `0 0 12px ${kpi.color}80` }} />
-                    )}
+                    <div className="w-2 h-2 rounded-full animate-pulse shadow-lg"
+                      style={{ backgroundColor: kpi.color, boxShadow: `0 0 12px ${kpi.color}80` }} />
                   </div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1.5">{kpi.label}</p>
-                  <p className="text-2xl sm:text-3xl font-black tabular-nums tracking-tighter leading-none transition-colors duration-500"
-                    style={{ color: isActive ? kpi.color : '#f1f5f9' }}>
+                  <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1.5">{kpi.label}</p>
+                  <p className="text-2xl sm:text-3xl font-black tabular-nums tracking-tighter leading-none"
+                    style={{ color: kpi.color }}>
                     {kpi.value}
                   </p>
-                  <p className="text-[8px] font-bold uppercase tracking-widest text-slate-600 mt-2">{kpi.sub}</p>
+                  <p className="text-[8px] font-bold uppercase tracking-widest text-slate-500 mt-2">{kpi.sub}</p>
                 </div>
               </button>
             )
           })}
         </div>
 
-        {/* ═══ MÉTRICAS SECUNDARIAS + COSTOS DESGLOSADOS ═══ */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          {[
-            { label: 'Ticket Promedio', value: `$${stats.facturacionPromedio.toLocaleString('es-AR')}`, color: 'text-white' },
-            { label: 'Utilidad / KM', value: `$${stats.utilidadPorKm}`, color: 'text-sky-400' },
-            { label: 'Total Litros', value: `${stats.ltsTotal.toLocaleString('es-AR')}`, color: 'text-amber-400' },
-            { label: 'Viajes Período', value: stats.totalViajes, color: 'text-indigo-400' },
-            { label: 'Costo Gasoil', value: `$${formatK(stats.gasoil)}`, color: 'text-yellow-300' },
-            { label: 'Costo Choferes', value: `$${formatK(stats.choferes)}`, color: 'text-violet-300' },
-            { label: 'Costo Oper+Desg', value: `$${formatK(stats.descargas + stats.desgasteTotal)}`, color: 'text-pink-300' },
-          ].map((m, i) => (
-            <div key={i} className="bg-black/30 border border-white/[0.06] rounded-2xl px-4 py-3.5 hover:bg-black/40 hover:border-white/10 transition-all group">
-              <span className="text-[7px] font-black uppercase tracking-widest text-slate-600 block mb-0.5">{m.label}</span>
-              <span className={`text-sm font-black tabular-nums tracking-tight ${m.color}`}>{m.value}</span>
-            </div>
-          ))}
+        {/* 🚀 NUEVA SECCIÓN: ESTADO DE RESULTADOS (PROFIT & LOSS) 🚀 */}
+        <div className="bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-8 shadow-2xl">
+           <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
+                <Calculator size={20} />
+              </div>
+              <div>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Auditoría de Utilidad</h3>
+                <p className="text-lg font-black text-white uppercase italic tracking-tighter">Estado de Resultados (P&L)</p>
+              </div>
+           </div>
+           
+           <div className="grid grid-cols-1 lg:grid-cols-6 gap-2 lg:gap-0 items-center bg-white/[0.02] rounded-2xl border border-white/5 p-4 lg:p-6 overflow-hidden relative">
+              {/* Items de la cuenta */}
+              {stats.incomeStatement.map((item, i) => (
+                <div key={i} className={`flex flex-col lg:items-center relative z-10 ${i !== stats.incomeStatement.length - 1 ? 'lg:border-r border-white/5 lg:pr-6' : ''}`}>
+                   <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 truncate w-full text-left lg:text-center">{item.label}</p>
+                   <p className={`text-sm lg:text-lg font-black tabular-nums tracking-tight ${item.color}`}>
+                     {item.amount > 0 ? '+' : ''}{item.amount === 0 ? '—' : `$${formatK(Math.abs(item.amount))}`}
+                   </p>
+                   {/* Signo matemático visual */}
+                   {i < stats.incomeStatement.length - 1 && (
+                     <div className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#020617] rounded-full border border-white/10 items-center justify-center z-20">
+                       <Minus size={10} className="text-slate-600" />
+                     </div>
+                   )}
+                </div>
+              ))}
+
+              {/* Resultado Final */}
+              <div className="lg:pl-6 flex flex-col items-center justify-center relative z-10 mt-4 lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-white/10 w-full">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Equal size={14} className="text-emerald-500" />
+                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.3em]">GANANCIA NETA</span>
+                  </div>
+                  <p className="text-3xl font-black text-white italic tabular-nums tracking-tighter drop-shadow-[0_0_15px_rgba(74,222,128,0.3)]">
+                    ${formatK(stats.neta)}
+                  </p>
+                  <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                     Limpio de bolsillo
+                  </p>
+                  {/* Glow final */}
+                  <div className="absolute inset-0 bg-emerald-500/5 blur-xl -z-10 rounded-full" />
+              </div>
+           </div>
         </div>
 
-        {/* ═══ SECCIÓN CENTRAL: PIE | BAR | CC + TOP ═══ */}
+        {/* ═══ SECCIÓN CENTRAL (GRÁFICOS) ═══ */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
 
           {/* PIE CHART */}
-          <div className="xl:col-span-4 bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-8 flex flex-col shadow-2xl shadow-black/20 hover:shadow-black/30 transition-shadow">
+          <div className="xl:col-span-4 bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-8 flex flex-col shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
                 <PieChartIcon size={12} className="text-emerald-400" /> Distribución
@@ -373,7 +392,7 @@ export default function MainDashboard() {
           </div>
 
           {/* BAR CHART */}
-          <div className="xl:col-span-5 bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-8 flex flex-col shadow-2xl shadow-black/20 hover:shadow-black/30 transition-shadow">
+          <div className="xl:col-span-5 bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-8 flex flex-col shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
                 <BarChart3 size={12} className="text-indigo-400" /> Actividad {new Date().getFullYear()}
@@ -426,40 +445,7 @@ export default function MainDashboard() {
               </div>
             </button>
 
-            {/* Top Clientes */}
-            <div className="bg-black/30 border border-white/[0.06] rounded-[2.5rem] p-6 flex-1 shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-1.5 bg-amber-500/15 rounded-lg shadow-lg shadow-amber-500/5"><Crown size={12} className="text-amber-400" /></div>
-                <h3 className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-500">Top Clientes · Período</h3>
-              </div>
-              <div className="space-y-3">
-                {stats.topClientes.length === 0 ? (
-                  <p className="text-[9px] text-slate-700 font-bold uppercase">Sin datos en período</p>
-                ) : (
-                  stats.topClientes.map((c: any, i: number) => {
-                    const maxVal = stats.topClientes[0]?.total || 1
-                    const medals = ['🥇', '🥈', '🥉']
-                    return (
-                      <div key={i}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-[10px] w-5 shrink-0 text-center">{medals[i] || <span className="text-[8px] font-black text-slate-700">#{i + 1}</span>}</span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase truncate">{c.nombre}</span>
-                          </div>
-                          <span className="text-[9px] font-black text-white tabular-nums shrink-0 ml-2">${formatK(c.total)}</span>
-                        </div>
-                        <div className="w-full h-1 bg-white/[0.04] rounded-full overflow-hidden ml-7">
-                          <div className="h-full bg-gradient-to-r from-amber-500 to-amber-300 rounded-full transition-all duration-700"
-                            style={{ width: `${(c.total / maxVal) * 100}%`, opacity: 1 - (i * 0.12) }} />
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Links */}
+            {/* Links Rápidos */}
             <div className="grid grid-cols-3 gap-3">
               {[
                 { href: '/viajes', icon: <Truck size={16} />, label: 'Viajes', color: 'hover:border-sky-500/30 hover:text-sky-400' },
