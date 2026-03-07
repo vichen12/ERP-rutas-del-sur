@@ -84,7 +84,7 @@ export default function TareasPage() {
           tipo: 'egreso',
           monto: Number(tarea.monto),
           descripcion: `TAREA: ${tarea.titulo}`,
-          fecha: new Date().toISOString(),
+          fecha: new Date().toISOString().split('T')[0],
           tipo_gasto: 'tarea',
         }])
       }
@@ -171,7 +171,8 @@ export default function TareasPage() {
 
   async function handleDelete(id: string) {
     if (!confirm('¿Eliminar esta tarea?')) return
-    await supabase.from('tareas').delete().eq('id', id)
+    const { error } = await supabase.from('tareas').delete().eq('id', id)
+    if (error) { alert('Error al eliminar tarea: ' + error.message); return }
     fetchTareas()
   }
 

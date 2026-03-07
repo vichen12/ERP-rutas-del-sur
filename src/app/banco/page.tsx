@@ -131,8 +131,9 @@ export default function CajaBancoPage() {
   async function handleSaveMovimiento(data: any) {
     setIsSaving(true)
     try {
+      let res
       if (editingMovimiento) {
-        await supabase
+        res = await supabase
           .from('movimientos_caja')
           .update({
             fecha: data.fecha,
@@ -148,7 +149,7 @@ export default function CajaBancoPage() {
           })
           .eq('id', editingMovimiento.id)
       } else {
-        await supabase.from('movimientos_caja').insert([{
+        res = await supabase.from('movimientos_caja').insert([{
           fecha: data.fecha,
           tipo: data.tipo,
           tipo_cuenta: data.tipo_cuenta,
@@ -161,11 +162,12 @@ export default function CajaBancoPage() {
           referencia: data.referencia || null,
         }])
       }
+      if (res.error) { alert('Error al guardar: ' + res.error.message); return }
       setIsModalOpen(false)
       setEditingMovimiento(null)
       fetchAll()
-    } catch (e) {
-      console.error('Error guardando movimiento:', e)
+    } catch (e: any) {
+      alert('Error guardando movimiento: ' + e.message)
     } finally {
       setIsSaving(false)
     }
@@ -173,14 +175,23 @@ export default function CajaBancoPage() {
 
   async function handleDeleteMovimiento(id: string) {
     if (!confirm('¿Eliminar este movimiento?')) return
-    await supabase.from('movimientos_caja').delete().eq('id', id)
+    const { error } = await supabase.from('movimientos_caja').delete().eq('id', id)
+    if (error) { alert('Error al eliminar: ' + error.message); return }
     fetchAll()
   }
 
   async function handleSaveTipoCambio(valor: number) {
+    const { error } = await supabase.from('configuracion').update({ tipo_cambio_dolar: valor }).eq('id', 1)
+    if (error) { alert('Error al guardar tipo de cambio: ' + error.message); return }
     setTipoCambioDolar(valor)
-    await supabase.from('configuracion').update({ tipo_cambio_dolar: valor }).eq('id', 1)
   }
+
+  if (loading) return (
+    <div className="h-screen bg-[#020617] flex flex-col items-center justify-center">
+      <div className="w-12 h-12 border-t-2 border-sky-500 rounded-full animate-spin mb-4" />
+      <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-600 animate-pulse">Cargando...</p>
+    </div>
+  )
 
   return (
     <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20">

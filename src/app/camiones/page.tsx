@@ -58,6 +58,7 @@ export default function FlotaPage() {
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingChoferId, setEditingChoferId] = useState<string | null>(null);
   const [selectedCamion, setSelectedCamion] = useState<any>(null);
 
   const initialFormState = {
@@ -199,11 +200,11 @@ export default function FlotaPage() {
         foto_url: choferFormData.foto_url,
       };
 
-      if (editingId) {
+      if (editingChoferId) {
         const { error } = await supabase
           .from("choferes")
           .update(payload)
-          .eq("id", editingId);
+          .eq("id", editingChoferId);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("choferes").insert([payload]);
@@ -385,11 +386,12 @@ export default function FlotaPage() {
             </div>
             <button
               onClick={() => {
-                setEditingId(null);
                 if (activeTab === "camiones") {
+                  setEditingId(null);
                   setFormData(initialFormState);
                   setIsModalOpen(true);
                 } else {
+                  setEditingChoferId(null);
                   setChoferFormData(initialChoferFormState);
                   setIsChoferModalOpen(true);
                 }
@@ -557,7 +559,7 @@ export default function FlotaPage() {
                     <div className="mt-6 pt-6 border-t border-white/5 flex gap-2 relative z-10">
                       <button
                         onClick={() => {
-                          setEditingId(ch.id);
+                          setEditingChoferId(ch.id);
                           setChoferFormData({
                             ...initialChoferFormState,
                             ...ch,
@@ -590,7 +592,7 @@ export default function FlotaPage() {
       {/* MODALES CAMIONES */}
       <CamionModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => { setIsModalOpen(false); setEditingId(null); }}
         onSubmit={handleSaveCamion}
         isSubmitting={isSubmitting}
         editingId={editingId}
@@ -624,10 +626,10 @@ export default function FlotaPage() {
       {/* MODAL CHOFERES */}
       <ChoferModal
         isOpen={isChoferModalOpen}
-        onClose={() => setIsChoferModalOpen(false)}
+        onClose={() => { setIsChoferModalOpen(false); setEditingChoferId(null); }}
         onSubmit={handleSaveChofer}
         isSubmitting={isSubmitting}
-        editingId={editingId}
+        editingId={editingChoferId}
         formData={choferFormData}
         setFormData={setChoferFormData}
       />

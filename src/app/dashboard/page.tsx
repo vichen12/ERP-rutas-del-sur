@@ -78,8 +78,10 @@ export default function MainDashboard() {
     const mesesAbv = ['E', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
     const viajesPorMes = mesesAbv.map((mes, index) => {
       const vMes = (viajes || []).filter((v: any) => {
-        const d = new Date(v.fecha)
-        return d.getFullYear() === currentYear && d.getMonth() === index
+        if (!v.fecha) return false
+        const year = Number(v.fecha.substring(0, 4))
+        const month = Number(v.fecha.substring(5, 7)) - 1
+        return year === currentYear && month === index
       })
       const facMes = vMes.reduce((acc: number, v: any) => acc + Number(v.tarifa_flete || 0), 0)
       return { name: mes, cantidad: vMes.length, facturacion: Math.round(facMes / 1000) }

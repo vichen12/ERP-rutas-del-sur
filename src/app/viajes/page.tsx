@@ -622,7 +622,7 @@ export default function ViajesPage() {
                       <h4 className="text-lg font-black text-white uppercase leading-tight">{v.origen} → {v.destino}</h4>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-bold text-slate-500 tabular-nums">{new Date(v.fecha).toLocaleDateString()}</p>
+                      <p className="text-[10px] font-bold text-slate-500 tabular-nums">{new Date(v.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
                       <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${v.es_retorno ? 'text-indigo-400 border-indigo-400/20' : 'text-emerald-400 border-emerald-400/20'}`}>
                         {v.es_retorno ? 'Ret' : 'Ida'}
                       </span>

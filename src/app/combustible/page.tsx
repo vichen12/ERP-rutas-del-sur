@@ -76,7 +76,7 @@ export default function CombustiblePage() {
   const cargasFiltradas = useMemo(() => {
     return cargas.filter(c => {
       const inDate = showAllTime || (c.fecha >= dateStart && c.fecha <= dateEnd);
-      if (viewMode === 'impagos') return !c.pagado && (showAllTime || c.fecha <= dateEnd);
+      if (viewMode === 'impagos') return !c.pagado && (showAllTime || (c.fecha >= dateStart && c.fecha <= dateEnd));
       if (viewMode === 'historial') return c.pagado && inDate;
       if (viewMode === 'resumen') return inDate;
       return false;

@@ -108,8 +108,8 @@ export default function CostosMultasPage() {
         supabase.from('multas').select('*, choferes(nombre), camiones(patente)').order('fecha', { ascending: false }),
         supabase.from('choferes').select('id, nombre').order('nombre'),
         supabase.from('camiones').select('id, patente').order('patente'),
-        supabase.from('viajes').select('precio, fecha, estado').eq('estado', 'completado'),
-        supabase.from('cargas_combustible').select('monto, fecha'),
+        supabase.from('viajes').select('tarifa_flete, fecha, estado').eq('estado', 'completado'),
+        supabase.from('cargas_combustible').select('total, fecha'),
         supabase.from('cuenta_corriente_choferes').select('monto, fecha, tipo'),
       ])
       setCostos(costosRes.data || [])
@@ -126,8 +126,8 @@ export default function CostosMultasPage() {
   // ═══ CONTEXTO DE VARIABLES ═══
   const variableContext: VariableContext = useMemo(() => {
     const inRange = (fecha: string) => fecha >= dateStart && fecha <= dateEnd
-    const ventasTotal = viajes.filter(v => inRange(v.fecha)).reduce((a, v) => a + Number(v.precio || 0), 0)
-    const gasoilTotal = cargasCombustible.filter(c => inRange(c.fecha)).reduce((a, c) => a + Number(c.monto || 0), 0)
+    const ventasTotal = viajes.filter(v => inRange(v.fecha)).reduce((a, v) => a + Number(v.tarifa_flete || 0), 0)
+    const gasoilTotal = cargasCombustible.filter(c => inRange(c.fecha)).reduce((a, c) => a + Number(c.total || 0), 0)
     const choferesTotal = cuentaChoferes.filter(c => inRange(c.fecha)).reduce((a, c) => a + Number(c.monto || 0), 0)
     const viajesCount = viajes.filter(v => inRange(v.fecha)).length
     return { VENTAS: ventasTotal, GASOIL: gasoilTotal, CHOFERES: choferesTotal, ESTRUCTURA: 0, NETO: ventasTotal - gasoilTotal - choferesTotal, VIAJES: viajesCount }
@@ -183,11 +183,15 @@ export default function CostosMultasPage() {
 
   async function handleDeleteCosto(id: string) {
     if (!confirm('¿Eliminar este registro?')) return
-    await supabase.from('costos_fijos').delete().eq('id', id); fetchAll()
+    const { error } = await supabase.from('costos_fijos').delete().eq('id', id)
+    if (error) { alert('Error al eliminar: ' + error.message); return }
+    fetchAll()
   }
 
   async function handleToggleCosto(id: string, activo: boolean) {
-    await supabase.from('costos_fijos').update({ activo: !activo }).eq('id', id); fetchAll()
+    const { error } = await supabase.from('costos_fijos').update({ activo: !activo }).eq('id', id)
+    if (error) { alert('Error al actualizar: ' + error.message); return }
+    fetchAll()
   }
 
   function abrirPagar(item: any) { setPagandoItem(item); setIsPagarModalOpen(true) }
@@ -236,7 +240,7 @@ export default function CostosMultasPage() {
   }
   async function handleDeleteMulta(id: string) { if (!confirm('¿Eliminar?')) return; await supabase.from('multas').delete().eq('id', id); fetchAll() }
   async function handlePagarMulta(multa: any) {
-    const res = await supabase.from('multas').update({ estado: 'pagada', fecha_pago: new Date().toISOString() }).eq('id', multa.id)
+    const res = await supabase.from('multas').update({ estado: 'pagada', fecha_pago: new Date().toISOString().split('T')[0] }).eq('id', multa.id)
     if (res.error) { alert('Error al pagar multa: ' + res.error.message); return }
     fetchAll()
   }

@@ -1,6 +1,6 @@
 'use client'
 export const dynamic = 'force-dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -68,7 +68,7 @@ export default function RemitosPage() {
           if (!clientsMap[m.cliente_id]) clientsMap[m.cliente_id] = []
           clientsMap[m.cliente_id].push(m)
           if (m.viaje_id) {
-            tripDebeMap[m.viaje_id] = Number(m.debe || 0)
+            tripDebeMap[m.viaje_id] = (tripDebeMap[m.viaje_id] || 0) + Number(m.debe || 0)
             if (m.remito) tripRemitoMap[m.viaje_id] = m.remito
           }
         })
@@ -139,7 +139,7 @@ export default function RemitosPage() {
     }
   }
 
-  const filtered = remitos.filter(r => {
+  const filtered = useMemo(() => remitos.filter(r => {
     const ms = r.nro_remito.toLowerCase().includes(search.toLowerCase()) ||
       r.cliente_nombre.toLowerCase().includes(search.toLowerCase()) ||
       r.origen.toLowerCase().includes(search.toLowerCase()) ||
@@ -150,7 +150,7 @@ export default function RemitosPage() {
       (facturaFilter === 'facturado' && r.facturado) ||
       (facturaFilter === 'sin_facturar' && !r.facturado)
     return ms && mc && me && mf
-  })
+  }), [remitos, search, clienteFilter, estadoFilter, facturaFilter])
 
   const countFact = remitos.filter(r => r.facturado).length
   const countSinFact = remitos.filter(r => !r.facturado).length
