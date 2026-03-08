@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useState, useEffect, useMemo, Suspense, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import * as supabaseLib from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -24,6 +24,7 @@ function FacturacionInner() {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
   const [isEmitting, setIsEmitting] = useState(false)
   const [preloadData, setPreloadData] = useState<any>(null)
+  const wizardAutoOpenedRef = useRef(false)
 
   const [dateStart, setDateStart] = useState(() => {
     const d = new Date()
@@ -33,15 +34,16 @@ function FacturacionInner() {
 
   useEffect(() => { fetchAll() }, [])
 
-  // Auto-abrir wizard cuando viene de remitos con params en la URL
+  // Auto-abrir wizard cuando viene de remitos con params en la URL (solo una vez)
   useEffect(() => {
-    if (!loading && clientes.length > 0) {
+    if (!loading && clientes.length > 0 && !wizardAutoOpenedRef.current) {
       const cid = searchParams.get('cliente_id')
       const imp = searchParams.get('importe')
       const vid = searchParams.get('viaje_id')
       if (cid) {
         const cliente = clientes.find((c: any) => c.id === cid)
         if (cliente) {
+          wizardAutoOpenedRef.current = true
           setPreloadData({
             cliente,
             importe: imp ? (Number(imp) / 1.21).toFixed(2) : '',

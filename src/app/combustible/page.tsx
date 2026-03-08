@@ -120,10 +120,16 @@ export default function CombustiblePage() {
 
   // --- GUARDADO SEGURO ---
   const handleGuardarCarga = async (payload: any) => {
-    const total = Number(payload.litros) * Number(payload.precio_litro);
+    const litros = Number(payload.litros)
+    const precioLitro = Number(payload.precio_litro)
+    if (!litros || litros <= 0) { toast.error('La cantidad de litros debe ser mayor a 0.'); return; }
+    if (!precioLitro || precioLitro <= 0) { toast.error('El precio por litro debe ser mayor a 0.'); return; }
+    const total = litros * precioLitro;
 
     const dataToInsert = {
       ...payload,
+      litros,
+      precio_litro: precioLitro,
       total,
       pagado: false,
       camion_id: payload.camion_id || null,

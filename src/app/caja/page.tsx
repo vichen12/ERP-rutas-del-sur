@@ -159,6 +159,8 @@ export default function CajaPage() {
   }
 
   async function handleSaveMovimiento(data: any) {
+    const monto = Number(data.monto)
+    if (!monto || monto <= 0 || isNaN(monto)) { toast.error('El monto debe ser mayor a 0.'); return; }
     setIsSaving(true)
     try {
       const payload = {

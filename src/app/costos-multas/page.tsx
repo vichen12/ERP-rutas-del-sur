@@ -222,6 +222,9 @@ export default function CostosMultasPage() {
 
   // Multas
   async function handleSaveMulta(data: any) {
+    const monto = Number(data.monto)
+    if (!monto || monto <= 0 || isNaN(monto)) { alert('El monto de la multa debe ser mayor a 0.'); return; }
+    if (!data.fecha) { alert('La fecha es obligatoria.'); return; }
     setIsSaving(true)
     try {
       // Limpiar UUIDs vacíos — Supabase rechaza '' para columnas UUID
@@ -229,7 +232,7 @@ export default function CostosMultasPage() {
         ...data,
         chofer_id: data.chofer_id || null,
         camion_id: data.camion_id || null,
-        monto: Number(data.monto),
+        monto,
       }
       let res
       if (editingMulta) res = await supabase.from('multas').update(payload).eq('id', editingMulta.id)
@@ -238,7 +241,12 @@ export default function CostosMultasPage() {
       setIsMultaModalOpen(false); setEditingMulta(null); fetchAll()
     } finally { setIsSaving(false) }
   }
-  async function handleDeleteMulta(id: string) { if (!confirm('¿Eliminar?')) return; await supabase.from('multas').delete().eq('id', id); fetchAll() }
+  async function handleDeleteMulta(id: string) {
+    if (!confirm('¿Eliminar?')) return
+    const { error } = await supabase.from('multas').delete().eq('id', id)
+    if (error) { alert('Error al eliminar multa: ' + error.message); return }
+    fetchAll()
+  }
   async function handlePagarMulta(multa: any) {
     const res = await supabase.from('multas').update({ estado: 'pagada', fecha_pago: new Date().toISOString().split('T')[0] }).eq('id', multa.id)
     if (res.error) { alert('Error al pagar multa: ' + res.error.message); return }

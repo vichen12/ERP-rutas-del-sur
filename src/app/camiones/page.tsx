@@ -150,6 +150,7 @@ export default function FlotaPage() {
 
   const handleSaveCamion = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!(formData.patente || "").trim()) { alert('La patente es obligatoria.'); return; }
     setIsSubmitting(true);
 
     try {
@@ -187,6 +188,7 @@ export default function FlotaPage() {
   // 🚀 GUARDAR CHOFER
   const handleSaveChofer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!choferFormData.nombre.trim()) { alert('El nombre del chofer es obligatorio.'); return; }
     setIsSubmitting(true);
 
     try {

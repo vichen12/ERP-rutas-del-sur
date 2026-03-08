@@ -106,6 +106,7 @@ export default function ClientesPage() {
 
   const handleSaveCliente = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!clientForm.razon_social.trim()) { alert('La razón social es obligatoria.'); return; }
     setIsSaving(true);
     try {
       const payload = {

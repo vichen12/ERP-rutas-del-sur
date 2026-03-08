@@ -123,6 +123,7 @@ export default function ChoferesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.nombre.trim()) { toast.error('El nombre del chofer es obligatorio.'); return; }
     setIsSubmitting(true);
     try {
       const payload = {
@@ -318,7 +319,7 @@ export default function ChoferesPage() {
 
       <ChoferModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => { setIsModalOpen(false); setEditingId(null); }}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         editingId={editingId}
