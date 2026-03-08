@@ -28,20 +28,23 @@ export default function MainDashboard() {
   })
   const [dateEnd, setDateEnd] = useState(() => new Date().toISOString().split('T')[0])
 
-  useEffect(() => { fetchDashboardData() }, [])
-
-  async function fetchDashboardData() {
-    setLoading(true)
-    try {
-      const [cl, vj, cc, cam] = await Promise.all([
-        supabase.from('clientes').select('*').order('razon_social'),
-        supabase.from('viajes').select('*'),
-        supabase.from('cuenta_corriente').select('*'),
-        supabase.from('camiones').select('*'),
-      ])
-      setData({ clientes: cl.data || [], viajes: vj.data || [], cc: cc.data || [], camiones: cam.data || [] })
-    } catch (error) { console.error(error) } finally { setLoading(false) }
-  }
+  useEffect(() => {
+    let cancelled = false
+    async function fetchDashboardData() {
+      setLoading(true)
+      try {
+        const [cl, vj, cc, cam] = await Promise.all([
+          supabase.from('clientes').select('*').order('razon_social'),
+          supabase.from('viajes').select('*'),
+          supabase.from('cuenta_corriente').select('*'),
+          supabase.from('camiones').select('*'),
+        ])
+        if (!cancelled) setData({ clientes: cl.data || [], viajes: vj.data || [], cc: cc.data || [], camiones: cam.data || [] })
+      } catch (error) { if (!cancelled) console.error(error) } finally { if (!cancelled) setLoading(false) }
+    }
+    fetchDashboardData()
+    return () => { cancelled = true }
+  }, [])
 
   const stats = useMemo(() => {
     const { viajes, cc, clientes, camiones } = data

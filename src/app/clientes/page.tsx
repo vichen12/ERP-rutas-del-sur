@@ -88,12 +88,13 @@ export default function ClientesPage() {
   }
 
   async function fetchUbicaciones(clienteId: string) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('destinos_cliente')
       .select('*')
       .eq('cliente_id', clienteId)
       .eq('activo', true)
       .order('nombre');
+    if (error) { console.error('Error al cargar ubicaciones:', error.message); return; }
     setUbicaciones(data || []);
   }
 

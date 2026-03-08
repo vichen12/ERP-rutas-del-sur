@@ -547,7 +547,7 @@ export default function ViajesPage() {
                     const pGasoil = Number(v.precio_gasoil) || precioGasoilGlobal;
                     const costoGas = (Number(v.lts_gasoil) || 0) * pGasoil;
                     const desgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
-                    const netaViaje = Number(v.tarifa_flete_calculada) - (Number(v.pago_chofer) + costoGas + Number(v.costo_descarga) + desgaste);
+                    const netaViaje = (Number(v.tarifa_flete_calculada) || 0) - ((Number(v.pago_chofer) || 0) + costoGas + (Number(v.costo_descarga) || 0) + desgaste);
 
                     return (
                       <tr

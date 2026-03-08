@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import * as supabaseLib from '@/lib/supabase'
 import { Plus, Loader2, Clock, AlertTriangle, CheckSquare } from 'lucide-react'
 import { TareasList } from '@/components/tareas/Tareaslist'
@@ -22,7 +22,12 @@ export default function TareasPage() {
   // CompletarModal
   const [completandoTarea, setCompletandoTarea] = useState<any>(null)
 
-  useEffect(() => { fetchTareas() }, [])
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    fetchTareas()
+    return () => { mountedRef.current = false }
+  }, [])
 
   async function fetchTareas() {
     setLoading(true)
@@ -31,12 +36,13 @@ export default function TareasPage() {
         .from('tareas')
         .select('*')
         .order('fecha_vencimiento', { ascending: true })
+      if (!mountedRef.current) return
       if (error) console.error('Error fetch:', error.message)
       setTareas(data || [])
     } catch (e: any) {
       console.error('Error cargando tareas:', e?.message || e)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }
 
@@ -133,6 +139,8 @@ export default function TareasPage() {
 
   // ═══ GUARDAR ═══
   async function handleSave(data: any) {
+    if (!(data.titulo || '').trim()) { alert('El título de la tarea es obligatorio.'); return; }
+    if (!data.fecha_vencimiento) { alert('La fecha de vencimiento es obligatoria.'); return; }
     setIsSaving(true)
     try {
       const payload = {

@@ -153,8 +153,9 @@ export default function CajaPage() {
   }, [movimientos, vistaGrafico])
 
   async function handleSaveTipoCambio(valor: number) {
+    const { error } = await supabase.from('configuracion').update({ tipo_cambio_dolar: valor }).eq('id', 1)
+    if (error) { toast.error('Error al guardar tipo de cambio: ' + error.message); return }
     setTipoCambioDolar(valor)
-    await supabase.from('configuracion').update({ tipo_cambio_dolar: valor }).eq('id', 1)
     toast.success(`Tipo de cambio actualizado a $${valor}`)
   }
 
