@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
-import { AlertOctagon, TrendingUp, DollarSign, Receipt, ChevronRight } from 'lucide-react'
+import { AlertOctagon, TrendingUp, DollarSign, Receipt, ChevronRight, Loader2 } from 'lucide-react'
 
 import { CostosFijosSection } from '@/components/costos/CostosFijosSection'
 import { MultasSection } from '@/components/multas/MultasSection'
@@ -262,6 +262,12 @@ export default function CostosMultasPage() {
     { value: 'multas', label: 'Multas', icon: AlertOctagon },
     { value: 'equilibrio', label: 'Punto de Equilibrio', icon: TrendingUp },
   ]
+
+  if (loading) return (
+    <div className="h-screen bg-[#020617] flex items-center justify-center">
+      <Loader2 className="animate-spin text-orange-500 w-12 h-12" />
+    </div>
+  )
 
   return (
     <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20 font-sans italic">

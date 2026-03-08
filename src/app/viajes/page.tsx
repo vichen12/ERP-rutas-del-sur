@@ -424,21 +424,31 @@ export default function ViajesPage() {
       }
 
       if (tramosRealizados > 0) {
-        const cam = camiones.find((c: any) => c.id === dataLimpia.camion_id);
-        const cho = choferes.find((ch: any) => ch.id === dataLimpia.chofer_id);
-        const kSum = Number(dataLimpia.km_recorridos) || 0;
-        const lSum = Number(dataLimpia.lts_gasoil) || 0;
+        // For dual-tramo trips, sum each tramo's km/lts; for single tramo, use the global value
+        const kSum = hasIda && hasVuelta
+          ? (Number(km_ida) || Number(dataLimpia.km_recorridos) || 0) + (Number(km_vuelta) || Number(dataLimpia.km_recorridos) || 0)
+          : hasIda ? (Number(km_ida) || Number(dataLimpia.km_recorridos) || 0)
+          : (Number(km_vuelta) || Number(dataLimpia.km_recorridos) || 0);
+        const lSum = hasIda && hasVuelta
+          ? (Number(lts_ida) || Number(dataLimpia.lts_gasoil) || 0) + (Number(lts_vuelta) || Number(dataLimpia.lts_gasoil) || 0)
+          : hasIda ? (Number(lts_ida) || Number(dataLimpia.lts_gasoil) || 0)
+          : (Number(lts_vuelta) || Number(dataLimpia.lts_gasoil) || 0);
 
-        await Promise.all([
-          supabase.from('camiones').update({
-            km_actual: (Number(cam?.km_actual) || 0) + kSum,
-            lts_consumidos: (Number(cam?.lts_consumidos) || 0) + lSum
-          }).eq('id', dataLimpia.camion_id),
-          supabase.from('choferes').update({
-            km_recorridos: (Number(cho?.km_recorridos) || 0) + kSum,
-            lts_consumidos: (Number(cho?.lts_consumidos) || 0) + lSum
-          }).eq('id', dataLimpia.chofer_id)
+        // Fetch fresh values from DB to avoid race conditions with stale local state
+        const [camRes, choRes] = await Promise.all([
+          dataLimpia.camion_id ? supabase.from('camiones').select('km_actual, lts_consumidos').eq('id', dataLimpia.camion_id).single() : Promise.resolve({ data: null }),
+          dataLimpia.chofer_id ? supabase.from('choferes').select('km_recorridos, lts_consumidos').eq('id', dataLimpia.chofer_id).single() : Promise.resolve({ data: null })
         ]);
+        const counterUpdates = [];
+        if (camRes.data) counterUpdates.push(supabase.from('camiones').update({
+          km_actual: (Number(camRes.data.km_actual) || 0) + kSum,
+          lts_consumidos: (Number(camRes.data.lts_consumidos) || 0) + lSum
+        }).eq('id', dataLimpia.camion_id));
+        if (choRes.data) counterUpdates.push(supabase.from('choferes').update({
+          km_recorridos: (Number(choRes.data.km_recorridos) || 0) + kSum,
+          lts_consumidos: (Number(choRes.data.lts_consumidos) || 0) + lSum
+        }).eq('id', dataLimpia.chofer_id));
+        if (counterUpdates.length > 0) await Promise.all(counterUpdates);
       }
 
       setIsModalOpen(false);
@@ -459,8 +469,6 @@ export default function ViajesPage() {
     try {
       const kmRestar = Number(viaje.km_recorridos) || 0;
       const ltsRestar = Number(viaje.lts_gasoil) || 0;
-      const cam = camiones.find(c => c.id === viaje.camion_id);
-      const cho = choferes.find(ch => ch.id === viaje.chofer_id);
 
       await Promise.all([
         supabase.from('reparto_viaje').delete().eq('viaje_id', viaje.id),
@@ -470,14 +478,18 @@ export default function ViajesPage() {
         supabase.from('cuenta_corriente_choferes').delete().eq('viaje_id', viaje.id)
       ]);
 
+      const [camRes, choRes] = await Promise.all([
+        viaje.camion_id ? supabase.from('camiones').select('km_actual, lts_consumidos').eq('id', viaje.camion_id).single() : Promise.resolve({ data: null }),
+        viaje.chofer_id ? supabase.from('choferes').select('km_recorridos, lts_consumidos').eq('id', viaje.chofer_id).single() : Promise.resolve({ data: null })
+      ]);
       const updates: any[] = [];
-      if (cam) updates.push(supabase.from('camiones').update({
-        km_actual: Math.max(0, cam.km_actual - kmRestar),
-        lts_consumidos: Math.max(0, cam.lts_consumidos - ltsRestar)
+      if (camRes.data) updates.push(supabase.from('camiones').update({
+        km_actual: Math.max(0, (Number(camRes.data.km_actual) || 0) - kmRestar),
+        lts_consumidos: Math.max(0, (Number(camRes.data.lts_consumidos) || 0) - ltsRestar)
       }).eq('id', viaje.camion_id));
-      if (cho) updates.push(supabase.from('choferes').update({
-        km_recorridos: Math.max(0, cho.km_recorridos - kmRestar),
-        lts_consumidos: Math.max(0, cho.lts_consumidos - ltsRestar)
+      if (choRes.data) updates.push(supabase.from('choferes').update({
+        km_recorridos: Math.max(0, (Number(choRes.data.km_recorridos) || 0) - kmRestar),
+        lts_consumidos: Math.max(0, (Number(choRes.data.lts_consumidos) || 0) - ltsRestar)
       }).eq('id', viaje.chofer_id));
       await Promise.all(updates);
 

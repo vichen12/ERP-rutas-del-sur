@@ -141,16 +141,14 @@ export default function CombustiblePage() {
       if (error) throw error;
 
       const ltsNuevos = Number(payload.litros);
-      const updates = [];
       if (dataToInsert.camion_id) {
-        const cam = camiones.find(c => c.id === dataToInsert.camion_id);
-        if (cam) updates.push(supabase.from('camiones').update({ lts_consumidos: (cam.lts_consumidos || 0) + ltsNuevos }).eq('id', cam.id));
+        const { data: freshCam } = await supabase.from('camiones').select('lts_consumidos').eq('id', dataToInsert.camion_id).single();
+        if (freshCam) await supabase.from('camiones').update({ lts_consumidos: (Number(freshCam.lts_consumidos) || 0) + ltsNuevos }).eq('id', dataToInsert.camion_id);
       }
       if (dataToInsert.chofer_id) {
-        const cho = choferes.find(c => c.id === dataToInsert.chofer_id);
-        if (cho) updates.push(supabase.from('choferes').update({ lts_consumidos: (cho.lts_consumidos || 0) + ltsNuevos }).eq('id', cho.id));
+        const { data: freshCho } = await supabase.from('choferes').select('lts_consumidos').eq('id', dataToInsert.chofer_id).single();
+        if (freshCho) await supabase.from('choferes').update({ lts_consumidos: (Number(freshCho.lts_consumidos) || 0) + ltsNuevos }).eq('id', dataToInsert.chofer_id);
       }
-      if (updates.length > 0) await Promise.all(updates);
 
       setIsCargaModalOpen(false);
       fetchData();
@@ -167,16 +165,16 @@ export default function CombustiblePage() {
 
     try {
       const ltsRestar = Number(carga.litros);
-      const updates = [];
+      const counterUpdates = [];
       if (carga.camion_id) {
-        const cam = camiones.find(c => c.id === carga.camion_id);
-        if (cam) updates.push(supabase.from('camiones').update({ lts_consumidos: Math.max(0, (cam.lts_consumidos || 0) - ltsRestar) }).eq('id', cam.id));
+        const { data: freshCam } = await supabase.from('camiones').select('lts_consumidos').eq('id', carga.camion_id).single();
+        if (freshCam) counterUpdates.push(supabase.from('camiones').update({ lts_consumidos: Math.max(0, (Number(freshCam.lts_consumidos) || 0) - ltsRestar) }).eq('id', carga.camion_id));
       }
       if (carga.chofer_id) {
-        const cho = choferes.find(c => c.id === carga.chofer_id);
-        if (cho) updates.push(supabase.from('choferes').update({ lts_consumidos: Math.max(0, (cho.lts_consumidos || 0) - ltsRestar) }).eq('id', cho.id));
+        const { data: freshCho } = await supabase.from('choferes').select('lts_consumidos').eq('id', carga.chofer_id).single();
+        if (freshCho) counterUpdates.push(supabase.from('choferes').update({ lts_consumidos: Math.max(0, (Number(freshCho.lts_consumidos) || 0) - ltsRestar) }).eq('id', carga.chofer_id));
       }
-      await Promise.all([...updates, supabase.from('cargas_combustible').delete().eq('id', carga.id)]);
+      await Promise.all([...counterUpdates, supabase.from('cargas_combustible').delete().eq('id', carga.id)]);
       fetchData();
       toast.success('Remito eliminado correctamente');
     } catch (e: any) {
