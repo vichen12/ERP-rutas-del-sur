@@ -29,8 +29,9 @@ export default function RemitosPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      const { data: clientesData } = await supabase
+      const { data: clientesData, error: errClientes } = await supabase
         .from('clientes').select('id, razon_social').order('razon_social')
+      if (errClientes) throw errClientes
       if (clientesData) setClientes(clientesData)
 
       const { data: viajesData, error: errViajes } = await supabase
@@ -39,11 +40,12 @@ export default function RemitosPage() {
         .order('fecha', { ascending: false })
       if (errViajes) throw errViajes
 
-      const { data: facturasConRemito } = await supabase
+      const { data: facturasConRemito, error: errFacturas } = await supabase
         .from('facturas')
         .select('id, estado, numero_comprobante, tipo_comprobante, punto_venta, cae, remito_id, viaje_id')
         .not('remito_id', 'is', null)
         .eq('estado', 'emitida')
+      if (errFacturas) throw errFacturas
 
       const facturasPorViaje: Record<string, any> = {}
       if (facturasConRemito) {

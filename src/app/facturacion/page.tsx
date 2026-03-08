@@ -65,6 +65,10 @@ function FacturacionInner() {
         supabase.from('remitos').select('id, fecha, numero, cliente_id, clientes(razon_social), facturado').order('fecha', { ascending: false }),
         supabase.from('configuracion').select('arca_cuit, arca_razon_social, arca_punto_venta, arca_condicion_iva, arca_entorno, arca_certificado, arca_clave_privada').eq('id', 1).single(),
       ])
+      if (facturasRes.error) throw facturasRes.error
+      if (clientesRes.error) throw clientesRes.error
+      if (viajesRes.error) throw viajesRes.error
+      if (remitosRes.error) throw remitosRes.error
       setFacturas(facturasRes.data || [])
       setClientes(clientesRes.data || [])
       setViajes(viajesRes.data || [])
