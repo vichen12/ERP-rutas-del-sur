@@ -297,13 +297,15 @@ export default function CostosMultasPage() {
         </div>
 
         {/* TABS */}
-        <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 w-fit">
-          {tabs.map(t => (
-            <button key={t.value} onClick={() => setActiveTab(t.value)}
-              className={`flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === t.value ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
-              <t.icon size={13} />{t.label}
-            </button>
-          ))}
+        <div className="overflow-x-auto w-full pb-1">
+          <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 w-fit min-w-full sm:min-w-0">
+            {tabs.map(t => (
+              <button key={t.value} onClick={() => setActiveTab(t.value)}
+                className={`flex items-center gap-2 px-4 sm:px-7 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === t.value ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                <t.icon size={13} />{t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* CONTENIDO */}

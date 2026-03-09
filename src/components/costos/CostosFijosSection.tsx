@@ -197,7 +197,8 @@ function ImpuestosView({ impuestos, variableContext, totalMensual, onNuevo, onEd
         <EmptyState text="Sin impuestos registrados" />
       ) : (
         <div className="bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[700px]">
             <thead className="bg-white/[0.02] text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-white/5">
               <tr>
                 <th className="p-5 pl-8">Nombre</th>
@@ -262,7 +263,7 @@ function ImpuestosView({ impuestos, variableContext, totalMensual, onNuevo, onEd
                       </button>
                     </td>
                     <td className="p-5 pr-8 text-center">
-                      <div className="flex gap-1.5 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1.5 justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         {vencido && c.activo && val !== null && (
                           <button onClick={() => onPagar(c)} className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition-all" title="Pagar">
                             <Banknote size={14} />
@@ -281,6 +282,7 @@ function ImpuestosView({ impuestos, variableContext, totalMensual, onNuevo, onEd
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
@@ -339,7 +341,8 @@ function CostosView({ costos, onNuevo, onEdit, onDelete, onToggle, onPagar }: {
         <EmptyState text="Sin costos registrados" />
       ) : (
         <div className="bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[600px]">
             <thead className="bg-white/[0.02] text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-white/5">
               <tr>
                 <th className="p-5 pl-8">Nombre</th>
@@ -403,7 +406,7 @@ function CostosView({ costos, onNuevo, onEdit, onDelete, onToggle, onPagar }: {
                       </button>
                     </td>
                     <td className="p-5 pr-8 text-center">
-                      <div className="flex gap-1.5 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1.5 justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         {!isPagado && c.activo && (
                           <button onClick={() => onPagar(c)} className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition-all" title="Pagar">
                             <Banknote size={14} />
@@ -422,6 +425,7 @@ function CostosView({ costos, onNuevo, onEdit, onDelete, onToggle, onPagar }: {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -96,7 +96,7 @@ export function TareasList({ tareas, tipo, onCompletar, onEdit, onDelete }: Prop
               </div>
 
               {/* ═══ FECHA ═══ */}
-              <div className="shrink-0 text-right hidden sm:block">
+              <div className="shrink-0 text-right">
                 {tipo === 'cumplidas' ? (
                   <p className="text-[8px] font-bold text-slate-600">
                     {tarea.fecha_completada
@@ -126,7 +126,7 @@ export function TareasList({ tareas, tipo, onCompletar, onEdit, onDelete }: Prop
               </div>
 
               {/* ═══ ACCIONES ═══ */}
-              <div className="shrink-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="shrink-0 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 {tipo !== 'cumplidas' && (
                   <button onClick={() => onEdit(tarea)}
                     className="p-2 bg-white/5 hover:bg-sky-500/10 text-slate-600 hover:text-sky-400 rounded-lg transition-all">
