@@ -13,7 +13,8 @@ import { ViajesHeader } from '@/components/viajes/ViajesHeader'
 import { ViajeModal } from '@/components/viajes/ViajeModal'
 import { TraccarSetupModal } from '@/components/viajes/TraccarSetupModal'
 
-const INITIAL_FORM_STATE = {
+function getInitialFormState() {
+  return {
   chofer_id: '',
   camion_id: '',
   origen: 'MENDOZA',
@@ -32,7 +33,9 @@ const INITIAL_FORM_STATE = {
   desgaste_por_km: '180',
   repartos_ida: [],
   repartos_vuelta: []
-};
+  }
+}
+const INITIAL_FORM_STATE = getInitialFormState();
 
 // ════════════════════════════════════════════════════════
 // 🚀 NUEVO COMPONENTE: VISTA 360 DEL VIAJE (SLIDE-OVER)
@@ -190,7 +193,7 @@ export default function ViajesPage() {
   const [destinos, setDestinos] = useState<any[]>([])
   const [precioGasoilGlobal, setPrecioGasoilGlobal] = useState(0)
   const [appConfig, setAppConfig] = useState<any>(null)
-  const [formData, setFormData] = useState<any>(INITIAL_FORM_STATE)
+  const [formData, setFormData] = useState<any>(getInitialFormState())
 
   useEffect(() => {
     setMounted(true)
@@ -452,7 +455,7 @@ export default function ViajesPage() {
       }
 
       setIsModalOpen(false);
-      setFormData(INITIAL_FORM_STATE);
+      setFormData(getInitialFormState());
       fetchData();
       alert("✅ Viaje registrado correctamente. Los saldos de clientes y choferes fueron actualizados.");
     } catch (err: any) {
@@ -522,7 +525,7 @@ export default function ViajesPage() {
 
         <ViajesHeader
           search={search} setSearch={setSearch}
-          onOpenModal={() => { setFormData(INITIAL_FORM_STATE); setIsModalOpen(true); }}
+          onOpenModal={() => { setFormData(getInitialFormState()); setIsModalOpen(true); }}
           onOpenTraccar={() => setIsTraccarModalOpen(true)}
           {...stats} totalKm={stats.km} totalFacturado={stats.bruta} totalNeto={stats.neta}
           activeTab={activeTab} setActiveTab={setActiveTab}

@@ -101,7 +101,10 @@ export async function POST(req: Request) {
 
     if (!tokenMatch || !signMatch) {
       console.error('Respuesta WSAA:', wsaaText)
-      throw new Error('No se pudo obtener el token de ARCA. Verificá el certificado.')
+      const faultMatch = wsaaText.match(/<faultstring>([\s\S]*?)<\/faultstring>/)
+      const errorDetail = faultMatch ? faultMatch[1].trim() : 'Respuesta inesperada del servidor AFIP'
+      const entorno = esProd ? 'PRODUCCIÓN' : 'HOMOLOGACIÓN'
+      throw new Error(`AFIP (${entorno}) rechazó la autenticación: ${errorDetail}. Verificá que el certificado esté vigente y corresponda al CUIT configurado.`)
     }
 
     const token = tokenMatch[1].trim()

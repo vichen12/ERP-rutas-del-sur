@@ -65,9 +65,9 @@ export default function MainDashboard() {
     const costoTotal = gasoil + choferes + descargas + desgasteTotal
     const neta = bruta - costoTotal
     const margen = bruta > 0 ? ((neta / bruta) * 100) : 0
-    const promedioGasoil = kmTotal > 0 ? ((ltsTotal / kmTotal) * 100).toFixed(1) : '0.0'
+    const promedioGasoil = kmTotal > 0 ? Number(((ltsTotal / kmTotal) * 100).toFixed(1)) : 0
     const facturacionPromedio = filtrados.length > 0 ? Math.round(bruta / filtrados.length) : 0
-    const utilidadPorKm = kmTotal > 0 ? (neta / kmTotal).toFixed(2) : '0'
+    const utilidadPorKm = kmTotal > 0 ? Number((neta / kmTotal).toFixed(2)) : 0
 
     const pieData = [
       { name: 'GASOIL', value: Math.round(gasoil), color: '#fbbf24', pct: bruta > 0 ? ((gasoil / bruta) * 100).toFixed(1) : 0 },

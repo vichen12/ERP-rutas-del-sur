@@ -119,7 +119,9 @@ export const backupService = {
     doc.text(`DEUDA TOTAL CARTERA: $ ${totalCartera.toLocaleString('es-AR')}`, 20, currentY + 9)
 
     addFooter(doc)
-    doc.save(`Auditoria_Deuda_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    try {
+      doc.save(`Auditoria_Deuda_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    } catch (e) { console.error('Error al descargar PDF:', e) }
   },
 
   downloadPDF: async (cliente: any, gestion: any) => {
@@ -153,7 +155,9 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`EstadoCuenta_${cliente.razon_social.replace(/\s+/g, '_')}.pdf`)
+    try {
+      doc.save(`EstadoCuenta_${cliente.razon_social.replace(/\s+/g, '_')}.pdf`)
+    } catch (e) { console.error('Error al descargar PDF:', e) }
   },
 
   // ════════════════════════════════════════
@@ -257,7 +261,9 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`CajaBanco_${fechaDesde.replace(/\//g, '-')}_${fechaHasta.replace(/\//g, '-')}.pdf`)
+    try {
+      doc.save(`CajaBanco_${fechaDesde.replace(/\//g, '-')}_${fechaHasta.replace(/\//g, '-')}.pdf`)
+    } catch (e) { console.error('Error al descargar PDF:', e) }
   },
 
   // ════════════════════════════════════════
@@ -339,7 +345,9 @@ export const backupService = {
     }
 
     addFooter(doc)
-    doc.save(`Tareas_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    try {
+      doc.save(`Tareas_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    } catch (e) { console.error('Error al descargar PDF:', e) }
   },
 
   // ════════════════════════════════════════
@@ -398,7 +406,9 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`Viajes_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    try {
+      doc.save(`Viajes_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    } catch (e) { console.error('Error al descargar PDF:', e) }
   },
 
   // ════════════════════════════════════════
@@ -466,7 +476,9 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`Flota_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    try {
+      doc.save(`Flota_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    } catch (e) { console.error('Error al descargar PDF:', e) }
   },
 
   // ════════════════════════════════════════
@@ -516,6 +528,8 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`Choferes_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    try {
+      doc.save(`Choferes_RutasDelSur_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    } catch (e) { console.error('Error al descargar PDF:', e) }
   },
 }

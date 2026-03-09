@@ -1,15 +1,13 @@
 'use client'
 import { useState, useEffect, useMemo, Suspense, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import * as supabaseLib from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { FacturasHeader } from '@/components/facturacion/FacturasHeader'
 import { FacturasKpis } from '@/components/facturacion/FacturasKpis'
 import { FacturasTabla } from '@/components/facturacion/FacturasTabla'
 import { FacturaWizard } from '@/components/facturacion/Facturawizard'
 import { ArcaConfigModal } from '@/components/facturacion/ArcaConfigModal'
-
-const supabase = (supabaseLib as any).supabase || ((supabaseLib as any).getSupabase?.()) || supabaseLib
 
 function FacturacionInner() {
   const searchParams = useSearchParams()

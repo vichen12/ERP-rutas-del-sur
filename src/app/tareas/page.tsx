@@ -1,12 +1,10 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
-import * as supabaseLib from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { Plus, Loader2, Clock, AlertTriangle, CheckSquare } from 'lucide-react'
 import { TareasList } from '@/components/tareas/Tareaslist'
 import { TareaModal } from '@/components/tareas/TareaModal'
 import { CompletarModal } from '@/components/tareas/Completarmodal'
-
-const supabase = (supabaseLib as any).supabase || ((supabaseLib as any).getSupabase?.()) || supabaseLib
 
 type Tab = 'por_cumplir' | 'atrasadas' | 'cumplidas'
 

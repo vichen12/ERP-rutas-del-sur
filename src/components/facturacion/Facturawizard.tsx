@@ -102,6 +102,14 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
   }
 
   function handleEmitir() {
+    // Validar CUIT para factura A (receptor Responsable Inscripto requiere CUIT válido)
+    if (tipoFactura.letra === 'A') {
+      const cuit = (selectedCliente?.cuit || '').replace(/\D/g, '')
+      if (cuit.length !== 11) {
+        alert('Para emitir Factura A el cliente debe tener un CUIT válido de 11 dígitos. Actualizá los datos del cliente antes de continuar.')
+        return
+      }
+    }
     onSubmit({
       tipo_comprobante: tipoFactura.tipo,
       fecha_comprobante: fechaComprobante,
