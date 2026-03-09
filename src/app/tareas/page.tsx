@@ -1,12 +1,15 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Plus, Loader2, Clock, AlertTriangle, CheckSquare } from 'lucide-react'
+import { Plus, Loader2, Clock, AlertTriangle, CheckSquare, Bell, X } from 'lucide-react'
 import { TareasList } from '@/components/tareas/Tareaslist'
 import { TareaModal } from '@/components/tareas/TareaModal'
 import { CompletarModal } from '@/components/tareas/Completarmodal'
+import { checkAndSendNotificaciones } from '@/lib/tareasNotificaciones'
 
 type Tab = 'por_cumplir' | 'atrasadas' | 'cumplidas'
+
+const WPP_STORAGE_KEY = 'erp_wpp_numero'
 
 export default function TareasPage() {
   const [tareas, setTareas] = useState<any[]>([])
@@ -20,7 +23,19 @@ export default function TareasPage() {
   // CompletarModal
   const [completandoTarea, setCompletandoTarea] = useState<any>(null)
 
+  // Notificaciones WhatsApp
+  const [wppModalOpen, setWppModalOpen] = useState(false)
+  const [wppInput, setWppInput] = useState('')
+  const [wppGuardado, setWppGuardado] = useState('')
+
   const mountedRef = useRef(true)
+
+  useEffect(() => {
+    const guardado = localStorage.getItem(WPP_STORAGE_KEY) || ''
+    setWppGuardado(guardado)
+    setWppInput(guardado)
+  }, [])
+
   useEffect(() => {
     mountedRef.current = true
     fetchTareas()
@@ -36,12 +51,25 @@ export default function TareasPage() {
         .order('fecha_vencimiento', { ascending: true })
       if (!mountedRef.current) return
       if (error) console.error('Error fetch:', error.message)
-      setTareas(data || [])
+      const tareasData = data || []
+      setTareas(tareasData)
+
+      // Enviar notificaciones al número del usuario si está configurado
+      const wpp = localStorage.getItem(WPP_STORAGE_KEY) || ''
+      if (wpp) {
+        checkAndSendNotificaciones(supabase, tareasData, '', wpp)
+      }
     } catch (e: any) {
       console.error('Error cargando tareas:', e?.message || e)
     } finally {
       if (mountedRef.current) setLoading(false)
     }
+  }
+
+  function guardarWpp() {
+    localStorage.setItem(WPP_STORAGE_KEY, wppInput.trim())
+    setWppGuardado(wppInput.trim())
+    setWppModalOpen(false)
   }
 
   const hoy = new Date().toISOString().split('T')[0]
@@ -199,12 +227,63 @@ export default function TareasPage() {
           <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
             TAREAS
           </h1>
-          <button onClick={() => { setEditingTarea(null); setIsModalOpen(true) }}
-            className="flex items-center gap-2 px-7 py-3.5 bg-violet-600 hover:bg-violet-500 text-white rounded-2xl font-black uppercase text-[9px] tracking-widest transition-all active:scale-95 shadow-xl group">
-            <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
-            Nueva Tarea
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setWppModalOpen(true)}
+              title={wppGuardado ? `WhatsApp: ${wppGuardado}` : 'Configurar notificaciones WhatsApp'}
+              className={`flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black uppercase text-[9px] tracking-widest transition-all active:scale-95 shadow-xl border ${wppGuardado ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-600/30' : 'bg-slate-800 border-white/10 text-slate-400 hover:text-white hover:border-white/20'}`}
+            >
+              <Bell size={14} strokeWidth={2.5} />
+              {wppGuardado ? 'WPP ✓' : 'Notif. WPP'}
+            </button>
+            <button onClick={() => { setEditingTarea(null); setIsModalOpen(true) }}
+              className="flex items-center gap-2 px-7 py-3.5 bg-violet-600 hover:bg-violet-500 text-white rounded-2xl font-black uppercase text-[9px] tracking-widest transition-all active:scale-95 shadow-xl group">
+              <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
+              Nueva Tarea
+            </button>
+          </div>
         </div>
+
+        {/* ═══ MODAL WPP ═══ */}
+        {wppModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 w-full max-w-sm shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-white font-black uppercase tracking-widest text-xs">Notificaciones WhatsApp</h2>
+                <button onClick={() => setWppModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+              <p className="text-slate-400 text-xs mb-5 leading-relaxed">
+                Ingresá tu número para recibir recordatorios de tareas por WhatsApp. Formato: <span className="text-white font-mono">+5492611234567</span>
+              </p>
+              <input
+                type="tel"
+                value={wppInput}
+                onChange={e => setWppInput(e.target.value)}
+                placeholder="+5492611234567"
+                className="w-full bg-slate-800 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm font-mono placeholder:text-slate-600 focus:outline-none focus:border-violet-500 mb-5"
+              />
+              <div className="flex gap-3">
+                {wppGuardado && (
+                  <button
+                    onClick={() => { setWppInput(''); localStorage.removeItem(WPP_STORAGE_KEY); setWppGuardado(''); setWppModalOpen(false) }}
+                    className="flex-1 py-3 rounded-2xl bg-rose-600/20 text-rose-400 border border-rose-500/30 font-black uppercase text-[9px] tracking-widest hover:bg-rose-600/30 transition-all"
+                  >
+                    Quitar
+                  </button>
+                )}
+                <button
+                  onClick={guardarWpp}
+                  disabled={!wppInput.trim()}
+                  className="flex-1 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 text-white font-black uppercase text-[9px] tracking-widest transition-all"
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ═══ TABS ═══ */}
         <div className="overflow-x-auto w-full pb-1">
