@@ -26,7 +26,9 @@ export function ViajeModal({
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   useEffect(() => {
-    if (isOpen) setStep(1);
+    if (isOpen) {
+      setStep(1);
+    }
   }, [isOpen]);
 
   const handleCamionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

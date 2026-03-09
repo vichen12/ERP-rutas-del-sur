@@ -56,10 +56,12 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
           </p>
           <div className="flex items-center justify-center gap-2">
               <span className="text-3xl font-black text-slate-500">$</span>
-              <input 
-                  type="number" 
-                  value={paymentData.montoReal || ''} 
-                  onChange={e => setPaymentData({...paymentData, montoReal: Number(e.target.value)})}
+              <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={paymentData.montoReal || ''}
+                  onChange={e => setPaymentData({...paymentData, montoReal: Math.max(0, Number(e.target.value))})}
                   className="bg-transparent text-4xl font-black text-white italic tracking-tighter w-48 text-center outline-none border-b border-white/10 focus:border-white transition-all"
               />
           </div>
@@ -115,9 +117,9 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
 
         <button 
           onClick={() => onConfirm(paymentData)} 
-          disabled={isProcessing || !paymentData.montoReal} 
+          disabled={isProcessing || paymentData.montoReal === null || paymentData.montoReal === undefined || paymentData.montoReal < 0}
           className={`w-full mt-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all flex items-center justify-center gap-2 ${
-            !paymentData.montoReal ? 'bg-white/5 text-slate-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white active:scale-95'
+            (paymentData.montoReal === null || paymentData.montoReal === undefined || paymentData.montoReal < 0) ? 'bg-white/5 text-slate-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white active:scale-95'
           }`}
         >
           {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <>Confirmar Pago <CheckCircle2 size={18}/></>}

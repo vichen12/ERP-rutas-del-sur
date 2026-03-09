@@ -2,12 +2,12 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  Truck, Users, LayoutDashboard, LogOut, 
-  Settings, Bell, UserCircle, MapPin, 
+import {
+  Truck, Users, LayoutDashboard, LogOut,
+  Settings, Bell, UserCircle, MapPin,
   AlertTriangle, CheckCircle2, X,
   FileText, Wrench, Menu, ShieldCheck,
-  Landmark,ClipboardList,DollarSign,Fuel  // ← NUEVO
+  Landmark,ClipboardList,DollarSign,Fuel, Package, BookOpen
 } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
 
@@ -113,10 +113,10 @@ export function Navbar() {
      { label: 'Combustible', href: '/combustible', icon: Fuel },
      { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
      { label: 'Tareas', href: '/tareas', icon: ClipboardList },
+    { label: 'Operativa', href: '/operativa', icon: Package },
     { label: 'Remitos',   href: '/remitos',    icon: FileText },
-    { label: 'Facturas', href: '/facturacion', icon: FileText }, 
-    
-    // ← NUEVO
+    { label: 'Facturas', href: '/facturacion', icon: FileText },
+    { label: 'Manual', href: '/manual', icon: BookOpen },
   ]
 
   const handleLogout = async () => {
