@@ -8,7 +8,7 @@ import {
   AlertTriangle, CheckCircle2, X,
   FileText, Wrench, Menu, ShieldCheck,
   Landmark, ClipboardList, DollarSign, Fuel,
-  Sun, Moon, Package
+  Sun, Moon, Package, FileCheck
 } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
 import { useTheme } from '@/components/ThemeProvider'
@@ -113,6 +113,7 @@ export function Navbar() {
     { label: 'Choferes',  href: '/choferes',   icon: UserCircle },
     { label: 'Viajes',    href: '/viajes',     icon: MapPin },
      { label: 'Banco',     href: '/banco', icon: Landmark },
+     { label: 'Cheques',   href: '/cheques', icon: FileCheck },
      { label: 'Combustible', href: '/combustible', icon: Fuel },
      { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
      { label: 'Tareas', href: '/tareas', icon: ClipboardList },
