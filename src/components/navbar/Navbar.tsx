@@ -116,9 +116,10 @@ export function Navbar() {
      { label: 'Combustible', href: '/combustible', icon: Fuel },
      { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
      { label: 'Tareas', href: '/tareas', icon: ClipboardList },
+     { label: 'Depósito', href: '/deposito', icon: Package },
     { label: 'Remitos',   href: '/remitos',    icon: FileText },
     { label: 'Facturas', href: '/facturacion', icon: FileText },
-    { label: 'Depósito', href: '/deposito', icon: Package },
+    
   ]
 
   const handleLogout = async () => {
