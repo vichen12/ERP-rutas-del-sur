@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════
--- SCRIPT 2: DATOS REALES — Rutas del Sur ERP
+-- SCRIPT 2: DATOS REALES — DallapeSystems ERP
 -- 8 clientes | 10 camiones | 8 choferes | 40 viajes (Abr 2025 → Mar 2026)
 -- Ejecutar DESPUÉS de 1_limpiar_datos.sql
 -- ══════════════════════════════════════════════════════════
@@ -529,7 +529,7 @@ INSERT INTO cargas_combustible (id, fecha, camion_id, chofer_id, litros, precio_
 
 -- DEPÓSITO INICIAL 30 MILLONES
 INSERT INTO movimientos_caja (fecha, tipo, tipo_cuenta, categoria, descripcion, monto) VALUES
-('2025-01-02','ingreso','banco','ingreso_otro','APORTE INICIAL SOCIOS — CAPITAL OPERATIVO RUTAS DEL SUR',30000000);
+('2025-01-02','ingreso','banco','ingreso_otro','APORTE INICIAL SOCIOS — CAPITAL OPERATIVO DALLAPESYSTEMS',30000000);
 
 -- COBROS DE FLETES (viajes 01-20, pagos completos en banco)
 INSERT INTO movimientos_caja (fecha, tipo, tipo_cuenta, categoria, descripcion, monto, cliente_id) VALUES

@@ -31,7 +31,7 @@ export function ClienteSidebar({
                <h1 className="text-xl font-black tracking-tighter uppercase italic text-white leading-none">
                  Terminal <span className="text-sky-500">Logística</span>
                </h1>
-               <p className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1.5 text-balance">Mendoza • Rutas del Sur ERP</p>
+               <p className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1.5 text-balance">DallapeSystems ERP</p>
             </div>
             <button onClick={onAdd} className="p-3 bg-sky-600/10 text-sky-500 rounded-2xl hover:bg-sky-600 hover:text-white transition-all border border-sky-500/20 group">
               <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />

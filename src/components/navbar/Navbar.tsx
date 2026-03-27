@@ -263,7 +263,7 @@ export function Navbar() {
             <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[10px] tracking-widest active:scale-95">
               <LogOut size={16} /> Salir del Sistema
             </button>
-            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em] pt-2">V2.0 • Rutas del Sur ERP</p>
+            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em] pt-2">V2.0 • DallapeSystems ERP</p>
           </div>
         </div>
       </div>

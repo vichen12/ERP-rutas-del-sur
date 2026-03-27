@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
 
     const emailHtml = `
       <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 20px;">
-        <h1 style="color: #0284c7;">Backup Rutas del Sur</h1>
+        <h1 style="color: #0284c7;">Backup DallapeSystems</h1>
         <p>Reporte generado el <strong>${fecha_generacion}</strong></p>
         <div style="background: #0f172a; color: white; padding: 20px; border-radius: 15px; text-align: center;">
           <span>Deuda Total Acumulada</span>
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Rutas del Sur ERP <onboarding@resend.dev>',
+        from: 'DallapeSystems ERP <onboarding@resend.dev>',
         to: ['rutasdelsurmza@gmail.com'],
         subject: `Resguardo Contable - ${fecha_generacion}`,
         html: emailHtml,

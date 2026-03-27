@@ -1,8 +1,8 @@
-# CLAUDE.md — Rutas del Sur ERP
+# CLAUDE.md — DallapeSystems ERP
 
 ## Descripción del Proyecto
 
-ERP completo para empresa de transporte/logística argentina llamada **Rutas del Sur**.
+ERP completo para empresa de transporte/logística argentina llamada **DallapeSystems**.
 Gestiona flota, choferes, viajes, clientes, caja, banco, combustible, costos, impuestos, tareas y facturación electrónica AFIP/ARCA.
 
 ---

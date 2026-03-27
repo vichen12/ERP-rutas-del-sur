@@ -24,7 +24,7 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                <p className="text-[7px] font-black text-emerald-500 uppercase tracking-[0.2em]">Sincronizado V2.0</p>
             </div>
-            <p className="text-[7px] font-black text-slate-600 uppercase tracking-[0.4em]">Rutas del Sur ERP</p>
+            <p className="text-[7px] font-black text-slate-600 uppercase tracking-[0.4em]">DallapeSystems ERP</p>
           </div>
         </div>
       </div>

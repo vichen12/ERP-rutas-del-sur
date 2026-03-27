@@ -53,7 +53,7 @@ export function CajaHeader({
             BANCO
           </h1>
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">
-            Control financiero integral · Rutas del Sur ERP
+            Control financiero integral · DallapeSystems ERP
           </p>
         </div>
 

@@ -310,7 +310,7 @@ export default function MainDashboard() {
         ══════════════════════════════════════ */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-500 mb-1">Rutas del Sur ERP</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-500 mb-1">DallapeSystems ERP</p>
             <h1 className="text-3xl font-black uppercase tracking-tight text-slate-100">
               Dashboard <span className="text-slate-600 font-thin mx-1">/</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400">Operaciones</span>

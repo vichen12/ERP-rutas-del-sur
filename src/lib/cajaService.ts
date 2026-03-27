@@ -1,6 +1,6 @@
 // src/lib/cajaService.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// SERVICIO CENTRAL DE CAJA — Rutas del Sur ERP
+// SERVICIO CENTRAL DE CAJA — DallapeSystems ERP
 //
 // TODOS los módulos que mueven plata deben usar esta función.
 // Nunca insertar en movimientos_caja directamente desde un componente.

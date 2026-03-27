@@ -5,7 +5,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#141c28] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
       
-      {/* Background Glows (Identidad Rutas del Sur) */}
+      {/* Background Glows (Identidad DallapeSystems) */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-sky-500/5 blur-[120px] rounded-full" />
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full" />
@@ -20,8 +20,8 @@ export default function LandingPage() {
         
         <div className="space-y-4">
           <h1 className="text-7xl md:text-9xl font-black italic tracking-tighter text-white uppercase leading-[0.8]">
-            RUTAS <br />
-            <span className="text-cyan-500">DEL SUR</span>
+            DALLAPE<br />
+            <span className="text-cyan-500">SYSTEMS</span>
           </h1>
           <p className="text-slate-500 font-bold text-sm md:text-lg max-w-xl mx-auto leading-relaxed uppercase tracking-[0.1em]">
             Ecosistema de gestión logística de alta precisión para transporte y control contable de flota.

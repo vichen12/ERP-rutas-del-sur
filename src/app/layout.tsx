@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rutas del Sur | ERP",
+  title: "DallapeSystems | ERP",
   description: "Panel de Control Operativo y Logístico",
 };
 
