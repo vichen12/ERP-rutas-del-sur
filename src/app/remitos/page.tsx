@@ -267,7 +267,7 @@ export default function RemitosPage() {
                 )}
               </div>
 
-              <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 items-center">
                 <div>
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{r.cliente_nombre}</p>
                   <h3 className={'text-xl font-black italic tracking-tighter uppercase leading-none ' + (r.nro_remito === 'PENDIENTE' ? 'text-amber-500' : 'text-white')}>

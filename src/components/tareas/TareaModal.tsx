@@ -71,8 +71,8 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start sm:items-center justify-center overflow-y-auto bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 my-auto">
 
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-violet-500" />
 

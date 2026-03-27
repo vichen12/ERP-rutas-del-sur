@@ -381,66 +381,114 @@ export default function CombustiblePage() {
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[3rem] border border-white/10 bg-[#1a2537]/20 backdrop-blur-xl shadow-2xl">
-            <table className="w-full text-left">
-              <thead className="bg-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-white/5">
-                <tr>
-                  {viewMode === 'impagos' && (
-                    <th className="p-6 w-16 text-center">
-                      <button onClick={handleSeleccionarTodo} className="text-slate-500 hover:text-amber-500 transition-colors"><CheckSquare size={18} className={selectedIds.length === cargasFiltradas.length && cargasFiltradas.length > 0 ? 'text-amber-500' : ''} /></button>
-                    </th>
-                  )}
-                  <th className="p-6">Fecha / Remito</th><th className="p-6">Unidad y Responsable</th><th className="p-6">Volumen</th><th className="p-6 text-right">Subtotal ERP</th><th className="p-6 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {cargasFiltradas.length === 0 ? (
-                  <tr><td colSpan={6} className="p-12 text-center text-slate-500 font-bold uppercase tracking-widest text-[10px]">No hay cargas para mostrar en este filtro.</td></tr>
-                ) : cargasFiltradas.map(c => {
-                  const isSelected = selectedIds.includes(c.id);
-                  const isSaldoAnterior = c.remito_nro === 'SALDO-ANTERIOR' || c.remito_nro === 'PAGO-EXCEDENTE';
-
-                  return (
-                    <tr key={c.id} className={`transition-all group ${isSelected ? 'bg-amber-500/5' : 'hover:bg-white/[0.02]'}`}>
-                      {viewMode === 'impagos' && (
-                        <td className="p-6 text-center border-r border-white/5">
-                          <input type="checkbox" checked={isSelected} onChange={() => handleToggleSeleccion(c.id)} className="w-4 h-4 accent-amber-500 rounded bg-[#1a2537] border-white/20 cursor-pointer" />
-                        </td>
-                      )}
-                      <td className="p-6">
-                        <p className="text-sm font-black text-white">{new Date(c.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
-                        <p className={`text-[10px] uppercase font-bold ${isSaldoAnterior ? 'text-rose-500' : 'text-amber-500'}`}>
-                          Nº {c.remito_nro || (c.viaje_id ? 'VINCULADO A VIAJE' : 'S/R')}
+          <div>
+            {/* Vista mobile */}
+            <div className="md:hidden space-y-3">
+              {cargasFiltradas.length === 0 ? (
+                <div className="p-10 text-center text-slate-500 font-bold uppercase tracking-widest text-[10px]">No hay cargas para mostrar.</div>
+              ) : cargasFiltradas.map(c => {
+                const isSelected = selectedIds.includes(c.id)
+                const isSaldoAnterior = c.remito_nro === 'SALDO-ANTERIOR' || c.remito_nro === 'PAGO-EXCEDENTE'
+                return (
+                  <div key={c.id} className={`rounded-2xl border p-4 space-y-3 transition-all ${isSelected ? 'bg-amber-500/5 border-amber-500/30' : 'bg-[#1a2537]/40 border-white/5'}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {viewMode === 'impagos' && (
+                          <input type="checkbox" checked={isSelected} onChange={() => handleToggleSeleccion(c.id)} className="w-4 h-4 accent-amber-500 shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <p className={`text-sm font-black uppercase truncate ${isSaldoAnterior ? 'text-rose-400' : 'text-slate-100'}`}>
+                            {getPatente(c) || (isSaldoAnterior ? 'AJUSTE FINANCIERO' : 'OTROS / BIDONES')}
+                          </p>
+                          <p className="text-[9px] text-slate-500 font-bold uppercase">{getChofer(c) || 'Sin responsable'}</p>
+                        </div>
+                      </div>
+                      <p className="text-base font-black text-white tabular-nums shrink-0">$ {Number(c.total).toLocaleString('es-AR')}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-bold text-slate-400">{new Date(c.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
+                        <p className={`text-[9px] font-bold uppercase ${isSaldoAnterior ? 'text-rose-500' : 'text-amber-500'}`}>
+                          Nº {c.remito_nro || (c.viaje_id ? 'VIAJE' : 'S/R')} · {Number(c.litros).toLocaleString('es-AR')} Lts
                         </p>
-                      </td>
-                      <td className="p-6">
-                        <p className={`text-xs font-black uppercase ${isSaldoAnterior ? 'text-rose-400' : 'text-slate-200'}`}>
-                          {getPatente(c) || (isSaldoAnterior ? 'AJUSTE FINANCIERO' : 'OTROS / BIDONES')}
-                        </p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase">{getChofer(c) || 'SIN RESPONSABLE'}</p>
-                      </td>
-                      <td className="p-6">
-                        <p className="text-sm font-black text-slate-300">{Number(c.litros).toLocaleString('es-AR')} Lts</p>
-                        {!isSaldoAnterior && <p className="text-[10px] text-slate-500 uppercase font-bold">a ${Number(c.precio_litro)}</p>}
-                      </td>
-                      <td className="p-6 text-right font-black text-white tabular-nums text-lg">
-                        $ {Number(c.total).toLocaleString('es-AR')}
-                      </td>
-                      <td className="p-6 text-center">
+                      </div>
+                      <div>
                         {!c.pagado && !c.viaje_id && (
-                          <button onClick={() => handleDeleteCarga(c)} className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100" title="Eliminar remito manual">
+                          <button onClick={() => handleDeleteCarga(c)} className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all">
                             <Trash2 size={14} />
                           </button>
                         )}
                         {c.pagado && (
-                          <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase border border-emerald-500/20">Pagado</span>
+                          <span className="px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase border border-emerald-500/20">Pagado</span>
                         )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Vista desktop */}
+            <div className="hidden md:block overflow-hidden rounded-[3rem] border border-white/10 bg-[#1a2537]/20 backdrop-blur-xl shadow-2xl">
+              <table className="w-full text-left">
+                <thead className="bg-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-white/5">
+                  <tr>
+                    {viewMode === 'impagos' && (
+                      <th className="p-6 w-16 text-center">
+                        <button onClick={handleSeleccionarTodo} className="text-slate-500 hover:text-amber-500 transition-colors"><CheckSquare size={18} className={selectedIds.length === cargasFiltradas.length && cargasFiltradas.length > 0 ? 'text-amber-500' : ''} /></button>
+                      </th>
+                    )}
+                    <th className="p-6">Fecha / Remito</th><th className="p-6">Unidad y Responsable</th><th className="p-6">Volumen</th><th className="p-6 text-right">Subtotal ERP</th><th className="p-6 text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {cargasFiltradas.length === 0 ? (
+                    <tr><td colSpan={6} className="p-12 text-center text-slate-500 font-bold uppercase tracking-widest text-[10px]">No hay cargas para mostrar en este filtro.</td></tr>
+                  ) : cargasFiltradas.map(c => {
+                    const isSelected = selectedIds.includes(c.id);
+                    const isSaldoAnterior = c.remito_nro === 'SALDO-ANTERIOR' || c.remito_nro === 'PAGO-EXCEDENTE';
+                    return (
+                      <tr key={c.id} className={`transition-all group ${isSelected ? 'bg-amber-500/5' : 'hover:bg-white/[0.02]'}`}>
+                        {viewMode === 'impagos' && (
+                          <td className="p-6 text-center border-r border-white/5">
+                            <input type="checkbox" checked={isSelected} onChange={() => handleToggleSeleccion(c.id)} className="w-4 h-4 accent-amber-500 rounded bg-[#1a2537] border-white/20 cursor-pointer" />
+                          </td>
+                        )}
+                        <td className="p-6">
+                          <p className="text-sm font-black text-white">{new Date(c.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
+                          <p className={`text-[10px] uppercase font-bold ${isSaldoAnterior ? 'text-rose-500' : 'text-amber-500'}`}>
+                            Nº {c.remito_nro || (c.viaje_id ? 'VINCULADO A VIAJE' : 'S/R')}
+                          </p>
+                        </td>
+                        <td className="p-6">
+                          <p className={`text-xs font-black uppercase ${isSaldoAnterior ? 'text-rose-400' : 'text-slate-200'}`}>
+                            {getPatente(c) || (isSaldoAnterior ? 'AJUSTE FINANCIERO' : 'OTROS / BIDONES')}
+                          </p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase">{getChofer(c) || 'SIN RESPONSABLE'}</p>
+                        </td>
+                        <td className="p-6">
+                          <p className="text-sm font-black text-slate-300">{Number(c.litros).toLocaleString('es-AR')} Lts</p>
+                          {!isSaldoAnterior && <p className="text-[10px] text-slate-500 uppercase font-bold">a ${Number(c.precio_litro)}</p>}
+                        </td>
+                        <td className="p-6 text-right font-black text-white tabular-nums text-lg">
+                          $ {Number(c.total).toLocaleString('es-AR')}
+                        </td>
+                        <td className="p-6 text-center">
+                          {!c.pagado && !c.viaje_id && (
+                            <button onClick={() => handleDeleteCarga(c)} className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100" title="Eliminar remito manual">
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                          {c.pagado && (
+                            <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase border border-emerald-500/20">Pagado</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

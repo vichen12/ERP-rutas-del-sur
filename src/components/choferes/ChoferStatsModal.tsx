@@ -117,8 +117,8 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
-      <div className="bg-[#141c28] border border-white/10 w-full max-w-6xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh]">
+    <div className="fixed inset-0 z-[200] flex items-start sm:items-center justify-center overflow-y-auto p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-6xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col max-h-none md:max-h-[90vh] my-auto">
         
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
 

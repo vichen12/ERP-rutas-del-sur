@@ -16,6 +16,7 @@ import { ClienteBackUp } from "@/components/clientes/ClienteBackUp";
 import { RegistrarMovimientoModal } from "@/components/clientes/RegistrarMovimientoModal";
 import { CompletarRemitoModal } from "@/components/clientes/CompletarRemitoModal";
 import { ClienteUbicaciones } from "@/components/clientes/ClienteUbicaciones";
+import { ClienteChequesSummary } from "@/components/cheques/ClienteChequesSummary";
 
 // ─── Integración con Caja ─────────────────────────────────────────────────────
 import { registrarMovimiento } from "@/lib/cajaService";
@@ -42,6 +43,7 @@ export default function ClientesPage() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [chequesCliente, setChequesCliente] = useState<any[]>([]);
 
   const emptyForm = {
     razon_social: "", cuit: "", nombre_contacto: "", telefono: "", direccion: "",
@@ -97,11 +99,22 @@ export default function ClientesPage() {
     setUbicaciones(data || []);
   }
 
+  async function fetchChequesCliente(clienteId: string) {
+    const { data } = await supabase
+      .from('cheques_diferidos')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .eq('tipo', 'recibido')
+      .order('fecha_vencimiento', { ascending: true });
+    setChequesCliente(data || []);
+  }
+
   function handleSelectCliente(cliente: any) {
     setSelected(cliente);
     setViewMode("individual");
     setIsSidebarOpen(false);
     fetchUbicaciones(cliente.id);
+    fetchChequesCliente(cliente.id);
   }
 
   const handleSaveCliente = async (e: React.FormEvent) => {
@@ -328,10 +341,11 @@ export default function ClientesPage() {
 
           {viewMode === "individual" && selected && (
             <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <ClienteHeader 
-                selected={selected} onBackup={() => setIsBackupModalOpen(true)} onEdit={handlePrepareEdit} onDelete={handleDeleteCliente} 
-                onNuevaOp={() => { setMovimientoAEditar(null); setIsMovimientoModalOpen(true); }} 
+              <ClienteHeader
+                selected={selected} onBackup={() => setIsBackupModalOpen(true)} onEdit={handlePrepareEdit} onDelete={handleDeleteCliente}
+                onNuevaOp={() => { setMovimientoAEditar(null); setIsMovimientoModalOpen(true); }}
               />
+              <ClienteChequesSummary cheques={chequesCliente} />
               <ClientesLibroMayor
                 gestion={gestion} 
                 aprobarViaje={aprobarViaje}

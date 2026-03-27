@@ -50,9 +50,10 @@ export function Navbar() {
   async function fetchAlerts() {
     try {
       // 🚀 ACTUALIZADO A CAMPOS V2.0
-      const [ch, ca] = await Promise.all([
+      const [ch, ca, chq] = await Promise.all([
         supabase.from('choferes').select('nombre, vto_licencia'),
-        supabase.from('camiones').select('patente, km_actual, km_ultimo_service, vto_rto, vto_senasa')
+        supabase.from('camiones').select('patente, km_actual, km_ultimo_service, vto_rto, vto_senasa'),
+        supabase.from('cheques_diferidos').select('tipo, monto, fecha_vencimiento, numero_cheque, clientes(razon_social)').eq('estado', 'pendiente'),
       ])
       
       const newAlerts: any[] = []
@@ -100,6 +101,33 @@ export function Navbar() {
           else if (diffDaysSenasa <= 30) newAlerts.push({ type: 'warning', title: 'SENASA Próximo', desc: `Unidad ${truck.patente}: SENASA vence en ${diffDaysSenasa} días.`, href: '/camiones' })
         }
       })
+      // 3. Alertas de Cheques (vencen en ≤5 días)
+      chq.data?.forEach((c: any) => {
+        if (!c.fecha_vencimiento) return
+        const venci = new Date(c.fecha_vencimiento + 'T12:00:00')
+        const diffDays = Math.ceil((venci.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24))
+        const esRecibido = c.tipo === 'recibido'
+        const nombre = c.clientes?.razon_social || 'Sin cliente'
+        const nro = c.numero_cheque ? ` Nro. ${c.numero_cheque}` : ''
+        const monto = `$${Number(c.monto).toLocaleString('es-AR')}`
+
+        if (diffDays < 0) {
+          newAlerts.push({
+            type: 'error',
+            title: esRecibido ? 'Cheque Vencido' : 'Cheque Emitido Vencido',
+            desc: `${esRecibido ? 'Cobrar' : 'Pagar'} cheque${nro} — ${nombre} (${monto})`,
+            href: '/cheques'
+          })
+        } else if (diffDays <= 5) {
+          newAlerts.push({
+            type: 'warning',
+            title: esRecibido ? 'Cheque a Cobrar' : 'Cheque a Pagar',
+            desc: `${esRecibido ? 'Vence' : 'Pagar'} en ${diffDays === 0 ? 'hoy' : diffDays + ' día' + (diffDays !== 1 ? 's' : '')} — ${nombre}${nro} (${monto})`,
+            href: '/cheques'
+          })
+        }
+      })
+
       setAlerts(newAlerts)
     } catch (e) { console.error("Error en Alertas Navbar:", e) }
   }

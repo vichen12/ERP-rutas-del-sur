@@ -47,8 +47,8 @@ export function RegistrarMovimientoModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
-      <div className="bg-[#141c28] border border-white/10 p-8 lg:p-10 rounded-[3rem] w-full max-w-2xl relative shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[500] flex items-start sm:items-center justify-center overflow-y-auto p-4 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 p-8 lg:p-10 rounded-[3rem] w-full max-w-2xl relative shadow-2xl overflow-hidden my-auto">
         
         <div className={`absolute -right-10 -top-10 w-40 h-40 blur-[100px] opacity-20 transition-colors duration-700 ${tipo === 'cargo' ? 'bg-sky-500' : 'bg-emerald-500'}`} />
         <div className={`absolute top-0 left-0 w-full h-1.5 transition-colors duration-700 ${tipo === 'cargo' ? 'bg-sky-500' : 'bg-emerald-500'}`} />

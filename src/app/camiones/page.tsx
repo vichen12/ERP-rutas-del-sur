@@ -394,7 +394,7 @@ export default function FlotaPage() {
                   setIsChoferModalOpen(true);
                 }
               }}
-              className="px-8 py-5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-3xl font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2"
+              className="px-8 py-5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-3xl font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <Plus size={20} strokeWidth={3} /> Alta
             </button>
@@ -441,7 +441,7 @@ export default function FlotaPage() {
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
           {activeTab === "camiones" ? (
             filteredData.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
                 {filteredData.map((c) => (
                   <CamionCard
                     key={c.id}

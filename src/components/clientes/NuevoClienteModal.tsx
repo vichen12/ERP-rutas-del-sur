@@ -19,8 +19,8 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
   }
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
-      <div className="bg-[#141c28] border border-white/10 p-10 lg:p-14 rounded-[3.5rem] w-full max-w-2xl relative shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[600] flex items-start sm:items-center justify-center overflow-y-auto p-4 sm:p-6 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 p-8 lg:p-14 rounded-[3.5rem] w-full max-w-2xl relative shadow-2xl overflow-hidden my-auto">
         
         {/* Efectos Ambientales */}
         <div className="absolute -left-10 -top-10 w-40 h-40 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
