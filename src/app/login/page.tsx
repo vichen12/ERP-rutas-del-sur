@@ -40,7 +40,7 @@ export default function LoginPage() {
             </div>
             <div>
               <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase leading-none">
-                Rutas <span className="text-sky-500">del Sur</span>
+                Dallape <span className="text-sky-500">Systems</span>
               </h1>
               <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">Acceso Restringido - ERP v1.0</p>
             </div>
@@ -55,7 +55,7 @@ export default function LoginPage() {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@rutasdelsur.com"
+                  placeholder="admin@dallapesystems.com"
                   className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-700"
                   required
                 />
