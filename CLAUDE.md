@@ -4189,3 +4189,60 @@ UUIDs usados en seed:
     "column_default": "now()"
   }
 ]
+
+
+
+
+
+---
+  Lo que tenés que hacer vos en Supabase (no se puede desde código)    
+
+  🔴 CRÍTICO — Row Level Security (RLS)
+
+  En Supabase → Authentication → Policies, activá RLS en TODAS las     
+  tablas. Mientras el sistema sea de un solo usuario, la política más  
+  simple es:
+  -- Ejecutar para cada tabla importante
+  ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "Solo usuarios autenticados" ON clientes
+    FOR ALL USING (auth.role() = 'authenticated');
+  -- Repetir para: viajes, cuenta_corriente, camiones, choferes, etc.  
+
+  🔴 CRÍTICO — Variable de entorno faltante
+
+  En tu .env.local agregá:
+  NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app
+  SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+  La SERVICE_ROLE_KEY la encontrás en Supabase → Settings → API →      
+  service_role.
+
+  🟡 MEDIO — Claves AFIP en la DB
+
+  Las claves privadas de AFIP (arca_clave_privada, arca_certificado)   
+  están guardadas en texto plano en la tabla configuracion. Por ahora  
+  es aceptable para un sistema interno, pero idealmente deberían estar 
+  en variables de entorno en producción.
+
+✻ Baked for 4m 59s
+
+───────────────────────────────────────────────────────────────────────
+❯  
+───────────────────────────────────────────────────────────────────────
+  ⏵⏵ accept edits on (meta+m to cycle)
+
+  Lo que vos tenés que hacer (5 minutos)
+
+  1. Supabase → SQL Editor → ejecutar scripts/4_rls_security.sql       
+  Esto protege todas las tablas con RLS de un saque.
+
+  2. Agregar a .env.local:
+  NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app
+  SUPABASE_SERVICE_ROLE_KEY=eyJ...  (Settings → API → service_role en  
+  Supabase)
+
+  ---
+  Ahora voy a revisar el responsive para notebooks.
+
+✻ Brewed for 4m 1s
+
+❯ dale hacelo pq realmente esta mal                                                        

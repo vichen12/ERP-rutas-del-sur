@@ -64,19 +64,21 @@ export default function ChoferesPage() {
   async function fetchData() {
     setLoading(true);
     try {
-      const [ch, ca, vi, deudas, historial] = await Promise.all([
+      // Un solo fetch de cuenta_corriente_choferes — se filtra en memoria
+      const [ch, ca, vi, cuentas] = await Promise.all([
         supabase.from("choferes").select("*").order("nombre", { ascending: true }),
         supabase.from("camiones").select("id, patente, modelo, operador_id"),
         supabase.from("viajes").select("id, chofer_id, pago_chofer, km_recorridos, lts_gasoil, fecha"),
-        supabase.from("cuenta_corriente_choferes").select("*").eq('pagado', false),
         supabase.from("cuenta_corriente_choferes").select("*").order("fecha", { ascending: false })
       ]);
 
       if (ch.data) setChoferes(ch.data);
       if (ca.data) setCamiones(ca.data);
       if (vi.data) setTodosLosViajes(vi.data);
-      if (deudas.data) setDeudasChoferes(deudas.data);
-      if (historial.data) setHistorialChoferes(historial.data);
+      if (cuentas.data) {
+        setDeudasChoferes(cuentas.data.filter((d: any) => !d.pagado));
+        setHistorialChoferes(cuentas.data);
+      }
       
     } catch (error: any) {
       console.error("Error cargando datos:", error.message);
@@ -191,6 +193,27 @@ export default function ChoferesPage() {
     }
   };
 
+  // --- PRE-COMPUTE maps O(n) para evitar O(n²) en render ---
+  const camionByOperador = useMemo(() =>
+    new Map(camiones.map((c: any) => [c.operador_id, c])),
+    [camiones]
+  );
+  const deudaByChofer = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const d of deudasChoferes) {
+      map.set(d.chofer_id, (map.get(d.chofer_id) || 0) + Number(d.monto));
+    }
+    return map;
+  }, [deudasChoferes]);
+  const kmsByChofer = useMemo(() => {
+    const map = new Map<string, { kms: number; count: number }>();
+    for (const v of todosLosViajes) {
+      const prev = map.get(v.chofer_id) || { kms: 0, count: 0 };
+      map.set(v.chofer_id, { kms: prev.kms + (Number(v.km_recorridos) || 0), count: prev.count + 1 });
+    }
+    return map;
+  }, [todosLosViajes]);
+
   // --- FILTRADO ---
   const filteredData = useMemo(() => {
     const term = search.toLowerCase().trim();
@@ -223,23 +246,23 @@ export default function ChoferesPage() {
     );
 
   return (
-    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-24 pt-32 relative font-sans italic selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-24 pt-20 sm:pt-28 md:pt-32 relative font-sans italic selection:bg-indigo-500/30">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#1e1b4b,transparent)] opacity-40" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:40px_40px]" />
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-6 md:px-10 space-y-8 relative z-10">
-        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 space-y-8 relative z-10">
+        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 xl:gap-10">
           <div className="space-y-6 flex-1">
-            <h1 className="text-6xl md:text-9xl font-black italic tracking-tighter text-white uppercase leading-[0.8]">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-9xl font-black italic tracking-tighter text-white uppercase leading-[0.8]">
               STAFF <span className="text-indigo-600 font-thin">/</span>{" "}
               <br className="hidden md:block" /> OPERADORES
             </h1>
 
             <div className="flex flex-wrap gap-4 pt-4">
               
-              <div className={`bg-[#141c28]/60 border px-6 py-4 rounded-[2rem] backdrop-blur-md min-w-[180px] group hover:border-white/20 transition-all ${
+              <div className={`bg-[#141c28]/60 border px-6 py-4 rounded-[2rem] backdrop-blur-md w-full sm:w-auto group hover:border-white/20 transition-all ${
                 globalStats.esAFavorEmpresa ? "border-emerald-500/40 bg-emerald-500/5" : 
                 globalStats.esDeudaEmpresa ? "border-rose-500/40 bg-rose-500/5" : "border-white/5"
               }`}>
@@ -289,14 +312,11 @@ export default function ChoferesPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {filteredData.map((ch) => {
-              const camion = camiones.find((c) => c.operador_id === ch.id);
-              const viajesCh = todosLosViajes.filter((v) => v.chofer_id === ch.id);
-              
-              const deudaReal = deudasChoferes
-                .filter(d => d.chofer_id === ch.id)
-                .reduce((acc, curr) => acc + Number(curr.monto), 0);
-
-              const kms = viajesCh.reduce((acc, v) => acc + (Number(v.km_recorridos) || 0), 0);
+              const camion = camionByOperador.get(ch.id);
+              const stats = kmsByChofer.get(ch.id) || { kms: 0, count: 0 };
+              const deudaReal = deudaByChofer.get(ch.id) || 0;
+              const kms = stats.kms;
+              const viajesCh = { length: stats.count }; // solo necesitamos el length
 
               return (
                 <ChoferCard
@@ -304,7 +324,7 @@ export default function ChoferesPage() {
                   chofer={ch}
                   camion={camion}
                   totalKm={kms}
-                  totalViajes={viajesCh.length}
+                  totalViajes={stats.count}
                   saldoPendiente={deudaReal}
                   onEdit={handleEdit}
                   onDelete={() => handleDeleteChofer(ch.id, ch.nombre)}
@@ -345,7 +365,7 @@ export default function ChoferesPage() {
 
 function HeaderStat({ label, val, color, icon: Icon, highlight }: any) {
   return (
-    <div className={`bg-[#141c28]/60 border ${highlight ? "border-amber-500/40 bg-amber-500/5" : "border-white/5"} px-6 py-4 rounded-[2rem] backdrop-blur-md min-w-[180px] group hover:border-white/20 transition-all`}>
+    <div className={`bg-[#141c28]/60 border ${highlight ? "border-amber-500/40 bg-amber-500/5" : "border-white/5"} px-6 py-4 rounded-[2rem] backdrop-blur-md w-full sm:w-auto group hover:border-white/20 transition-all`}>
       <p className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-2 ${color}`}>
         <Icon size={12} /> {label}
       </p>

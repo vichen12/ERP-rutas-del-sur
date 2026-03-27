@@ -145,7 +145,7 @@ export function ViajesHeader({
       <header className="flex flex-col xl:flex-row justify-between items-stretch gap-8">
         <div className="flex flex-col justify-between space-y-8 w-full xl:w-auto">
           <div className="space-y-2">
-            <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
               BITÁCORA <br/> 
               <span className={`${themeColor} font-thin transition-colors`}>
                 / {activeTab === 'global' ? 'GESTIÓN' : activeTab}

@@ -1,4 +1,6 @@
 'use client'
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useMemo } from 'react'
 import * as supabaseLib from '@/lib/supabase'
 import { Plus, Loader2, Clock, AlertTriangle, CheckSquare } from 'lucide-react'
@@ -42,27 +44,20 @@ export default function TareasPage() {
 
   const hoy = new Date().toISOString().split('T')[0]
 
-  // ═══ SEPARAR POR TABS ═══
-  const porCumplir = useMemo(() =>
-    tareas.filter(t => {
-      if (t.completada) return false
-      if (t.fecha_vencimiento < hoy) return false
-      // Solo mostrar si ya llegó la fecha_inicio (o no tiene)
-      if (t.fecha_inicio && t.fecha_inicio > hoy) return false
-      return true
-    }).sort((a, b) => a.fecha_vencimiento.localeCompare(b.fecha_vencimiento)),
-    [tareas, hoy]
-  )
-  const atrasadas = useMemo(() =>
-    tareas.filter(t => !t.completada && t.fecha_vencimiento < hoy)
-      .sort((a, b) => a.fecha_vencimiento.localeCompare(b.fecha_vencimiento)),
-    [tareas, hoy]
-  )
-  const cumplidas = useMemo(() =>
-    tareas.filter(t => t.completada)
-      .sort((a, b) => (b.fecha_vencimiento || '').localeCompare(a.fecha_vencimiento || '')),
-    [tareas]
-  )
+  // ═══ SEPARAR POR TABS — single pass en lugar de 3 filters ═══
+  const { porCumplir, atrasadas, cumplidas } = useMemo(() => {
+    const pc: any[] = [], at: any[] = [], cu: any[] = []
+    for (const t of tareas) {
+      if (t.completada) { cu.push(t); continue }
+      if (t.fecha_vencimiento < hoy) { at.push(t); continue }
+      if (t.fecha_inicio && t.fecha_inicio > hoy) continue
+      pc.push(t)
+    }
+    pc.sort((a, b) => a.fecha_vencimiento.localeCompare(b.fecha_vencimiento))
+    at.sort((a, b) => a.fecha_vencimiento.localeCompare(b.fecha_vencimiento))
+    cu.sort((a, b) => (b.fecha_vencimiento || '').localeCompare(a.fecha_vencimiento || ''))
+    return { porCumplir: pc, atrasadas: at, cumplidas: cu }
+  }, [tareas, hoy])
 
   // ═══ INICIAR COMPLETAR ═══
   function iniciarCompletar(tarea: any) {
@@ -78,26 +73,25 @@ export default function TareasPage() {
   // ═══ EJECUTAR COMPLETAR ═══
   async function ejecutarCompletar(tarea: any, descontarCaja: boolean) {
     try {
-      // Si descontar caja
+      const now = new Date().toISOString()
+      const ops: Promise<any>[] = [
+        supabase.from('tareas').update({ completada: true, fecha_completada: now }).eq('id', tarea.id)
+      ]
+
       if (descontarCaja && tarea.afecta_caja && tarea.monto) {
-        await supabase.from('movimientos_caja').insert([{
+        ops.push(supabase.from('movimientos_caja').insert([{
           tipo: 'egreso',
           tipo_cuenta: 'banco',
           categoria: 'costo_fijo',
           monto: Number(tarea.monto),
           descripcion: `TAREA: ${tarea.titulo}`,
-          fecha: new Date().toISOString().split('T')[0],
-        }])
+          fecha: now.split('T')[0],
+        }]))
       }
 
-      // Marcar completada
-      const now = new Date().toISOString()
-      await supabase.from('tareas').update({ completada: true, fecha_completada: now }).eq('id', tarea.id)
-
-      // Si recurrente → crear la siguiente
       if (tarea.es_recurrente && tarea.periodo_recurrencia) {
         const proximaFecha = calcularProximaFecha(tarea.fecha_vencimiento, tarea.periodo_recurrencia)
-        await supabase.from('tareas').insert([{
+        ops.push(supabase.from('tareas').insert([{
           titulo: tarea.titulo,
           descripcion: tarea.descripcion || null,
           fecha_inicio: proximaFecha,
@@ -108,9 +102,10 @@ export default function TareasPage() {
           monto: tarea.monto || null,
           completada: false,
           categoria: tarea.categoria || 'operativa',
-        }])
+        }]))
       }
 
+      await Promise.all(ops)
       setCompletandoTarea(null)
       fetchTareas()
     } catch (e: any) {
@@ -190,7 +185,7 @@ export default function TareasPage() {
 
         {/* ═══ HEADER ═══ */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
-          <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
             TAREAS
           </h1>
           <button onClick={() => { setEditingTarea(null); setIsModalOpen(true) }}
@@ -201,7 +196,7 @@ export default function TareasPage() {
         </div>
 
         {/* ═══ TABS ═══ */}
-        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit">
+        <div className="flex flex-wrap bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit gap-1">
           {tabs.map(t => (
             <button
               key={t.value}

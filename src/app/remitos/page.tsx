@@ -177,15 +177,15 @@ export default function RemitosPage() {
   return (
     <div className="min-h-screen bg-[#141c28] text-slate-200 pb-20 pt-32 md:pt-40 relative overflow-x-hidden font-sans italic selection:bg-amber-500/30">
       <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:30px_30px]" />
-      <div className="max-w-7xl mx-auto px-6 space-y-10 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 relative z-10">
 
         {/* HEADER */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-8">
           <div>
             <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4em] mb-2 flex items-center gap-2"><FileText size={14} /> Archivo Digital</p>
-            <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter text-white uppercase leading-none">REMITOS</h1>
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black italic tracking-tighter text-white uppercase leading-none">REMITOS</h1>
           </div>
-          <div className="flex items-end gap-8">
+          <div className="flex flex-wrap items-end gap-6 sm:gap-8">
             <div className="text-right">
               <p className="text-[8px] font-black uppercase tracking-widest text-emerald-500/60">Facturados</p>
               <p className="text-2xl font-black tabular-nums text-emerald-400 italic">{countFact}</p>
@@ -203,7 +203,7 @@ export default function RemitosPage() {
 
         {/* FILTROS */}
         <div className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {[
               { v: 'todos', l: 'Todos', c: remitos.length, tc: 'text-white' },
               { v: 'sin_facturar', l: 'Sin Facturar', c: countSinFact, tc: 'text-amber-400' },

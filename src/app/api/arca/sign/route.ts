@@ -1,12 +1,21 @@
 // src/app/api/arca/sign/route.ts
 // Firma el TRA con el certificado digital (CMS/PKCS#7)
-// Requiere: npm install node-forge
+// Ruta interna — solo llamada desde /api/arca/auth
 
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
+import { requireAuth } from '@/lib/apiAuth'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // ── Verificar autenticación ──────────────────────────────
+  const authError = await requireAuth(req)
+  if (authError) return authError
+
   try {
     const { tra, certificado, clavePrivada } = await req.json()
+
+    if (!tra || !certificado || !clavePrivada) {
+      return NextResponse.json({ error: 'Parámetros incompletos.' }, { status: 400 })
+    }
 
     // Importar node-forge dinámicamente
     const forge = await import('node-forge')
@@ -35,7 +44,7 @@ export async function POST(req: Request) {
       authenticatedAttributes: [
         { type: forge.pki.oids.contentType,   value: forge.pki.oids.data },
         { type: forge.pki.oids.messageDigest },
-        { type: forge.pki.oids.signingTime,   value: new Date() as any},
+        { type: forge.pki.oids.signingTime,   value: new Date() as any },
       ],
     })
 
@@ -47,7 +56,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ cmsSigned: base64 })
   } catch (e: any) {
-    console.error('Error firmando TRA:', e)
+    console.error('Error firmando TRA:', e.message)
     return NextResponse.json({ error: e.message || 'Error al firmar el certificado' }, { status: 500 })
   }
 }

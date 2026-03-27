@@ -32,12 +32,12 @@ export default function MainDashboard() {
     try {
       const [cl, vj, cc, cam, ch, tar, mov] = await Promise.all([
         supabase.from('clientes').select('id,razon_social').order('razon_social'),
-        supabase.from('viajes').select('*').order('fecha', { ascending: false }),
-        supabase.from('cuenta_corriente').select('*'),
-        supabase.from('camiones').select('*'),
-        supabase.from('choferes').select('id,nombre,estado').order('nombre'),
-        supabase.from('tareas').select('*').eq('completada', false).order('fecha_vencimiento'),
-        supabase.from('movimientos_caja').select('fecha,tipo,monto,categoria,descripcion').order('fecha', { ascending: false }).limit(200),
+        supabase.from('viajes').select('id,fecha,cliente_id,chofer_id,camion_id,tarifa_flete,flete_bruto,pago_chofer,lts_gasoil,precio_gasoil,km_recorridos,gastos_extras,estado').order('fecha', { ascending: false }),
+        supabase.from('cuenta_corriente').select('id,cliente_id,fecha,debe,haber,tipo_movimiento,estado_gestion'),
+        supabase.from('camiones').select('id,patente,modelo,km_actual,km_ultimo_service,estado,vto_rto,vto_senasa'),
+        supabase.from('choferes').select('id,nombre,estado,vto_licencia').order('nombre'),
+        supabase.from('tareas').select('id,titulo,fecha_vencimiento,categoria,prioridad,afecta_caja,monto').eq('completada', false).order('fecha_vencimiento'),
+        supabase.from('movimientos_caja').select('fecha,tipo,tipo_cuenta,monto,categoria,descripcion').order('fecha', { ascending: false }).limit(200),
       ])
       setData({
         clientes: cl.data || [], viajes: vj.data || [],
@@ -303,7 +303,7 @@ export default function MainDashboard() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:40px_40px]" />
       </div>
 
-      <div className="relative z-10 pt-24 pb-16 px-4 lg:px-8 max-w-[1800px] mx-auto">
+      <div className="relative z-10 pt-24 pb-16 px-4 sm:px-6 md:px-8 max-w-[1800px] mx-auto">
 
         {/* ══════════════════════════════════════
             HEADER
@@ -311,7 +311,7 @@ export default function MainDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-500 mb-1">DallapeSystems ERP</p>
-            <h1 className="text-3xl font-black uppercase tracking-tight text-slate-100">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-slate-100">
               Dashboard <span className="text-slate-600 font-thin mx-1">/</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-sky-400">Operaciones</span>
             </h1>
@@ -734,7 +734,7 @@ export default function MainDashboard() {
                   </div>
                   <span className="text-[8px] font-black text-slate-500">{recientes.length} viajes · {fmtK(totalFac)} facturado</span>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     {
                       label: 'Viajes de Ida', count: idas.length, color: 'emerald',

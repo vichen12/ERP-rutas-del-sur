@@ -492,7 +492,7 @@ function ViajesContent() {
           <div className="space-y-10 animate-in fade-in duration-700">
 
             {/* TABLA DESKTOP */}
-            <div className="hidden xl:block overflow-hidden rounded-[3rem] border border-white/10 bg-[#1a2537]/20 backdrop-blur-xl shadow-2xl">
+            <div className="hidden xl:block overflow-x-auto rounded-[3rem] border border-white/10 bg-[#1a2537]/20 backdrop-blur-xl shadow-2xl">
               <table className="w-full text-left">
                 <thead className="bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                   <tr>

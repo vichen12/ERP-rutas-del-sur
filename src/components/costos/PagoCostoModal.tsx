@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { X, CheckCircle2, Loader2, DollarSign, Repeat, Zap, Calculator as CalcIcon } from 'lucide-react'
+import { safeMath } from '@/lib/safeMath'
 
 interface PagoCostoModalProps {
   isOpen: boolean;
@@ -41,17 +42,15 @@ export function PagoCostoModal({ isOpen, onClose, onConfirm, costo, isProcessing
     }
   }, [isOpen, costo])
 
-  // Lógica de cálculo de fórmula en caliente
+  // Lógica de cálculo de fórmula en caliente — sin eval()
   const montoFinal = (() => {
     if (!isFormulaMode) return Number(montoInput) || 0
-    try {
-      const f = montoInput
-        .replace(/VENTAS/g, String(variables?.VENTAS || 0))
-        .replace(/GASOIL/g, String(variables?.GASOIL || 0))
-        .replace(/CHOFERES/g, String(variables?.CHOFERES || 0))
-        .replace(/NETO/g, String(variables?.NETO || 0))
-      return eval(f) || 0
-    } catch { return 0 }
+    const f = montoInput
+      .replace(/VENTAS/g,   String(variables?.VENTAS   || 0))
+      .replace(/GASOIL/g,   String(variables?.GASOIL   || 0))
+      .replace(/CHOFERES/g, String(variables?.CHOFERES || 0))
+      .replace(/NETO/g,     String(variables?.NETO     || 0))
+    return safeMath(f) ?? 0
   })()
 
   if (!isOpen || !costo) return null

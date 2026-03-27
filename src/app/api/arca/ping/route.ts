@@ -1,63 +1,61 @@
-import { NextResponse } from 'next/server';
-import Afip from '@afipsdk/afip.js';
-import { createClient } from '@supabase/supabase-js';
+// src/app/api/arca/ping/route.ts
+// Verifica la conexión con AFIP/ARCA
 
-// Inicializamos Supabase del lado del servidor
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { NextResponse, type NextRequest } from 'next/server'
+import Afip from '@afipsdk/afip.js'
+import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/apiAuth'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // ── Verificar autenticación ──────────────────────────────
+  const authError = await requireAuth(req)
+  if (authError) return authError
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ success: false, error: 'Configuración de servidor incompleta.' }, { status: 500 })
+  }
+
   try {
-    // 1. Buscamos la configuración en la base de datos
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const { data: config, error } = await supabase
       .from('configuracion')
-      .select('*')
+      .select('arca_cuit, arca_certificado, arca_clave_privada, arca_entorno')
       .eq('id', 1)
-      .single();
+      .single()
 
     if (error || !config) {
-      return NextResponse.json({ success: false, error: 'No se encontró configuración.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'No se encontró configuración.' }, { status: 400 })
     }
 
     if (!config.arca_certificado || !config.arca_clave_privada) {
-      return NextResponse.json({ success: false, error: 'Faltan certificados.' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Faltan certificados.' }, { status: 400 })
     }
 
-    // 2. Instanciamos el SDK de AFIP
-    // Usamos "as any" para evitar errores de campos faltantes en el constructor
     const afip = new Afip({
-      CUIT: parseInt(config.arca_cuit.replace(/[^0-9]/g, '')),
-      cert: config.arca_certificado,
-      key: config.arca_clave_privada,
-      production: config.arca_entorno === 'produccion',
-      access_token: "" 
-    } as any);
+      CUIT:        parseInt(config.arca_cuit.replace(/[^0-9]/g, '')),
+      cert:        config.arca_certificado,
+      key:         config.arca_clave_privada,
+      production:  config.arca_entorno === 'produccion',
+      access_token: '',
+    } as any)
 
-    // 3. Verificamos que el servidor WSFE de AFIP esté online
-    const serverStatus = await afip.ElectronicBilling.getServerStatus();
+    const serverStatus = await afip.ElectronicBilling.getServerStatus()
+    await (afip as any).CreateTA('wsfe')
 
-    // 4. PRUEBA DE FUEGO: Forzamos la generación del Ticket de Acceso (TA)
-    // 🚀 EL FIX: Convertimos afip a "any" antes de llamar al método para que TS no lo bloquee
-    await (afip as any).CreateTA('wsfe');
-
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Conexión verificada correctamente',
-      status: serverStatus 
-    });
-
+      status: serverStatus,
+    })
   } catch (error: any) {
-    console.error("Error Ping AFIP:", error);
-    
-    let errorMessage = 'Error de conexión con AFIP.';
-    if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    return NextResponse.json({ 
-      success: false, 
-      error: errorMessage 
-    }, { status: 500 });
+    console.error('Error Ping AFIP:', error.message)
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Error de conexión con AFIP.',
+    }, { status: 500 })
   }
 }

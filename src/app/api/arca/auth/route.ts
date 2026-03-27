@@ -2,8 +2,9 @@
 // Obtiene el Token de Acceso (TA) del WSAA de ARCA/AFIP
 // El TA dura 12hs, se guarda en memoria para reutilizar
 
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/apiAuth'
 
 // Cache del token en memoria (dura 12hs)
 let tokenCache: { token: string; sign: string; expiresAt: number } | null = null
@@ -11,12 +12,20 @@ let tokenCache: { token: string; sign: string; expiresAt: number } | null = null
 const WSAA_URL_HOMO = 'https://wsaahomo.afip.gov.ar/ws/services/LoginCms'
 const WSAA_URL_PROD = 'https://wsaa.afip.gov.ar/ws/services/LoginCms'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // ── Verificar autenticación ──────────────────────────────
+  const authError = await requireAuth(req)
+  if (authError) return authError
+
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({ error: 'Configuración de servidor incompleta.' }, { status: 500 })
+    }
 
     // Obtener configuración ARCA desde Supabase
     const { data: config } = await supabase
@@ -37,7 +46,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ token: tokenCache.token, sign: tokenCache.sign })
     }
 
-    const esProd = config.arca_entorno === 'produccion'
+    const esProd  = config.arca_entorno === 'produccion'
     const wsaaUrl = esProd ? WSAA_URL_PROD : WSAA_URL_HOMO
 
     // Construir el TRA (Ticket de Requerimiento de Acceso)
@@ -55,14 +64,21 @@ export async function POST(req: Request) {
   <service>wsfe</service>
 </loginTicketRequest>`
 
-    // Firmar el TRA con el certificado (usando la API de firma)
-    // NOTA: La firma CMS requiere Node.js crypto / forge en el servidor
-    const firmaResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/arca/sign`, {
+    // Firmar el TRA con el certificado
+    if (!process.env.NEXT_PUBLIC_APP_URL) {
+      return NextResponse.json({ error: 'NEXT_PUBLIC_APP_URL no configurada.' }, { status: 500 })
+    }
+
+    const firmaResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/arca/sign`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        // Pasar cookies de la request original para mantener auth en la sub-llamada interna
+        'cookie': req.headers.get('cookie') || '',
+      },
       body: JSON.stringify({
         tra,
-        certificado: config.arca_certificado,
+        certificado:  config.arca_certificado,
         clavePrivada: config.arca_clave_privada,
       }),
     })
@@ -95,12 +111,12 @@ export async function POST(req: Request) {
 
     const wsaaText = await wsaaResponse.text()
 
-    // Parsear respuesta XML (CORREGIDO PARA NETLIFY)
     const tokenMatch = wsaaText.match(/<token>([\s\S]*?)<\/token>/)
     const signMatch  = wsaaText.match(/<sign>([\s\S]*?)<\/sign>/)
 
     if (!tokenMatch || !signMatch) {
-      console.error('Respuesta WSAA:', wsaaText)
+      // Loguear solo el error, no el contenido completo que puede incluir tokens
+      console.error('Error WSAA: respuesta sin token. Status HTTP:', wsaaResponse.status)
       throw new Error('No se pudo obtener el token de ARCA. Verificá el certificado.')
     }
 
@@ -112,7 +128,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ token, sign })
   } catch (e: any) {
-    console.error('Error auth ARCA:', e)
+    console.error('Error auth ARCA:', e.message)
     return NextResponse.json({ error: e.message || 'Error de autenticación con ARCA' }, { status: 500 })
   }
 }

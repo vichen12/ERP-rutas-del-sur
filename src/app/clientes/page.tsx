@@ -324,11 +324,11 @@ export default function ClientesPage() {
           />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 pb-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
           
           {viewMode === "general" && (
             <div className="animate-in fade-in duration-500 space-y-8 text-right">
-              <button onClick={() => { setClientForm(emptyForm); setIsClientModalOpen(true); }} className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-black text-[11px] uppercase flex items-center gap-3 transition-all ml-auto active:scale-95 shadow-xl shadow-sky-900/20">
+              <button onClick={() => { setClientForm(emptyForm); setIsClientModalOpen(true); }} className="bg-sky-600 hover:bg-sky-500 text-white px-8 py-4 rounded-2xl font-black text-[11px] uppercase flex items-center gap-3 transition-all ml-auto active:scale-95 shadow-xl shadow-sky-900/20 w-full sm:w-auto justify-center sm:justify-start">
                 <Plus size={18} /> Nuevo Cliente
               </button>
               <ClientesDashboardGeneral 
@@ -340,7 +340,7 @@ export default function ClientesPage() {
           )}
 
           {viewMode === "individual" && selected && (
-            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-8 sm:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 overflow-x-hidden">
               <ClienteHeader
                 selected={selected} onBackup={() => setIsBackupModalOpen(true)} onEdit={handlePrepareEdit} onDelete={handleDeleteCliente}
                 onNuevaOp={() => { setMovimientoAEditar(null); setIsMovimientoModalOpen(true); }}

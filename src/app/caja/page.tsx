@@ -1,5 +1,6 @@
 'use client'
 // src/app/caja/page.tsx
+export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -216,8 +217,8 @@ export default function CajaPage() {
   const maxSaldoGrafico = Math.max(...datosGrafico.map(d => Math.abs(d.saldoFin)), 1)
 
   return (
-    <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20 font-sans italic">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-8 space-y-8">
+    <main className="min-h-screen bg-[#141c28] pt-16 sm:pt-20 md:pt-24 pb-20 font-sans italic">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 space-y-8">
 
         <CajaHeader
           tipoCuenta={tipoCuenta}       setTipoCuenta={setTipoCuenta}
@@ -240,7 +241,7 @@ export default function CajaPage() {
 
         {/* Agregamos una tarjetita extra de alerta si hay deuda con choferes */}
         {deudaChoferes > 0 && (
-          <div className="bg-indigo-500/10 border border-indigo-500/30 p-4 rounded-2xl flex items-center justify-between">
+          <div className="bg-indigo-500/10 border border-indigo-500/30 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Info size={18} className="text-indigo-400" />
               <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
@@ -342,7 +343,7 @@ export default function CajaPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-white/5 pt-6">
             <div className="text-center">
               <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em]">Ingresos período</p>
               <p className="text-xl font-black text-emerald-400 tabular-nums mt-1">
@@ -413,7 +414,7 @@ function CajaMovimientosTablaConAuditoria({
 }) {
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center px-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-2">
         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">
           Registro de Movimientos
         </p>

@@ -1,17 +1,66 @@
 // src/app/api/arca/facturar/route.ts
 // Emite una factura electrónica via WSFE (Web Service Factura Electrónica)
 
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '@/lib/apiAuth'
 
 const WSFE_URL_HOMO = 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx'
 const WSFE_URL_PROD = 'https://servicios1.afip.gov.ar/wsfev1/service.asmx'
 
-export async function POST(req: Request) {
+// ── Validaciones de input ────────────────────────────────────────────────────
+const TIPOS_VALIDOS = [1, 6, 11, 19]
+const CONCEPTOS_VALIDOS = [1, 2, 3]
+const CUIT_REGEX = /^\d{11}$/
+const CUIT_CF = '00000000000' // Consumidor Final
+
+function validarInput(body: any): string | null {
+  const { tipo_comprobante, punto_venta, importe_neto, importe_iva, importe_total, cuit_receptor } = body
+
+  if (!TIPOS_VALIDOS.includes(Number(tipo_comprobante)))
+    return `tipo_comprobante inválido. Valores permitidos: ${TIPOS_VALIDOS.join(', ')}`
+
+  if (!Number.isInteger(Number(punto_venta)) || Number(punto_venta) < 1)
+    return 'punto_venta inválido.'
+
+  if (Number(importe_total) <= 0)
+    return 'importe_total debe ser mayor a cero.'
+
+  if (Number(importe_neto) < 0 || Number(importe_iva) < 0)
+    return 'Los importes no pueden ser negativos.'
+
+  if (Math.abs((Number(importe_neto) + Number(importe_iva)) - Number(importe_total)) > 0.05)
+    return 'importe_neto + importe_iva no coincide con importe_total.'
+
+  if (cuit_receptor && cuit_receptor !== CUIT_CF && !CUIT_REGEX.test(cuit_receptor.replace(/-/g, '')))
+    return 'cuit_receptor tiene formato inválido (debe ser 11 dígitos).'
+
+  return null
+}
+
+export async function POST(req: NextRequest) {
+  // ── Verificar autenticación ──────────────────────────────
+  const authError = await requireAuth(req)
+  if (authError) return authError
+
+  if (!process.env.NEXT_PUBLIC_APP_URL) {
+    return NextResponse.json({ error: 'NEXT_PUBLIC_APP_URL no configurada.' }, { status: 500 })
+  }
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'Configuración de servidor incompleta.' }, { status: 500 })
+  }
+
   try {
     const body = await req.json()
+
+    // ── Validar inputs ───────────────────────────────────────
+    const validationError = validarInput(body)
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
+    }
+
     const {
-      tipo_comprobante,  // 1=FA, 6=FB, 11=FC
+      tipo_comprobante,
       punto_venta,
       fecha_comprobante,
       cuit_receptor,
@@ -29,7 +78,7 @@ export async function POST(req: Request) {
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
     // Obtener config
@@ -43,14 +92,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'ARCA no configurado' }, { status: 400 })
     }
 
-    const esProd   = config.arca_entorno === 'produccion'
-    const wsfeUrl  = esProd ? WSFE_URL_PROD : WSFE_URL_HOMO
-    const cuitEmisor = config.arca_cuit.replace(/-/g, '')
-    const pv       = punto_venta || config.arca_punto_venta || 1
+    const esProd      = config.arca_entorno === 'produccion'
+    const wsfeUrl     = esProd ? WSFE_URL_PROD : WSFE_URL_HOMO
+    const cuitEmisor  = config.arca_cuit.replace(/-/g, '')
+    const pv          = punto_venta || config.arca_punto_venta || 1
 
-    // 1. Obtener token de auth
-    const authRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/arca/auth`, {
+    // 1. Obtener token de auth — pasar cookies para mantener sesión
+    const authRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/arca/auth`, {
       method: 'POST',
+      headers: { 'cookie': req.headers.get('cookie') || '' },
     })
     if (!authRes.ok) {
       const err = await authRes.json()
@@ -77,17 +127,17 @@ export async function POST(req: Request) {
       token,
       sign,
       pv,
-      tipoComprobante: tipo_comprobante,
+      tipoComprobante:  tipo_comprobante,
       nroComprobante,
       fechaStr,
-      cuitReceptor: cuit_receptor || '00000000000',
-      condicionIva: condicion_iva_receptor || 'CF',
-      importeNeto: importe_neto,
-      importeIva:  importe_iva,
-      importeTotal: importe_total,
-      alicuotaIva: alicuota_iva || 21,
-      concepto:    concepto || 2,
-      descripcion: descripcion || 'Servicio de transporte',
+      cuitReceptor:     cuit_receptor || CUIT_CF,
+      condicionIva:     condicion_iva_receptor || 'CF',
+      importeNeto:      Number(importe_neto),
+      importeIva:       Number(importe_iva),
+      importeTotal:     Number(importe_total),
+      alicuotaIva:      alicuota_iva || 21,
+      concepto:         CONCEPTOS_VALIDOS.includes(Number(concepto)) ? Number(concepto) : 2,
+      descripcion:      descripcion || 'Servicio de transporte',
     })
 
     const emitirRes = await fetch(wsfeUrl, {
@@ -104,7 +154,6 @@ export async function POST(req: Request) {
     const obsMatch    = emitirText.match(/<Msg>(.*?)<\/Msg>/g)
 
     if (errMatch) {
-      // Guardar con estado error
       const { data: facturaError } = await supabase.from('facturas').insert([{
         tipo_comprobante: Number(tipo_comprobante),
         punto_venta: pv,
@@ -125,11 +174,13 @@ export async function POST(req: Request) {
     }
 
     if (!caeMatch) {
-      throw new Error('ARCA no devolvió CAE. Respuesta: ' + emitirText.substring(0, 500))
+      throw new Error('ARCA no devolvió CAE. Verificá los datos e intentá de nuevo.')
     }
 
     const cae    = caeMatch[1].trim()
-    const caeVto = caeVtoMatch ? `${caeVtoMatch[1].substring(0,4)}-${caeVtoMatch[1].substring(4,6)}-${caeVtoMatch[1].substring(6,8)}` : null
+    const caeVto = caeVtoMatch
+      ? `${caeVtoMatch[1].substring(0,4)}-${caeVtoMatch[1].substring(4,6)}-${caeVtoMatch[1].substring(6,8)}`
+      : null
 
     // 4. Guardar en Supabase
     const { data: factura, error: dbError } = await supabase.from('facturas').insert([{
@@ -158,7 +209,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ factura, cae, caeVto, nroComprobante, observaciones: obsMatch })
   } catch (e: any) {
-    console.error('Error emitiendo factura:', e)
+    console.error('Error emitiendo factura:', e.message)
     return NextResponse.json({ error: e.message || 'Error al emitir la factura' }, { status: 500 })
   }
 }
@@ -184,8 +235,8 @@ function buildSoapUltimoComprobante(cuit: string, token: string, sign: string, p
 }
 
 function buildSoapEmitirComprobante(p: any) {
-  const alicuotaId = p.alicuotaIva === 0 ? 3 : p.alicuotaIva === 10.5 ? 4 : p.alicuotaIva === 27 ? 6 : 5 // 5=21%
-  const docTipo    = p.cuitReceptor === '00000000000' ? 99 : 80 // 99=Consumidor Final, 80=CUIT
+  const alicuotaId = p.alicuotaIva === 0 ? 3 : p.alicuotaIva === 10.5 ? 4 : p.alicuotaIva === 27 ? 6 : 5
+  const docTipo    = p.cuitReceptor === CUIT_CF ? 99 : 80
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ar="http://ar.gov.afip.dif.FEV1/">

@@ -15,7 +15,7 @@ export function FacturasHeader({ arcaConfigurado, entorno, dateStart, setDateSta
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
               <p className="text-[10px] font-black text-sky-500 uppercase tracking-[0.4em]">Facturacion Electronica</p>
             </div>
-            <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
               ARCA<br /><span className="text-sky-500 font-thin">/ AFIP</span>
             </h1>
             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">Emision de comprobantes electronicos · DallapeSystems ERP</p>
@@ -45,7 +45,7 @@ export function FacturasHeader({ arcaConfigurado, entorno, dateStart, setDateSta
           </div>
         </div>
 
-        <div className="flex items-center gap-4 bg-[#141c28]/40 px-6 py-3 rounded-[2rem] border border-white/5 w-fit">
+        <div className="flex flex-wrap items-center gap-4 bg-[#141c28]/40 px-6 py-3 rounded-[2rem] border border-white/5 w-fit">
           <Calendar size={16} className="text-sky-500" />
           <div className="flex flex-col">
             <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Desde</span>

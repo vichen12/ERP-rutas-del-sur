@@ -33,7 +33,9 @@
       "Bash(xargs ls:*)",
       "Bash(find /c/Users/viche/Desktop/ERP/rutas-del-sur-erp/supabase -name *.sql)",
       "Bash(find /c/Users/viche/OneDrive/Escritorio/erp/ERP-rutas-del-sur -maxdepth 3 -type f -name *output* -o -name *agent* -o -name *responsive*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find /c/Users/viche/OneDrive/Escritorio/erp/ERP-rutas-del-sur -name .env* -o -name next.config*)",
+      "Bash(find /c/Users/viche/OneDrive/Escritorio/erp/ERP-rutas-del-sur -name *.sql -o -name schema*)"
     ]
   }
 }

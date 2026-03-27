@@ -257,7 +257,7 @@ export default function ChequesPage() {
 
   return (
     <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 space-y-6">
 
         {/* ── HEADER ── */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 font-sans italic pt-2">
@@ -326,7 +326,7 @@ export default function ChequesPage() {
         {/* ── CONTROLES: TABS + BÚSQUEDA + FILTROS ── */}
         <div className="space-y-3 font-sans italic">
           {/* Fila 1: Tabs tipo + estado + botón filtros */}
-          <div className="flex flex-wrap gap-2 items-center justify-between">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 items-start sm:items-center justify-between">
             {/* Tab tipo */}
             <div className="flex bg-[#1a2537] p-1 rounded-2xl border border-white/5 gap-0.5">
               {([

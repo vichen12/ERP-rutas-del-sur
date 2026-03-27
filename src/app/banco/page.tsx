@@ -194,8 +194,8 @@ export default function CajaBancoPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-8 space-y-8">
+    <main className="min-h-screen bg-[#141c28] pt-16 sm:pt-20 md:pt-24 pb-20">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 space-y-8">
 
         {/* HEADER PRINCIPAL */}
         <CajaHeader
@@ -226,7 +226,7 @@ export default function CajaBancoPage() {
         <CajaResumenGeneral resumen={resumen} loading={loading} />
 
         {/* TABS: MOVIMIENTOS / CHEQUES */}
-        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit font-sans italic">
+        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-full sm:w-fit font-sans italic overflow-x-auto">
           <button onClick={() => setActiveTab('movimientos')}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'movimientos' ? 'bg-sky-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
             <Landmark size={13} /> Movimientos
@@ -269,31 +269,55 @@ export default function CajaBancoPage() {
               </div>
             ) : (
               <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2rem] overflow-hidden">
-                <div className="grid grid-cols-5 px-6 py-3 border-b border-white/5">
-                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Fecha</p>
-                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Tipo</p>
-                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest col-span-2">Beneficiario / Descripción</p>
-                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest text-right">Monto</p>
-                </div>
-                <div className="divide-y divide-white/5">
-                  {cheques.map((c) => (
-                    <div key={c.id} className="grid grid-cols-5 px-6 py-4 hover:bg-white/[0.02] transition-colors group">
-                      <div>
-                        <p className="text-xs font-black text-white">{new Date(c.fecha + 'T12:00:00').toLocaleDateString('es-AR')}</p>
-                        {c.referencia && <p className="text-[9px] text-indigo-400 font-bold mt-0.5">Nro: {c.referencia}</p>}
+                <div className="overflow-x-auto">
+                  <div className="hidden sm:grid grid-cols-5 px-6 py-3 border-b border-white/5 min-w-[480px]">
+                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Fecha</p>
+                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Tipo</p>
+                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest col-span-2">Beneficiario / Descripción</p>
+                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest text-right">Monto</p>
+                  </div>
+                  <div className="divide-y divide-white/5">
+                    {cheques.map((c) => (
+                      <div key={c.id}>
+                        {/* Desktop row */}
+                        <div className="hidden sm:grid grid-cols-5 px-6 py-4 hover:bg-white/[0.02] transition-colors group min-w-[480px]">
+                          <div>
+                            <p className="text-xs font-black text-white">{new Date(c.fecha + 'T12:00:00').toLocaleDateString('es-AR')}</p>
+                            {c.referencia && <p className="text-[9px] text-indigo-400 font-bold mt-0.5">Nro: {c.referencia}</p>}
+                          </div>
+                          <div className="flex items-center">
+                            <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-black uppercase ${c.tipo === 'ingreso' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                              {c.tipo === 'ingreso' ? <ArrowUpRight size={10} /> : <ArrowDownLeft size={10} />}
+                              {c.tipo === 'ingreso' ? 'Cobro' : 'Pago'}
+                            </span>
+                          </div>
+                          <p className="text-sm font-black text-white col-span-2 truncate pr-4">{c.descripcion || '—'}</p>
+                          <p className={`text-sm font-black tabular-nums text-right ${c.tipo === 'ingreso' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {c.tipo === 'egreso' ? '-' : '+'}$ {Number(c.monto).toLocaleString('es-AR')}
+                          </p>
+                        </div>
+                        {/* Mobile card */}
+                        <div className="sm:hidden px-4 py-4 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-xs font-black text-white">{new Date(c.fecha + 'T12:00:00').toLocaleDateString('es-AR')}</p>
+                              {c.referencia && <p className="text-[9px] text-indigo-400 font-bold mt-0.5">Nro: {c.referencia}</p>}
+                            </div>
+                            <p className={`text-sm font-black tabular-nums ${c.tipo === 'ingreso' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {c.tipo === 'egreso' ? '-' : '+'}$ {Number(c.monto).toLocaleString('es-AR')}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-black uppercase ${c.tipo === 'ingreso' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                              {c.tipo === 'ingreso' ? <ArrowUpRight size={10} /> : <ArrowDownLeft size={10} />}
+                              {c.tipo === 'ingreso' ? 'Cobro' : 'Pago'}
+                            </span>
+                            <p className="text-xs font-bold text-slate-300 truncate">{c.descripcion || '—'}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-black uppercase ${c.tipo === 'ingreso' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                          {c.tipo === 'ingreso' ? <ArrowUpRight size={10} /> : <ArrowDownLeft size={10} />}
-                          {c.tipo === 'ingreso' ? 'Cobro' : 'Pago'}
-                        </span>
-                      </div>
-                      <p className="text-sm font-black text-white col-span-2 truncate pr-4">{c.descripcion || '—'}</p>
-                      <p className={`text-sm font-black tabular-nums text-right ${c.tipo === 'ingreso' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        {c.tipo === 'egreso' ? '-' : '+'}$ {Number(c.monto).toLocaleString('es-AR')}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

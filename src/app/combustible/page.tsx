@@ -262,12 +262,12 @@ export default function CombustiblePage() {
   if (!mounted || loading) return <div className="h-screen bg-[#141c28] flex items-center justify-center"><Loader2 className="animate-spin text-amber-500 w-12 h-12" /></div>
 
   return (
-    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-32 pt-24 md:pt-32 font-sans italic selection:bg-amber-500/30">
+    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-32 pt-16 sm:pt-20 md:pt-24 font-sans italic selection:bg-amber-500/30">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 space-y-8">
 
         <div className="flex flex-col xl:flex-row justify-between items-start gap-8">
           <div>
-            <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none">
               Cuenta Corriente <br /><span className="text-amber-500">Combustible</span>
             </h1>
             <p className="text-slate-500 uppercase tracking-widest text-[10px] font-bold mt-4">Gestión de Ciclos YPF, Pagos y Conciliación</p>

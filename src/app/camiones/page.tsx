@@ -120,21 +120,20 @@ export default function FlotaPage() {
 
       if (ca.error) throw ca.error;
 
-      const camionesMapeados = (ca.data || []).map((camion) => {
-        const choferAsignado =
-          (ch.data || []).find(
-            (c) => c.id === camion.chofer_id || c.id === camion.operador_id,
-          ) || null;
-        const totalGastosCamion = (ga.data || [])
-          .filter((g) => g.camion_id === camion.id)
-          .reduce((acc, curr) => acc + Number(curr.monto), 0);
+      // Pre-compute maps O(n) en lugar de find/filter O(n²) dentro del map
+      const choferById = new Map((ch.data || []).map((c: any) => [c.id, c]));
+      const gastosByCamion = new Map<string, number>();
+      for (const g of (ga.data || [])) {
+        if (g.camion_id) {
+          gastosByCamion.set(g.camion_id, (gastosByCamion.get(g.camion_id) || 0) + Number(g.monto));
+        }
+      }
 
-        return {
-          ...camion,
-          operador: choferAsignado,
-          totalGastos: totalGastosCamion,
-        };
-      });
+      const camionesMapeados = (ca.data || []).map((camion: any) => ({
+        ...camion,
+        operador: choferById.get(camion.chofer_id) || choferById.get(camion.operador_id) || null,
+        totalGastos: gastosByCamion.get(camion.id) || 0,
+      }));
 
       setCamiones(camionesMapeados);
       setChoferes(ch.data || []);

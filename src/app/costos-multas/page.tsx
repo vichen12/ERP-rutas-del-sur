@@ -1,6 +1,9 @@
 'use client'
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+import { safeMath } from '@/lib/safeMath'
 import { AlertOctagon, TrendingUp, DollarSign, Receipt, ChevronRight } from 'lucide-react'
 
 import { CostosFijosSection } from '@/components/costos/CostosFijosSection'
@@ -42,9 +45,8 @@ export function evaluarFormula(formulaStr: string, ctx: VariableContext): number
     for (const key of sortedKeys) {
       expr = expr.replace(new RegExp(key, 'g'), String(vars[key]))
     }
-    if (!/^[\d\s+\-*/().]+$/.test(expr)) return null
-    const result = Function(`"use strict"; return (${expr})`)()
-    if (typeof result !== 'number' || !isFinite(result)) return null
+    const result = safeMath(expr)
+    if (result === null) return null
     return Math.round(result * 100) / 100
   } catch { return null }
 }
@@ -254,9 +256,9 @@ export default function CostosMultasPage() {
 
   return (
     <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20 font-sans italic">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-8 space-y-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 space-y-8">
 
-        <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
           COSTOS <br /><span className="text-orange-500 font-thin">/ MULTAS</span>
         </h1>
 
@@ -280,7 +282,7 @@ export default function CostosMultasPage() {
         </div>
 
         {/* TABS */}
-        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit">
+        <div className="flex flex-wrap bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit gap-1">
           {tabs.map(t => (
             <button key={t.value} onClick={() => setActiveTab(t.value)}
               className={`flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === t.value ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
