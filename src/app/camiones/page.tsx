@@ -331,7 +331,7 @@ export default function FlotaPage() {
 
   if (!mounted || loading)
     return (
-      <div className="h-screen bg-[#020617] flex flex-col items-center justify-center">
+      <div className="h-screen bg-[#141c28] flex flex-col items-center justify-center">
         <Loader2 className="text-cyan-500 animate-spin mb-4" size={48} />
         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] animate-pulse">
           Estabilizando Conexión...
@@ -340,7 +340,7 @@ export default function FlotaPage() {
     );
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-32 font-sans italic selection:bg-cyan-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-32 font-sans italic selection:bg-cyan-500/30 overflow-x-hidden">
       <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
 
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10 pt-24 md:pt-32 space-y-8 relative z-10">
@@ -362,10 +362,10 @@ export default function FlotaPage() {
                     ? "BUSCAR PATENTE..."
                     : "BUSCAR CHOFER..."
                 }
-                className="w-full bg-slate-950 border border-white/10 rounded-3xl py-5 pl-14 text-white font-bold outline-none focus:border-cyan-500/50 uppercase italic"
+                className="w-full bg-[#141c28] border border-white/10 rounded-3xl py-5 pl-14 text-white font-bold outline-none focus:border-cyan-500/50 uppercase italic"
               />
             </div>
-            <div className="flex bg-slate-900/80 p-1.5 rounded-[2.5rem] border border-white/5 backdrop-blur-md shadow-2xl">
+            <div className="flex bg-[#1a2537]/80 p-1.5 rounded-[2.5rem] border border-white/5 backdrop-blur-md shadow-2xl">
               <TabBtn
                 active={activeTab === "camiones"}
                 onClick={() => {
@@ -502,7 +502,7 @@ export default function FlotaPage() {
                 return (
                   <div
                     key={ch.id}
-                    className={`p-8 bg-slate-950/40 rounded-[2.5rem] border border-white/5 backdrop-blur-xl group hover:border-indigo-500/30 transition-all shadow-2xl relative overflow-hidden flex flex-col justify-between ${opacityClass}`}
+                    className={`p-8 bg-[#141c28]/40 rounded-[2.5rem] border border-white/5 backdrop-blur-xl group hover:border-indigo-500/30 transition-all shadow-2xl relative overflow-hidden flex flex-col justify-between ${opacityClass}`}
                   >
                     <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-125 transition-transform duration-700 pointer-events-none">
                       {ch.foto_url ? (
@@ -669,7 +669,7 @@ function StatusFilterBtn({ active, onClick, label, color, border, bg }: any) {
 }
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-white/5 rounded-[3rem] bg-slate-900/20 backdrop-blur-sm">
+    <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-white/5 rounded-[3rem] bg-[#1a2537]/20 backdrop-blur-sm">
       <Filter size={48} className="text-slate-700 mb-4" />
       <h3 className="text-lg font-black text-slate-500 uppercase tracking-widest">
         Sin resultados

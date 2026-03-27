@@ -22,8 +22,8 @@ export function ClienteBackUp({ isOpen, onClose, onSendEmail, onDownloadPDF, isP
   }
 
   return (
-    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden italic font-sans">
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-[#141c28]/80 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden italic font-sans">
         
         {/* Efecto de luz ambiental */}
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-sky-500/10 blur-[50px] rounded-full pointer-events-none" />
@@ -114,7 +114,7 @@ export function ClienteBackUp({ isOpen, onClose, onSendEmail, onDownloadPDF, isP
 
         {/* LOADING OVERLAY */}
         {isProcessing && (
-          <div className="absolute inset-0 bg-[#020617]/90 backdrop-blur-sm flex items-center justify-center z-[50] animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-[#141c28]/90 backdrop-blur-sm flex items-center justify-center z-[50] animate-in fade-in duration-200">
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
                 <Loader2 className="text-sky-500 animate-spin" size={48} strokeWidth={3} />

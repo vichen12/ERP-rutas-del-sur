@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/viche/Desktop/ERP/rutas-del-sur-erp -type f -name types.ts -o -name types.d.ts -o -name *schema*)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/viche/Desktop/ERP/rutas-del-sur-erp/**)",
+      "Bash(done)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /PID 29296 /F\")",
+      "Bash(cmd /c \"taskkill /PID 29296 /F 2>&1\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(powershell -Command \"Stop-Process -Id 29296 -Force -ErrorAction SilentlyContinue; Write-Host 'done'\")",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess\")",
+      "Bash(grep -rPoh \"bg-\\(?:black|gray-900|gray-950|neutral-900|neutral-950|zinc-900|zinc-950|slate-900|slate-950\\)\" src/app/*/page.tsx src/components/**/*.tsx)",
+      "Bash(grep -rPoh \"bg-\\(?:gray|slate|neutral|zinc\\)-\\(?:800|900|950\\)\\(?:/[0-9]+\\)?\" src/app/*/page.tsx src/components/**/*.tsx)",
+      "Bash(wc -l __NEW_LINE_c617f9e5a1346af0__ echo \"bg-black standalone \\(should be 0 remaining\\):\" grep -r \"bg-black[^/]\" src/ --include=\"*.tsx\")",
+      "Bash(__NEW_LINE_62fa3a2dbc8b6837__ echo:*)",
+      "Bash(cd /c/Users/viche/Desktop/ERP/rutas-del-sur-erp __NEW_LINE_295dc9f198c5965d__ echo \"=== bg-black/ instances \\(should be preserved\\) ===\" grep -r \"bg-black/\" src/ --include=\"*.tsx\" -n)",
+      "Bash(grep -roh text-slate-[0-9]* src/app src/components)",
+      "Bash(grep -rn remitos.*selectb src/app src/components)",
+      "Bash(grep -v \"^api$\")",
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next:*)",
+      "Bash(npx vitest:*)",
+      "Bash(curl:*)",
+      "Bash(xargs ls:*)",
+      "Bash(find /c/Users/viche/Desktop/ERP/rutas-del-sur-erp/supabase -name *.sql)"
+    ]
+  }
+}

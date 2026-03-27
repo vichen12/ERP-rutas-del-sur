@@ -108,7 +108,7 @@ export default function CostosMultasPage() {
         supabase.from('multas').select('*, choferes(nombre), camiones(patente)').order('fecha', { ascending: false }),
         supabase.from('choferes').select('id, nombre').order('nombre'),
         supabase.from('camiones').select('id, patente').order('patente'),
-        supabase.from('viajes').select('precio, fecha, estado').eq('estado', 'completado'),
+        supabase.from('viajes').select('tarifa_flete, fecha'),
         supabase.from('cargas_combustible').select('monto, fecha'),
         supabase.from('cuenta_corriente_choferes').select('monto, fecha, tipo'),
       ])
@@ -126,7 +126,7 @@ export default function CostosMultasPage() {
   // ═══ CONTEXTO DE VARIABLES ═══
   const variableContext: VariableContext = useMemo(() => {
     const inRange = (fecha: string) => fecha >= dateStart && fecha <= dateEnd
-    const ventasTotal = viajes.filter(v => inRange(v.fecha)).reduce((a, v) => a + Number(v.precio || 0), 0)
+    const ventasTotal = viajes.filter(v => inRange(v.fecha)).reduce((a, v) => a + Number(v.tarifa_flete || 0), 0)
     const gasoilTotal = cargasCombustible.filter(c => inRange(c.fecha)).reduce((a, c) => a + Number(c.monto || 0), 0)
     const choferesTotal = cuentaChoferes.filter(c => inRange(c.fecha)).reduce((a, c) => a + Number(c.monto || 0), 0)
     const viajesCount = viajes.filter(v => inRange(v.fecha)).length
@@ -198,13 +198,14 @@ export default function CostosMultasPage() {
       const categoria = item.tipo === 'impuesto' ? 'impuesto' : 'costo_fijo'
       const movRes = await supabase.from('movimientos_caja').insert([{
         tipo: 'egreso',
+        tipo_cuenta: item.tipo_cuenta || 'banco',
         categoria,
         monto: montoFinal,
         descripcion: `${item.tipo === 'impuesto' ? 'IMPUESTO' : 'COSTO'}: ${item.nombre}`,
         fecha: hoyStr,
       }])
       if (movRes.error) { alert('Error al registrar pago: ' + movRes.error.message); return }
-      const updates: any = { ultimo_pago: hoyStr, monto_ultimo_pago: montoFinal }
+      const updates: any = {}
       if (item.tipo === 'impuesto' || item.recurrente) {
         updates.proximo_pago = avanzarFecha(item.proximo_pago || hoyStr, item.frecuencia || 'mensual')
       } else {
@@ -252,7 +253,7 @@ export default function CostosMultasPage() {
   ]
 
   return (
-    <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20 font-sans italic">
+    <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20 font-sans italic">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 space-y-8">
 
         <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
@@ -260,8 +261,8 @@ export default function CostosMultasPage() {
         </h1>
 
         {/* FILTRO GLOBAL */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-950/60 p-2 rounded-[2rem] border border-white/5">
-          <div className="flex bg-slate-900 p-1 rounded-2xl border border-white/5 shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-[#141c28]/60 p-2 rounded-[2rem] border border-white/5">
+          <div className="flex bg-[#1a2537] p-1 rounded-2xl border border-white/5 shrink-0">
             <button onClick={setEsteMes} className="px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-white/5 transition-all">Este Mes</button>
             <button onClick={setEsteAno} className="px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-white/5 transition-all">Este Año</button>
           </div>
@@ -279,7 +280,7 @@ export default function CostosMultasPage() {
         </div>
 
         {/* TABS */}
-        <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 w-fit">
+        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit">
           {tabs.map(t => (
             <button key={t.value} onClick={() => setActiveTab(t.value)}
               className={`flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === t.value ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>

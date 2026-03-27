@@ -71,14 +71,14 @@ export function CamionStatsModal({ isOpen, onClose, camion, viajes = [], gastos 
                        'text-emerald-500';
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-5xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-5xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Glow de fondo */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-sky-500/5 rounded-full blur-[100px] pointer-events-none" />
 
         {/* HEADER */}
-        <div className="p-8 md:p-10 border-b border-white/5 relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 bg-slate-900/20">
+        <div className="p-8 md:p-10 border-b border-white/5 relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 bg-[#1a2537]/20">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
@@ -96,7 +96,7 @@ export function CamionStatsModal({ isOpen, onClose, camion, viajes = [], gastos 
             </button>
             
             {/* PANEL DE FILTROS V2 */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto bg-slate-950/50 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto bg-[#141c28]/50 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
               
               <div className="flex gap-2">
                 <FilterBtn active={filterMode === 'mes'} onClick={() => setFilterMode('mes')} label="Este Mes" />
@@ -110,12 +110,12 @@ export function CamionStatsModal({ isOpen, onClose, camion, viajes = [], gastos 
                 <div className="flex items-center gap-2 px-2 animate-in slide-in-from-left-4">
                   <input 
                     type="date" value={dateStart} onChange={(e) => setDateStart(e.target.value)}
-                    className="bg-black/50 text-[10px] font-black text-sky-400 uppercase outline-none px-4 py-2 rounded-xl border border-sky-500/20 [color-scheme:dark]"
+                    className="bg-[#141c28]/50 text-[10px] font-black text-sky-400 uppercase outline-none px-4 py-2 rounded-xl border border-sky-500/20 [color-scheme:dark]"
                   />
                   <span className="text-slate-600 text-xs font-black">/</span>
                   <input 
                     type="date" value={dateEnd} onChange={(e) => setDateEnd(e.target.value)}
-                    className="bg-black/50 text-[10px] font-black text-sky-400 uppercase outline-none px-4 py-2 rounded-xl border border-sky-500/20 [color-scheme:dark]"
+                    className="bg-[#141c28]/50 text-[10px] font-black text-sky-400 uppercase outline-none px-4 py-2 rounded-xl border border-sky-500/20 [color-scheme:dark]"
                   />
                 </div>
               )}
@@ -128,7 +128,7 @@ export function CamionStatsModal({ isOpen, onClose, camion, viajes = [], gastos 
         <div className="p-8 md:p-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
           {/* RENDIMIENTO PROMEDIO */}
-          <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
+          <div className="bg-[#1a2537]/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-white/5 rounded-2xl">
                 <Flame size={24} className={consumoColor} />
@@ -141,7 +141,7 @@ export function CamionStatsModal({ isOpen, onClose, camion, viajes = [], gastos 
           </div>
 
           {/* TOTAL LITROS */}
-          <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
+          <div className="bg-[#1a2537]/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-cyan-500/10 rounded-2xl">
                 <Activity size={24} className="text-cyan-400" />
@@ -154,7 +154,7 @@ export function CamionStatsModal({ isOpen, onClose, camion, viajes = [], gastos 
           </div>
 
           {/* TOTAL KM */}
-          <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
+          <div className="bg-[#1a2537]/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-emerald-500/10 rounded-2xl">
                 <Gauge size={24} className="text-emerald-400" />
@@ -167,7 +167,7 @@ export function CamionStatsModal({ isOpen, onClose, camion, viajes = [], gastos 
           </div>
 
           {/* VISITAS A TALLER / GASTOS */}
-          <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
+          <div className="bg-[#1a2537]/50 border border-white/5 p-6 rounded-[2rem] relative group shadow-inner">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 bg-amber-500/10 rounded-2xl">
                 <Wrench size={24} className="text-amber-400" />

@@ -86,8 +86,8 @@ export function ImpuestoModal({ isOpen, onClose, onSubmit, isSaving, editingData
   ]
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 font-sans italic">
-      <div className="bg-[#020617] w-full max-w-lg rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
 
         {/* Barra superior violeta */}
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-violet-500" />
@@ -112,7 +112,7 @@ export function ImpuestoModal({ isOpen, onClose, onSubmit, isSaving, editingData
             <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Nombre</label>
             <input required placeholder="EJ: INGRESOS BRUTOS / IIBB / IVA / GANANCIAS"
               value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
           </div>
 
           {/* MONTO / FÓRMULA */}
@@ -125,7 +125,7 @@ export function ImpuestoModal({ isOpen, onClose, onSubmit, isSaving, editingData
             </div>
             <input ref={inputRef} required placeholder="50000 ó VENTAS * 0.03"
               value={form.monto} onChange={e => setForm(p => ({ ...p, monto: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-mono font-black text-lg uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700 tracking-wide" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-mono font-black text-lg uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700 tracking-wide" />
 
             {/* Variables disponibles — botones discretos */}
             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -137,7 +137,7 @@ export function ImpuestoModal({ isOpen, onClose, onSubmit, isSaving, editingData
               ))}
               {['+', '-', '*', '/', '(', ')'].map(op => (
                 <button key={op} type="button" onClick={() => inject(` ${op} `)}
-                  className="bg-slate-800 hover:bg-slate-700 border border-white/10 rounded-lg px-2.5 py-1 text-white font-mono text-xs font-bold transition-all active:scale-95">
+                  className="bg-[#243248] hover:bg-slate-700 border border-white/10 rounded-lg px-2.5 py-1 text-white font-mono text-xs font-bold transition-all active:scale-95">
                   {op}
                 </button>
               ))}
@@ -179,7 +179,7 @@ export function ImpuestoModal({ isOpen, onClose, onSubmit, isSaving, editingData
           <div className="space-y-1.5">
             <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Próximo Vencimiento</label>
             <input type="date" value={form.proximo_pago} onChange={e => setForm(p => ({ ...p, proximo_pago: e.target.value }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm outline-none focus:border-violet-500 transition-all [color-scheme:dark]" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm outline-none focus:border-violet-500 transition-all [color-scheme:dark]" />
           </div>
 
           {/* NOTAS */}
@@ -187,12 +187,12 @@ export function ImpuestoModal({ isOpen, onClose, onSubmit, isSaving, editingData
             <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Notas <span className="text-slate-700">(Opcional)</span></label>
             <input placeholder="EJ: VENCE EL 15 / CUIT 30-..." value={form.notas}
               onChange={e => setForm(p => ({ ...p, notas: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-bold text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-bold text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
           </div>
 
           {/* SUBMIT */}
           <button type="submit" disabled={isSaving || (form.monto.trim() !== '' && liveResult === null)}
-            className="w-full py-4 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:bg-slate-800 text-white disabled:text-slate-600 font-black uppercase text-[10px] tracking-[0.3em] transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl">
+            className="w-full py-4 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:bg-[#243248] text-white disabled:text-slate-600 font-black uppercase text-[10px] tracking-[0.3em] transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl">
             {isSaving ? <Loader2 className="animate-spin" size={18} /> : <><CheckCircle2 size={18} />{editingData ? 'Guardar Cambios' : 'Registrar Impuesto'}</>}
           </button>
         </form>

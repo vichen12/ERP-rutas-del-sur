@@ -103,10 +103,10 @@ export default function RemitosPage() {
 
       const procesados = (viajesData || []).map((v: any) => {
         let est = tripStatusMap[v.id] || 'sin_remito'
-        const nroRem = tripRemitoMap[v.id] || v.nro_remito || 'PENDIENTE'
+        const nroRem = tripRemitoMap[v.id] || 'PENDIENTE'
         if (est === 'bandeja_entrada' && (!nroRem || nroRem === 'PENDIENTE')) est = 'sin_remito'
 
-        const importeReal = tripDebeMap[v.id] || Number(v.monto_total || 0)
+        const importeReal = tripDebeMap[v.id] || Number(v.tarifa_flete || 0)
         const faltaReal = tripFaltaMap[v.id] !== undefined ? tripFaltaMap[v.id] : importeReal
 
         const factJoin = v.facturas?.find((f: any) => f.estado === 'emitida') || null
@@ -166,7 +166,7 @@ export default function RemitosPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center font-sans italic">
+    <div className="min-h-screen bg-[#141c28] flex items-center justify-center font-sans italic">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="text-amber-500 animate-spin" size={48} />
         <p className="text-amber-500 font-black uppercase tracking-[0.3em]">Cargando remitos...</p>
@@ -175,7 +175,7 @@ export default function RemitosPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-20 pt-32 md:pt-40 relative overflow-x-hidden font-sans italic selection:bg-amber-500/30">
+    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-20 pt-32 md:pt-40 relative overflow-x-hidden font-sans italic selection:bg-amber-500/30">
       <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:30px_30px]" />
       <div className="max-w-7xl mx-auto px-6 space-y-10 relative z-10">
 
@@ -220,25 +220,25 @@ export default function RemitosPage() {
             ))}
           </div>
 
-          <div className="bg-slate-900/50 border border-white/10 p-2 rounded-[2rem] flex flex-col md:flex-row gap-2 backdrop-blur-xl shadow-2xl">
+          <div className="bg-[#1a2537]/50 border border-white/10 p-2 rounded-[2rem] flex flex-col md:flex-row gap-2 backdrop-blur-xl shadow-2xl">
             <div className="relative flex-1 group">
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-amber-500 transition-colors" size={18} />
               <input type="text" placeholder="Buscar por remito, ciudad, cliente..." value={search} onChange={e => setSearch(e.target.value)}
-                className="w-full bg-black/40 rounded-3xl py-5 pl-14 pr-6 text-white outline-none focus:bg-black/60 font-black tracking-widest text-xs uppercase placeholder:text-slate-700 transition-all" />
+                className="w-full bg-[#141c28]/40 rounded-3xl py-5 pl-14 pr-6 text-white outline-none focus:bg-[#141c28]/60 font-black tracking-widest text-xs uppercase placeholder:text-slate-700 transition-all" />
             </div>
             <div className="flex gap-2 flex-col sm:flex-row">
               <div className="relative w-full sm:w-64">
                 <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                 <select value={clienteFilter} onChange={e => setClienteFilter(e.target.value)}
-                  className="w-full h-full bg-black/40 rounded-3xl py-5 pl-12 pr-6 text-white outline-none focus:bg-black/60 font-black tracking-widest text-[10px] uppercase appearance-none cursor-pointer border-r-8 border-transparent">
+                  className="w-full h-full bg-[#141c28]/40 rounded-3xl py-5 pl-12 pr-6 text-white outline-none focus:bg-[#141c28]/60 font-black tracking-widest text-[10px] uppercase appearance-none cursor-pointer border-r-8 border-transparent">
                   <option value="todos">Todos los Clientes</option>
-                  {clientes.map((c: any) => <option key={c.id} value={c.id} className="bg-slate-900">{c.razon_social}</option>)}
+                  {clientes.map((c: any) => <option key={c.id} value={c.id} className="bg-[#1a2537]">{c.razon_social}</option>)}
                 </select>
               </div>
               <div className="relative w-full sm:w-56">
                 <Filter className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                 <select value={estadoFilter} onChange={e => setEstadoFilter(e.target.value)}
-                  className="w-full h-full bg-black/40 rounded-3xl py-5 pl-12 pr-6 text-white outline-none focus:bg-black/60 font-black tracking-widest text-[10px] uppercase appearance-none cursor-pointer border-r-8 border-transparent">
+                  className="w-full h-full bg-[#141c28]/40 rounded-3xl py-5 pl-12 pr-6 text-white outline-none focus:bg-[#141c28]/60 font-black tracking-widest text-[10px] uppercase appearance-none cursor-pointer border-r-8 border-transparent">
                   <option value="todos">Cualquier Estado</option>
                   <option value="cobrado">Cobrados</option>
                   <option value="deuda_activa">Pendientes de Pago</option>
@@ -253,14 +253,14 @@ export default function RemitosPage() {
         {/* LISTA */}
         <div className="space-y-4">
           {filtered.length > 0 ? filtered.map(r => (
-            <div key={r.id} className="bg-[#020617] border border-white/5 rounded-[2rem] p-4 pr-6 flex flex-col xl:flex-row items-center gap-6 hover:border-white/20 transition-all shadow-xl group">
+            <div key={r.id} className="bg-[#141c28] border border-white/5 rounded-[2rem] p-4 pr-6 flex flex-col xl:flex-row items-center gap-6 hover:border-white/20 transition-all shadow-xl group">
 
               <div onClick={() => { if (r.foto_url) { setViewImageUrl(r.foto_url); setIsViewOpen(true) } }}
                 className={'w-full xl:w-40 h-32 xl:h-28 rounded-2xl overflow-hidden border border-white/10 flex items-center justify-center relative shrink-0 ' + (r.foto_url ? 'cursor-pointer hover:border-amber-500' : 'bg-white/5')}>
                 {r.foto_url ? (
                   <>
                     <Image src={r.foto_url} alt="Remito" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" sizes="(max-width: 768px) 100vw, 160px" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><Search size={20} className="text-white" /></div>
+                    <div className="absolute inset-0 bg-[#141c28]/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><Search size={20} className="text-white" /></div>
                   </>
                 ) : (
                   <div className="flex flex-col items-center text-slate-700"><ImageIcon size={24} strokeWidth={1.5} /><span className="text-[8px] font-black uppercase mt-1">Sin Foto</span></div>
@@ -316,7 +316,7 @@ export default function RemitosPage() {
         </div>
 
         {isViewOpen && (
-          <div className="fixed inset-0 z-[999] bg-[#020617]/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
+          <div className="fixed inset-0 z-[999] bg-[#141c28]/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
             <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-[510]">
               <h3 className="text-white font-black uppercase tracking-widest text-sm flex items-center gap-3"><FileText size={18} className="text-amber-500" /> Visor de Documento</h3>
               <div className="flex gap-4">

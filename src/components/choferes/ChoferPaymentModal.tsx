@@ -37,9 +37,9 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
 
   return (
     // CONTENEDOR PRINCIPAL RESPONSIVE
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-24 md:pt-32 p-4 bg-black/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-24 md:pt-32 p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto">
       
-      <div className="bg-[#020617] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative mb-10">
+      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative mb-10">
         <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
             <X size={20}/>
         </button>
@@ -65,7 +65,7 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
           </div>
           
           {esDiferente && (
-              <div className="mt-3 text-[10px] font-bold uppercase p-2 bg-black/20 rounded-lg inline-block">
+              <div className="mt-3 text-[10px] font-bold uppercase p-2 bg-[#141c28]/20 rounded-lg inline-block">
                   {diferencia < 0 ? (
                     <span className="text-rose-400">Pago Parcial (Quedará debiendo ${Math.abs(diferencia).toLocaleString()})</span>
                   ) : (
@@ -83,7 +83,7 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
               type="date" 
               value={paymentData.fecha} 
               onChange={e => setPaymentData({...paymentData, fecha: e.target.value})} 
-              className="w-full bg-slate-950 border border-white/10 rounded-2xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500 appearance-none uppercase" 
+              className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500 appearance-none uppercase" 
             />
           </div>
 
@@ -94,7 +94,7 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
                 <button 
                   key={m} 
                   onClick={() => setPaymentData({...paymentData, metodo: m})} 
-                  className={`py-3 rounded-xl text-[9px] font-black uppercase border transition-all ${paymentData.metodo === m ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-950 border-white/10 text-slate-500 hover:text-white'}`}
+                  className={`py-3 rounded-xl text-[9px] font-black uppercase border transition-all ${paymentData.metodo === m ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-[#141c28] border-white/10 text-slate-500 hover:text-white'}`}
                 >
                   {m}
                 </button>
@@ -108,7 +108,7 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
               placeholder="EJ: ADELANTO VIAJE NEUQUÉN" 
               value={paymentData.notas} 
               onChange={e => setPaymentData({...paymentData, notas: e.target.value})} 
-              className="w-full bg-slate-950 border border-white/10 rounded-2xl py-3 px-4 text-white font-bold outline-none focus:border-indigo-500 uppercase italic placeholder:text-slate-700" 
+              className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-3 px-4 text-white font-bold outline-none focus:border-indigo-500 uppercase italic placeholder:text-slate-700" 
             />
           </div>
         </div>

@@ -123,8 +123,8 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 font-sans italic">
-      <div className="bg-[#020617] w-full max-w-lg rounded-[2.5rem] border border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[2.5rem] border border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
 
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-sky-500" />
 
@@ -167,7 +167,7 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
                   placeholder="Buscar por nombre o CUIT..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-white font-bold text-sm uppercase outline-none focus:border-sky-500 placeholder:text-slate-700"
+                  className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-white font-bold text-sm uppercase outline-none focus:border-sky-500 placeholder:text-slate-700"
                 />
               </div>
 
@@ -178,7 +178,7 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
                     ? 'bg-sky-500/10 border-sky-500/30'
                     : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10'
                 }`}>
-                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500">
+                <div className="w-10 h-10 rounded-xl bg-[#243248] flex items-center justify-center text-slate-500">
                   <User size={18} />
                 </div>
                 <div className="flex-1">
@@ -195,7 +195,7 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
                   return (
                     <button key={c.id} onClick={() => { handleSelectCliente(c); setStep(2) }}
                       className="w-full flex items-center gap-4 p-4 rounded-xl border bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all text-left group">
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-[#243248] flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
                         <User size={18} />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -228,7 +228,7 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
             <div className="space-y-5">
 
               {/* Resumen cliente + tipo factura */}
-              <div className="flex items-center gap-4 p-4 bg-slate-900/60 rounded-xl border border-white/5">
+              <div className="flex items-center gap-4 p-4 bg-[#1a2537]/60 rounded-xl border border-white/5">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black ${LETRA_COLORS[tipoFactura.letra]}`}>
                   {tipoFactura.letra}
                 </div>
@@ -307,7 +307,7 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
                     placeholder="0.00"
                     value={importeNeto}
                     onChange={e => setImporteNeto(e.target.value)}
-                    className="w-full bg-slate-900 border border-white/5 rounded-xl py-4 pl-13 pr-4 text-white font-black text-2xl tabular-nums outline-none focus:border-sky-500 placeholder:text-slate-700"
+                    className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-4 pl-13 pr-4 text-white font-black text-2xl tabular-nums outline-none focus:border-sky-500 placeholder:text-slate-700"
                     style={{ paddingLeft: '3.25rem' }}
                   />
                 </div>
@@ -330,7 +330,7 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
 
               {/* Preview totales */}
               {Number(importeNeto) > 0 && (
-                <div className="grid grid-cols-3 gap-3 p-4 bg-slate-950/60 rounded-xl border border-white/5">
+                <div className="grid grid-cols-3 gap-3 p-4 bg-[#141c28]/60 rounded-xl border border-white/5">
                   <div className="text-center">
                     <p className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Neto</p>
                     <p className="text-base font-black text-slate-300 tabular-nums">${Number(importeNeto).toLocaleString('es-AR', { maximumFractionDigits: 2 })}</p>
@@ -351,12 +351,12 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Descripcion</label>
                   <input value={descripcion} onChange={e => setDescripcion(e.target.value.toUpperCase())}
-                    className="w-full bg-slate-900 border border-white/5 rounded-xl py-3 px-4 text-white font-bold text-xs uppercase outline-none focus:border-sky-500" />
+                    className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3 px-4 text-white font-bold text-xs uppercase outline-none focus:border-sky-500" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Fecha</label>
                   <input type="date" value={fechaComprobante} onChange={e => setFechaComprobante(e.target.value)}
-                    className="w-full bg-slate-900 border border-white/5 rounded-xl py-3 px-4 text-white font-bold text-xs outline-none [color-scheme:dark]" />
+                    className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3 px-4 text-white font-bold text-xs outline-none [color-scheme:dark]" />
                 </div>
               </div>
 

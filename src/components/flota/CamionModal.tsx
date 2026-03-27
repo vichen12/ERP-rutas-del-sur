@@ -8,13 +8,13 @@ export function CamionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-black/90 backdrop-blur-sm p-4 overflow-y-auto italic">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-sm p-4 overflow-y-auto italic">
       
       {/* CONTENEDOR PRINCIPAL: 
          - Quitamos el overflow del hijo para que el scroll sea natural del padre.
          - 'my-auto' permite que el modal se centre si es corto y scrollee si es largo.
       */}
-      <div className="bg-[#020617] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
         
         {/* Decoración Superior */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-t-full" />
@@ -40,7 +40,7 @@ export function CamionModal({
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Patente</label>
               <input 
                 required
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none uppercase transition-all"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none uppercase transition-all"
                 value={formData.patente || ''}
                 onChange={e => setFormData({...formData, patente: e.target.value.toUpperCase()})}
                 placeholder="ABC-123"
@@ -49,7 +49,7 @@ export function CamionModal({
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Modelo</label>
               <input 
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none uppercase transition-all"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none uppercase transition-all"
                 value={formData.modelo || ''}
                 onChange={e => setFormData({...formData, modelo: e.target.value.toUpperCase()})}
                 placeholder="SCANIA / VOLVO"
@@ -65,7 +65,7 @@ export function CamionModal({
               </label>
               <input 
                 type="number"
-                className="w-full bg-slate-900 border border-cyan-500/10 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none transition-all"
+                className="w-full bg-[#1a2537] border border-cyan-500/10 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none transition-all"
                 value={formData.km_actual || ''}
                 onChange={e => setFormData({...formData, km_actual: e.target.value})}
               />
@@ -76,7 +76,7 @@ export function CamionModal({
               </label>
               <input 
                 type="number"
-                className="w-full bg-slate-900 border border-amber-500/10 rounded-2xl py-4 px-6 text-white font-black focus:border-amber-500 outline-none transition-all"
+                className="w-full bg-[#1a2537] border border-amber-500/10 rounded-2xl py-4 px-6 text-white font-black focus:border-amber-500 outline-none transition-all"
                 value={formData.km_ultimo_service || ''}
                 onChange={e => setFormData({...formData, km_ultimo_service: e.target.value})}
               />
@@ -89,7 +89,7 @@ export function CamionModal({
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Vto RTO</label>
               <input 
                 type="date"
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-indigo-500 outline-none [color-scheme:dark]"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-indigo-500 outline-none [color-scheme:dark]"
                 value={formData.vto_rto || ''}
                 onChange={e => setFormData({...formData, vto_rto: e.target.value})}
               />
@@ -98,7 +98,7 @@ export function CamionModal({
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Vto SENASA</label>
               <input 
                 type="date"
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-indigo-500 outline-none [color-scheme:dark]"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-indigo-500 outline-none [color-scheme:dark]"
                 value={formData.vto_senasa || ''}
                 onChange={e => setFormData({...formData, vto_senasa: e.target.value})}
               />
@@ -112,7 +112,7 @@ export function CamionModal({
                 <User size={10}/> Operador
               </label>
               <select 
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
                 value={formData.chofer_id || ''}
                 onChange={e => setFormData({...formData, chofer_id: e.target.value})}
               >
@@ -128,7 +128,7 @@ export function CamionModal({
                 <Activity size={10}/> Estado Operativo
               </label>
               <select 
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black focus:border-cyan-500 outline-none appearance-none cursor-pointer"
                 value={formData.estado || 'Disponible'}
                 onChange={e => setFormData({...formData, estado: e.target.value})}
               >
@@ -144,7 +144,7 @@ export function CamionModal({
             <button 
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-[0.3em] transition-all shadow-xl shadow-cyan-900/20 active:scale-95 flex items-center justify-center gap-3 group"
+              className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-[#243248] disabled:text-slate-500 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-[0.3em] transition-all shadow-xl shadow-cyan-900/20 active:scale-95 flex items-center justify-center gap-3 group"
             >
               {isSubmitting ? (
                 <Loader2 className="animate-spin" size={20} />

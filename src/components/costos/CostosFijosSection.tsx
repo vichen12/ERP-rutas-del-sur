@@ -165,14 +165,14 @@ function ImpuestosView({ impuestos, variableContext, totalMensual, onNuevo, onEd
           </p>
           <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-2">{activos} impuestos activos</p>
         </div>
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-7 relative overflow-hidden">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-7 relative overflow-hidden">
           <TrendingUp size={70} className="absolute -right-3 -bottom-3 text-slate-500/5 pointer-events-none" />
           <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">Proyección Anual</p>
           <p className="text-3xl font-black text-white italic tabular-nums tracking-tighter">
             $ {(totalMensual * 12).toLocaleString('es-AR', { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-7 relative overflow-hidden">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-7 relative overflow-hidden">
           <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">% sobre Ventas</p>
           <p className="text-3xl font-black text-orange-400 italic tabular-nums tracking-tighter">
             {variableContext.VENTAS > 0 ? ((totalMensual / variableContext.VENTAS) * 100).toFixed(1) : '0'}%
@@ -196,7 +196,7 @@ function ImpuestosView({ impuestos, variableContext, totalMensual, onNuevo, onEd
       {impuestos.length === 0 ? (
         <EmptyState text="Sin impuestos registrados" />
       ) : (
-        <div className="bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
+        <div className="bg-[#1a2537]/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-white/5">
               <tr>
@@ -303,7 +303,7 @@ function CostosView({ costos, onNuevo, onEdit, onDelete, onToggle, onPagar }: {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-6">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2rem] p-6">
           <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1">Total Registrados</p>
           <p className="text-3xl font-black text-white italic tabular-nums">{costos.length}</p>
         </div>
@@ -338,7 +338,7 @@ function CostosView({ costos, onNuevo, onEdit, onDelete, onToggle, onPagar }: {
       {costos.length === 0 ? (
         <EmptyState text="Sin costos registrados" />
       ) : (
-        <div className="bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
+        <div className="bg-[#1a2537]/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
           <table className="w-full text-left">
             <thead className="bg-white/[0.02] text-[8px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-white/5">
               <tr>

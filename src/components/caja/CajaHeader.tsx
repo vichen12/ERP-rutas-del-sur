@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Plus, Calendar, Globe, TrendingUp, TrendingDown, Landmark, Wallet } from 'lucide-react'
+import { Plus, Calendar, Globe, TrendingUp, TrendingDown, Landmark } from 'lucide-react'
 
 interface CajaHeaderProps {
   tipoCuenta: 'todas' | 'caja' | 'banco'
@@ -50,8 +50,7 @@ export function CajaHeader({
             <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Tesorería Central</p>
           </div>
           <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
-            CAJA <br />
-            <span className="text-emerald-500 font-thin">/ BANCO</span>
+            BANCO
           </h1>
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">
             Control financiero integral · Rutas del Sur ERP
@@ -82,32 +81,30 @@ export function CajaHeader({
       </div>
 
       {/* BARRA DE FILTROS */}
-      <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 bg-slate-950/40 p-2 rounded-[2.2rem] border border-white/5">
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 bg-[#141c28]/40 p-2 rounded-[2.2rem] border border-white/5">
 
-        {/* SELECTOR CAJA / BANCO */}
-        <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 shadow-inner shrink-0">
-          {(['todas', 'caja', 'banco'] as const).map((t) => (
+        {/* SELECTOR BANCO */}
+        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 shadow-inner shrink-0">
+          {(['todas', 'banco'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTipoCuenta(t)}
               className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${
                 tipoCuenta === t
-                  ? t === 'caja'
-                    ? 'bg-amber-600 text-white shadow-lg'
-                    : t === 'banco'
+                  ? t === 'banco'
                     ? 'bg-sky-600 text-white shadow-lg'
                     : 'bg-emerald-600 text-white shadow-lg'
                   : 'text-slate-500 hover:text-white'
               }`}
             >
-              {t === 'caja' ? <Wallet size={12} /> : t === 'banco' ? <Landmark size={12} /> : null}
-              {t === 'todas' ? 'Todas' : t === 'caja' ? 'Efectivo' : 'Banco'}
+              {t === 'banco' ? <Landmark size={12} /> : null}
+              {t === 'todas' ? 'Todas' : 'Banco'}
             </button>
           ))}
         </div>
 
         {/* FILTROS RÁPIDOS */}
-        <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 shadow-inner shrink-0">
+        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 shadow-inner shrink-0">
           <button onClick={setEsteMes} className="px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all text-slate-500 hover:text-white hover:bg-white/5">
             Este Mes
           </button>
@@ -149,7 +146,7 @@ export function CajaHeader({
           className={`flex items-center justify-center gap-3 px-8 py-4 rounded-[1.8rem] text-[9px] font-black uppercase tracking-[0.2em] transition-all border shrink-0 ${
             showAllTime
               ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg'
-              : 'bg-slate-900 border-white/10 text-slate-500 hover:text-white'
+              : 'bg-[#1a2537] border-white/10 text-slate-500 hover:text-white'
           }`}
         >
           <Globe size={16} />

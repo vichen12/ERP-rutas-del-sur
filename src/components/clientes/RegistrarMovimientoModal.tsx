@@ -47,8 +47,8 @@ export function RegistrarMovimientoModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
-      <div className="bg-[#020617] border border-white/10 p-8 lg:p-10 rounded-[3rem] w-full max-w-2xl relative shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 p-8 lg:p-10 rounded-[3rem] w-full max-w-2xl relative shadow-2xl overflow-hidden">
         
         <div className={`absolute -right-10 -top-10 w-40 h-40 blur-[100px] opacity-20 transition-colors duration-700 ${tipo === 'cargo' ? 'bg-sky-500' : 'bg-emerald-500'}`} />
         <div className={`absolute top-0 left-0 w-full h-1.5 transition-colors duration-700 ${tipo === 'cargo' ? 'bg-sky-500' : 'bg-emerald-500'}`} />
@@ -71,7 +71,7 @@ export function RegistrarMovimientoModal({
 
         {/* Solo mostramos el selector si es una operación nueva */}
         {!initialData && (
-          <div className="flex bg-slate-950 p-1.5 rounded-2xl mb-8 border border-white/5 relative z-10 shadow-inner">
+          <div className="flex bg-[#141c28] p-1.5 rounded-2xl mb-8 border border-white/5 relative z-10 shadow-inner">
             <button type="button" onClick={() => setTipo('cobro')} className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tipo === 'cobro' ? 'bg-emerald-600 text-white shadow-xl scale-[1.02]' : 'text-slate-600 hover:text-slate-400'}`}>
               <DollarSign size={16} /> Registrar Ingreso
             </button>
@@ -90,7 +90,7 @@ export function RegistrarMovimientoModal({
                 <input 
                   type="number" step="0.01" required autoFocus placeholder="0.00"
                   value={monto} onChange={(e) => setMonto(e.target.value)}
-                  className="w-full p-5 pl-14 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-white/20 transition-all text-xl tabular-nums placeholder:text-slate-800" 
+                  className="w-full p-5 pl-14 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-white/20 transition-all text-xl tabular-nums placeholder:text-slate-800" 
                 />
               </div>
             </div>
@@ -103,7 +103,7 @@ export function RegistrarMovimientoModal({
                 <input 
                   placeholder={tipo === 'cargo' ? "EJ: REF-001" : "EJ: TR-1234"}
                   value={remito} onChange={(e) => setRemito(e.target.value)}
-                  className="w-full p-5 pl-14 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black uppercase focus:border-white/20 transition-all text-xs tracking-widest placeholder:text-slate-800" 
+                  className="w-full p-5 pl-14 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black uppercase focus:border-white/20 transition-all text-xs tracking-widest placeholder:text-slate-800" 
                 />
               </div>
             </div>
@@ -115,7 +115,7 @@ export function RegistrarMovimientoModal({
               <input 
                 placeholder={tipo === 'cargo' ? "EJ: CARGO POR DEMORA" : "EJ: PAGO CHEQUE 30 DÍAS"}
                 value={detalle} onChange={(e) => setDetalle(e.target.value)}
-                className="w-full p-5 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-white/20 transition-all text-xs uppercase placeholder:text-slate-800" 
+                className="w-full p-5 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-white/20 transition-all text-xs uppercase placeholder:text-slate-800" 
               />
             </div>
             <div className="space-y-2">
@@ -125,7 +125,7 @@ export function RegistrarMovimientoModal({
                 <input 
                   type="date" required
                   value={fecha} onChange={(e) => setFecha(e.target.value)}
-                  className="w-full p-5 pl-14 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-white/20 transition-all uppercase text-xs [color-scheme:dark]" 
+                  className="w-full p-5 pl-14 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-white/20 transition-all uppercase text-xs [color-scheme:dark]" 
                 />
               </div>
             </div>

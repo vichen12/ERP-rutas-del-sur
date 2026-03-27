@@ -51,8 +51,8 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
   ]
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#020617] w-full max-w-md rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-md rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
         <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-full bg-rose-500" />
 
         <div className="flex justify-between items-start mb-8">
@@ -77,7 +77,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
               placeholder="EJ: TRÁNSITO / SENASA / MUNICIPALIDAD"
               value={form.infractor}
               onChange={e => setForm(p => ({ ...p, infractor: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black text-sm uppercase outline-none focus:border-rose-500 transition-all placeholder:text-slate-700"
+              className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black text-sm uppercase outline-none focus:border-rose-500 transition-all placeholder:text-slate-700"
             />
             <div className="flex flex-wrap gap-2 px-1">
               {infractoresSugeridos.map(s => (
@@ -105,7 +105,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
                   required type="number" step="0.01" min="0" placeholder="0.00"
                   value={form.monto}
                   onChange={e => setForm(p => ({ ...p, monto: e.target.value }))}
-                  className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-white font-black text-xl tabular-nums outline-none focus:border-rose-500 transition-all"
+                  className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-white font-black text-xl tabular-nums outline-none focus:border-rose-500 transition-all"
                 />
               </div>
             </div>
@@ -117,7 +117,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
                 required type="date"
                 value={form.fecha}
                 onChange={e => setForm(p => ({ ...p, fecha: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-5 text-white font-black text-sm outline-none focus:border-rose-500 [color-scheme:dark] uppercase"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-5 text-white font-black text-sm outline-none focus:border-rose-500 [color-scheme:dark] uppercase"
               />
             </div>
           </div>
@@ -125,7 +125,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
           {/* ESTADO */}
           <div className="space-y-2">
             <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Estado</label>
-            <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-white/5">
+            <div className="flex bg-[#141c28] p-1.5 rounded-2xl border border-white/5">
               {estados.map(e => (
                 <button key={e.value} type="button"
                   onClick={() => setForm(p => ({ ...p, estado: e.value }))}
@@ -149,7 +149,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
               value={form.detalle}
               onChange={e => setForm(p => ({ ...p, detalle: e.target.value.toUpperCase() }))}
               rows={2}
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-bold text-sm uppercase outline-none focus:border-rose-500 transition-all resize-none placeholder:text-slate-700"
+              className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-bold text-sm uppercase outline-none focus:border-rose-500 transition-all resize-none placeholder:text-slate-700"
             />
           </div>
 
@@ -163,7 +163,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
                 <select
                   value={form.chofer_id}
                   onChange={e => setForm(p => ({ ...p, chofer_id: e.target.value }))}
-                  className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-xs outline-none appearance-none uppercase"
+                  className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-xs outline-none appearance-none uppercase"
                 >
                   <option value="">SIN ASIGNAR</option>
                   {choferes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
@@ -179,7 +179,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
                 <select
                   value={form.camion_id}
                   onChange={e => setForm(p => ({ ...p, camion_id: e.target.value }))}
-                  className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-xs outline-none appearance-none uppercase"
+                  className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-xs outline-none appearance-none uppercase"
                 >
                   <option value="">SIN ASIGNAR</option>
                   {camiones.map(c => <option key={c.id} value={c.id}>{c.patente}</option>)}

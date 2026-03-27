@@ -27,7 +27,7 @@ export async function GET() {
     // 2. Instanciamos el SDK de AFIP
     // Usamos "as any" para evitar errores de campos faltantes en el constructor
     const afip = new Afip({
-      CUIT: parseInt(config.arca_cuit),
+      CUIT: parseInt(config.arca_cuit.replace(/[^0-9]/g, '')),
       cert: config.arca_certificado,
       key: config.arca_clave_privada,
       production: config.arca_entorno === 'produccion',

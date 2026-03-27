@@ -78,12 +78,12 @@ export function ChoferCard({
   
   if (estado === 'En Viaje') { estadoColor = 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'; dotColor = 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]'; }
   else if (estado.includes('Franco') || estado.includes('Licencia')) { estadoColor = 'bg-amber-500/15 text-amber-400 border-amber-500/30'; dotColor = 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]'; }
-  else if (isInactivo) { estadoColor = 'bg-slate-800 text-slate-400 border-white/10'; dotColor = 'bg-slate-600'; }
+  else if (isInactivo) { estadoColor = 'bg-[#243248] text-slate-400 border-white/10'; dotColor = 'bg-slate-600'; }
 
   const statusBorder = estaVencido ? 'border-rose-500/50 shadow-[0_0_30px_rgba(225,29,72,0.1)]' : vencePronto ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.1)]' : 'border-white/10 group-hover:border-indigo-500/40 hover:shadow-[0_0_40px_rgba(79,70,229,0.1)]';
 
   return (
-    <div className={`group bg-[#050814] rounded-[2rem] border ${statusBorder} transition-all duration-500 flex relative overflow-hidden h-full min-h-[380px] w-full min-w-0 ${isInactivo ? 'opacity-60 grayscale-[0.6]' : ''}`}>
+    <div className={`group bg-[#141c28] rounded-[2rem] border ${statusBorder} transition-all duration-500 flex relative overflow-hidden h-full min-h-[380px] w-full min-w-0 ${isInactivo ? 'opacity-60 grayscale-[0.6]' : ''}`}>
       
       {/* 🔮 Brillo de Fondo Dinámico */}
       <div className={`absolute -bottom-10 -right-10 w-full h-full pointer-events-none transition-all duration-1000 z-0 opacity-60 ${balanceGlow}`} />
@@ -94,7 +94,7 @@ export function ChoferCard({
       )}
 
       {/* 🛠️ BARRA LATERAL ADMINISTRATIVA (DOCK) */}
-      <div className="w-14 sm:w-16 shrink-0 bg-[#02040A] flex flex-col items-center py-6 z-20 border-r border-white/5 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+      <div className="w-14 sm:w-16 shrink-0 bg-[#141c28] flex flex-col items-center py-6 z-20 border-r border-white/5 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
         
         {/* Escudo LNH Arriba */}
     
@@ -118,7 +118,7 @@ export function ChoferCard({
           <div className="flex gap-4 items-center mb-6">
             
             <div className="relative shrink-0">
-              <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[1.2rem] bg-slate-900 border-2 border-white/10 flex items-center justify-center overflow-hidden shadow-xl relative z-10 transition-transform duration-500 group-hover:scale-105`}>
+              <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[1.2rem] bg-[#1a2537] border-2 border-white/10 flex items-center justify-center overflow-hidden shadow-xl relative z-10 transition-transform duration-500 group-hover:scale-105`}>
                 {chofer.foto_url ? (
                   <Image src={chofer.foto_url} alt={chofer.nombre} fill className="object-cover" />
                 ) : (

@@ -22,7 +22,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#141c28] flex items-center justify-center p-6 relative overflow-hidden">
       
       {/* Background Decor (Cyber-Logistics style) */}
       <div className="absolute inset-0 pointer-events-none">
@@ -31,7 +31,7 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-slate-900/40 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-2xl shadow-2xl space-y-8">
+        <div className="bg-[#1a2537]/40 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-2xl shadow-2xl space-y-8">
           
           {/* LOGO TÁCTICO */}
           <div className="text-center space-y-4">
@@ -56,7 +56,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@rutasdelsur.com"
-                  className="w-full bg-slate-950 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-700"
+                  className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-700"
                   required
                 />
               </div>
@@ -71,7 +71,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-700"
+                  className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-700"
                   required
                 />
               </div>
@@ -80,7 +80,7 @@ export default function LoginPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full group bg-sky-500 hover:bg-sky-400 disabled:bg-slate-800 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 active:scale-95"
+              className="w-full group bg-sky-500 hover:bg-sky-400 disabled:bg-[#243248] text-white py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 active:scale-95"
             >
               {loading ? <Loader2 className="animate-spin" size={18} /> : (
                 <>

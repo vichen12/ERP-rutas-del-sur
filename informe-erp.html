@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rutas del Sur ERP — Manual Operativo Completo</title>
+  <style>
+    :root {
+      --bg: #0f1623;
+      --card: #1a2537;
+      --elevated: #243248;
+      --border: rgba(255,255,255,0.08);
+      --sky: #0ea5e9;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --amber: #f59e0b;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --faint: #475569;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f1623 0%, #1a2537 50%, #0c1a30 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 40px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 50%, rgba(14,165,233,0.08) 0%, transparent 60%),
+                  radial-gradient(circle at 70% 50%, rgba(99,102,241,0.06) 0%, transparent 60%);
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(14,165,233,0.15);
+      border: 1px solid rgba(14,165,233,0.3);
+      color: var(--sky);
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-meta span {
+      font-size: 13px;
+      color: var(--faint);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    .toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+    .toc h2 {
+      color: var(--sky);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 8px;
+    }
+    .toc a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13.5px;
+      transition: all 0.15s;
+    }
+    .toc a:hover {
+      border-color: var(--sky);
+      color: var(--sky);
+      background: rgba(14,165,233,0.08);
+    }
+    .section {
+      margin-bottom: 64px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .icon-sky    { background: rgba(14,165,233,0.15);  border: 1px solid rgba(14,165,233,0.3);  }
+    .icon-emerald{ background: rgba(16,185,129,0.15);  border: 1px solid rgba(16,185,129,0.3);  }
+    .icon-rose   { background: rgba(244,63,94,0.15);   border: 1px solid rgba(244,63,94,0.3);   }
+    .icon-amber  { background: rgba(245,158,11,0.15);  border: 1px solid rgba(245,158,11,0.3);  }
+    .icon-indigo { background: rgba(99,102,241,0.15);  border: 1px solid rgba(99,102,241,0.3);  }
+    .icon-violet { background: rgba(139,92,246,0.15);  border: 1px solid rgba(139,92,246,0.3);  }
+    .icon-teal   { background: rgba(20,184,166,0.15);  border: 1px solid rgba(20,184,166,0.3);  }
+    .icon-orange { background: rgba(249,115,22,0.15);  border: 1px solid rgba(249,115,22,0.3);  }
+    .icon-lime   { background: rgba(132,204,22,0.15);  border: 1px solid rgba(132,204,22,0.3);  }
+    .section-title h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+    .section-title p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h4 {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      margin: 18px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card p { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    @media(max-width:768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2rem; }
+    }
+    .flow { display: flex; flex-direction: column; gap: 0; }
+    .flow-step { display: flex; gap: 16px; position: relative; }
+    .flow-step::before {
+      content: '';
+      position: absolute;
+      left: 19px; top: 44px; bottom: -16px;
+      width: 2px;
+      background: var(--border);
+    }
+    .flow-step:last-child::before { display: none; }
+    .flow-num {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--elevated);
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: var(--sky);
+      flex-shrink: 0;
+    }
+    .flow-content { flex: 1; padding-bottom: 24px; }
+    .flow-content h4 {
+      font-size: 14px !important;
+      font-weight: 600;
+      color: #f1f5f9 !important;
+      margin: 8px 0 6px !important;
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+    }
+    .flow-content p { font-size: 13.5px; color: var(--muted); }
+    .code {
+      background: #0a0f1a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #93c5fd;
+      margin: 12px 0;
+      overflow-x: auto;
+      line-height: 1.7;
+      white-space: pre;
+    }
+    .tbl-wrap { overflow-x: auto; margin: 12px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    thead th {
+      background: var(--elevated);
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--text);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-sky    { background: rgba(14,165,233,0.15); color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); }
+    .badge-emerald{ background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-rose   { background: rgba(244,63,94,0.15);  color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+    .badge-amber  { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-indigo { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+    .badge-violet { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.3); }
+    .alert {
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin: 14px 0;
+      font-size: 13.5px;
+      display: flex;
+      gap: 10px;
+    }
+    .alert-sky    { background: rgba(14,165,233,0.08); border-left: 3px solid var(--sky); color: #bae6fd; }
+    .alert-amber  { background: rgba(245,158,11,0.08); border-left: 3px solid var(--amber); color: #fde68a; }
+    .alert-rose   { background: rgba(244,63,94,0.08);  border-left: 3px solid var(--rose); color: #fecdd3; }
+    .alert-emerald{ background: rgba(16,185,129,0.08); border-left: 3px solid var(--emerald); color: #a7f3d0; }
+    .formula {
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #c4b5fd;
+      line-height: 2;
+      white-space: pre;
+    }
+    .impact-list { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+    .impact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--elevated);
+      border-radius: 10px;
+      font-size: 13.5px;
+    }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; }
+    .kpi {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .kpi-label { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .kpi-value { font-size: 1.6rem; font-weight: 700; }
+    .kpi-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .kpi-sky     .kpi-value { color: var(--sky); }
+    .kpi-emerald .kpi-value { color: var(--emerald); }
+    .kpi-rose    .kpi-value { color: var(--rose); }
+    .kpi-amber   .kpi-value { color: var(--amber); }
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+    .scroll-top {
+      position: fixed;
+      bottom: 30px; right: 30px;
+      width: 44px; height: 44px;
+      background: var(--sky);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      text-decoration: none;
+      color: white;
+      box-shadow: 0 4px 20px rgba(14,165,233,0.4);
+    }
+    .tag {
+      display: inline-block;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1px 8px;
+      font-size: 12px;
+      font-family: monospace;
+      color: #93c5fd;
+      margin: 1px 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">Manual Operativo</div>
+  <h1>Rutas del Sur ERP</h1>
+  <p>Guia completa: como opera cada modulo, que impacta cada accion y como fluye el dinero en todo el sistema.</p>
+  <div class="hero-meta">
+    <span>Actualizado: Marzo 2026</span>
+    <span>12 modulos documentados</span>
+    <span>Flujos de datos e impactos cruzados</span>
+    <span>Gateway financiero central</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+<div class="toc" id="top">
+  <h2>Indice de contenidos</h2>
+  <div class="toc-grid">
+    <a href="#arquitectura">Arquitectura General</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#viajes">Viajes</a>
+    <a href="#clientes">Clientes</a>
+    <a href="#caja">Caja</a>
+    <a href="#banco">Banco</a>
+    <a href="#choferes">Choferes</a>
+    <a href="#camiones">Camiones</a>
+    <a href="#combustible">Combustible</a>
+    <a href="#costos">Costos y Multas</a>
+    <a href="#facturacion">Facturacion ARCA</a>
+    <a href="#remitos">Remitos</a>
+    <a href="#tareas">Tareas</a>
+    <a href="#impactos">Mapa de Impactos</a>
+  </div>
+</div>
+
+
+<!-- ARQUITECTURA -->
+<div class="section" id="arquitectura">
+  <div class="section-header">
+    <div class="section-icon icon-sky">&#127959;</div>
+    <div class="section-title">
+      <h2>Arquitectura General del Sistema</h2>
+      <p>Como estan conectados todos los modulos y el principio fundamental de la caja</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Principio Central: cajaService es el unico gateway financiero</h3>
+    <p>Toda operacion que mueve dinero en el sistema debe pasar por <strong>cajaService</strong>. Ningun modulo escribe directamente en <span class="tag">movimientos_caja</span>. Esto garantiza consistencia, auditabilidad y balance correcto.</p>
+    <div class="alert alert-amber">
+      REGLA ABSOLUTA: Si una accion tiene impacto economico, usa cajaService. Nunca un INSERT INTO movimientos_caja directo desde un componente.
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Stack Tecnologico</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Capa</th><th>Tecnologia</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td>Next.js 16 (App Router)</td></tr>
+            <tr><td>Lenguaje</td><td>TypeScript 5</td></tr>
+            <tr><td>Base de Datos</td><td>Supabase (PostgreSQL)</td></tr>
+            <tr><td>Auth</td><td>Supabase Auth</td></tr>
+            <tr><td>Estilos</td><td>Tailwind CSS v4</td></tr>
+            <tr><td>PDF</td><td>jsPDF + autotable</td></tr>
+            <tr><td>Facturacion</td><td>AFIP SDK (WSAA + WSFEV1)</td></tr>
+            <tr><td>Notificaciones</td><td>Resend (email) + CallMeBot (WA)</td></tr>
+            <tr><td>GPS</td><td>Traccar (opcional)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Tablas Nucleo del Sistema</h3>
+      <div class="impact-list">
+        <div class="impact-item"><strong>viajes</strong> &mdash; Tabla de hechos principal. Cada viaje genera cascada en multiples tablas.</div>
+        <div class="impact-item"><strong>movimientos_caja</strong> &mdash; Libro mayor de todos los movimientos de dinero.</div>
+        <div class="impact-item"><strong>cuenta_corriente</strong> &mdash; Saldo de deuda de cada cliente con la empresa.</div>
+        <div class="impact-item"><strong>cuenta_corriente_choferes</strong> &mdash; Lo que la empresa le debe a cada chofer.</div>
+        <div class="impact-item"><strong>remitos</strong> &mdash; Puente entre viajes y facturas. Sin remito no hay factura.</div>
+        <div class="impact-item"><strong>facturas</strong> &mdash; Comprobantes fiscales emitidos ante AFIP/ARCA.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Ciclo de Vida Completo de una Operacion</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <h4>Alta de Cliente y configuracion de tarifa</h4>
+          <p>Se crea el cliente con su tarifa de flete, pago al chofer, litros estimados y km de ruta. Estos valores se auto-completan en cada viaje nuevo.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <h4>Creacion del Viaje (3 pasos)</h4>
+          <p>Se seleccionan camion, chofer y clientes. El sistema calcula costos automaticamente. Se guarda en <span class="tag">viajes</span> + <span class="tag">reparto_viaje</span>.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <h4>Impacto automatico en Cuenta Corriente</h4>
+          <p>Por cada cliente del viaje se genera una entrada en <span class="tag">cuenta_corriente</span> con debe = tarifa_flete. Estado: <span class="badge badge-amber">por_cobrar</span>.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-content">
+          <h4>Cobro al cliente</h4>
+          <p>Cuando el cliente paga, se registra via <span class="tag">cajaService.registrarCobroFlete()</span>. Entra como ingreso en <span class="tag">movimientos_caja</span> y se acredita en cuenta corriente.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-content">
+          <h4>Remito a Factura AFIP</h4>
+          <p>El remito vincula el viaje con la factura. Se emite via ARCA y se guarda en <span class="tag">facturas</span> con CAE. El remito se marca <span class="badge badge-emerald">facturado</span>.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-content">
+          <h4>Pago al chofer</h4>
+          <p>La liquidacion al chofer se hace via <span class="tag">cajaService.registrarPagoChofer()</span>. Sale de caja y se marca pagado en <span class="tag">cuenta_corriente_choferes</span>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- DASHBOARD -->
+<div class="section" id="dashboard">
+  <div class="section-header">
+    <div class="section-icon icon-indigo">&#128202;</div>
+    <div class="section-title">
+      <h2>Dashboard &mdash; Centro de Control</h2>
+      <p>Que muestra, de donde viene cada numero y como se calculan las metricas</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>KPIs Principales del Periodo</h3>
+    <p>Todos los KPIs se filtran por el rango de fechas seleccionado (default: mes actual). Se recalculan en tiempo real al cambiar el rango.</p>
+    <div class="kpi-grid">
+      <div class="kpi kpi-sky">
+        <div class="kpi-label">Viajes del periodo</div>
+        <div class="kpi-value">24</div>
+        <div class="kpi-sub">COUNT(viajes) filtrado por fecha</div>
+      </div>
+      <div class="kpi kpi-emerald">
+        <div class="kpi-label">Facturacion Bruta</div>
+        <div class="kpi-value">$185k</div>
+        <div class="kpi-sub">SUM(tarifa_flete) de viajes</div>
+      </div>
+      <div class="kpi kpi-rose">
+        <div class="kpi-label">Costos Operativos</div>
+        <div class="kpi-value">$78k</div>
+        <div class="kpi-sub">Gasoil + Chofer + Descarga + Desgaste</div>
+      </div>
+      <div class="kpi kpi-amber">
+        <div class="kpi-label">Utilidad Neta</div>
+        <div class="kpi-value">$107k</div>
+        <div class="kpi-sub">Bruta menos Costos (margen 57.8%)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Como se calculan los costos operativos</h3>
+      <div class="formula">gasoilTotal  = SUM(lts_gasoil x precio_gasoil)
+pagoChofer   = SUM(pago_chofer) por viaje
+descarga     = SUM(costo_descarga) por viaje
+desgaste     = SUM(km_recorridos x desgaste_por_km)
+
+totalCostos  = gasoil + pagoChofer + descarga + desgaste
+
+utilidadNeta = facturacionBruta - totalCostos
+margen%      = (utilidadNeta / facturacionBruta) x 100</div>
+    </div>
+    <div class="card">
+      <h3>Plata en la Calle (Deudores)</h3>
+      <p>Muestra cuanto dinero esta adeudado por clientes que aun no pagaron sus viajes.</p>
+      <div class="formula">saldo_cliente = SUM(debe) - SUM(haber)
+              en cuenta_corriente
+
+"Plata en la calle" = SUM(saldo) donde saldo > 0</div>
+      <div class="alert alert-sky">
+        El dashboard lista los Top 5 deudores ordenados por saldo descendente, con dias desde el ultimo viaje.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Grafico de Tendencia 12 Meses</h3>
+    <p>El grafico de area/barras muestra mes a mes la evolucion de:</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Linea/Barra</th><th>Fuente de datos</th><th>Color</th></tr></thead>
+        <tbody>
+          <tr><td>Facturacion bruta</td><td>SUM(tarifa_flete) por mes en viajes</td><td><span class="badge badge-sky">Azul</span></td></tr>
+          <tr><td>Costos operativos</td><td>Suma de los 4 costos por mes</td><td><span class="badge badge-rose">Rojo</span></td></tr>
+          <tr><td>Utilidad neta</td><td>Bruta menos Costos por mes</td><td><span class="badge badge-emerald">Verde</span></td></tr>
+          <tr><td>Saldo caja+banco</td><td>Acumulado de movimientos_caja</td><td><span class="badge badge-amber">Amarillo</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Panel de Alertas (tambien en Navbar)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Alerta</th><th>Condicion</th><th>Nivel</th></tr></thead>
+        <tbody>
+          <tr><td>Licencia chofer vencida</td><td>vto_licencia &lt; hoy</td><td><span class="badge badge-rose">CRITICO</span></td></tr>
+          <tr><td>Licencia chofer por vencer</td><td>vto_licencia &lt;= hoy + 30 dias</td><td><span class="badge badge-amber">AVISO</span></td></tr>
+          <tr><td>Servicio necesario urgente</td><td>km_actual - km_ultimo_service &gt;= 32.000</td><td><span class="badge badge-rose">CRITICO</span></td></tr>
+          <tr><td>Servicio necesario aviso</td><td>km_actual - km_ultimo_service &gt;= 25.000</td><td><span class="badge badge-amber">AVISO</span></td></tr>
+          <tr><td>RTO por vencer</td><td>vto_rto &lt;= hoy + 30 dias</td><td><span class="badge badge-amber">AVISO</span></td></tr>
+          <tr><td>SENASA por vencer</td><td>vto_senasa &lt;= hoy + 30 dias</td><td><span class="badge badge-amber">AVISO</span></td></tr>
+          <tr><td>Tareas vencidas</td><td>fecha_vencimiento &lt; hoy AND completada=false</td><td><span class="badge badge-rose">CRITICO</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- VIAJES -->
+<div class="section" id="viajes">
+  <div class="section-header">
+    <div class="section-icon icon-sky">&#128666;</div>
+    <div class="section-title">
+      <h2>Viajes &mdash; El Nucleo Operativo</h2>
+      <p>Como funciona el wizard de 3 pasos, que impacta en cada tabla y como se calculan los costos</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Wizard de Creacion de Viaje (3 Pasos)</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <h4>Paso 1 &mdash; Logistica Operativa</h4>
+          <p>Se selecciona el <strong>camion</strong> y se auto-asigna el chofer. Luego se agregan clientes para IDA y opcionalmente VUELTA. Por cada cliente (reparto) el sistema auto-completa desde la ficha del cliente: tarifa de flete, pago al chofer, km de ruta, litros estimados, costo descarga, desgaste por km.</p>
+          <div class="alert alert-sky">
+            CLAVE: Si hay viaje de vuelta con clientes, el multiplicador de costos fijos = 2. Esto aplica a pago chofer y descarga (se recorre dos veces). Si es solo ida, multiplicador = 1.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <h4>Paso 2 &mdash; Analisis de Costos</h4>
+          <p>Vista editable donde se puede ajustar el flete por cliente. El sistema calcula en tiempo real:</p>
+          <div class="formula">fleteBruto  = SUM(monto_flete_ida) + SUM(monto_flete_vuelta)
+gasoil      = lts_gasoil x precio_gasoil
+pagoChofer  = pago_chofer x multiplicadorFijos
+descarga    = costo_descarga x multiplicadorFijos
+desgaste    = km_recorridos x desgaste_por_km
+
+totalCostos = gasoil + pagoChofer + descarga + desgaste
+neta        = fleteBruto - totalCostos
+margen%     = (neta / fleteBruto) x 100</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <h4>Paso 3 &mdash; Manifiesto Final</h4>
+          <p>Resumen completo con: desglose km ida/vuelta, utilidad/km, costo de gasoil, columnas: Flete Bruto | Gasoil | Chofer+Descarga | Fondo Desgaste. Se confirma y guarda.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tablas afectadas al guardar un viaje</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Tabla</th><th>Operacion</th><th>Que se guarda</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="tag">viajes</span></td>
+            <td><span class="badge badge-sky">INSERT</span></td>
+            <td>fecha, cliente_id, chofer_id, camion_id, km, lts, tarifa_flete, pago_chofer, costo_descarga, desgaste_por_km, es_retorno, estado="Finalizado"</td>
+          </tr>
+          <tr>
+            <td><span class="tag">reparto_viaje</span></td>
+            <td><span class="badge badge-sky">INSERT</span></td>
+            <td>Un registro por cada cliente/destino del viaje: viaje_id, destino_id, orden, monto_flete_parcial, nro_remito_parcial</td>
+          </tr>
+          <tr>
+            <td><span class="tag">cuenta_corriente</span></td>
+            <td><span class="badge badge-sky">INSERT</span></td>
+            <td>Por cada cliente: {cliente_id, viaje_id, debe=tarifa_flete, haber=0, estado_gestion='por_cobrar'}</td>
+          </tr>
+          <tr>
+            <td><span class="tag">cuenta_corriente_choferes</span></td>
+            <td><span class="badge badge-sky">INSERT</span></td>
+            <td>{chofer_id, viaje_id, monto=pago_chofer, pagado=false}</td>
+          </tr>
+          <tr>
+            <td><span class="tag">camiones</span></td>
+            <td><span class="badge badge-amber">UPDATE</span></td>
+            <td>km_actual += km_recorridos; lts_consumidos += lts_gasoil</td>
+          </tr>
+          <tr>
+            <td><span class="tag">choferes</span></td>
+            <td><span class="badge badge-amber">UPDATE</span></td>
+            <td>km_recorridos += km_recorridos; lts_consumidos += lts_gasoil</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-emerald">
+      Al guardar el viaje NO se crea movimiento en caja todavia. El cobro al cliente es un paso separado que ocurre cuando el cliente paga efectivamente.
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Tipos de Viaje</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>es_retorno</th><th>Impacto</th></tr></thead>
+          <tbody>
+            <tr><td>Solo IDA</td><td>false</td><td>Multiplicador costos = 1. Solo km_ida.</td></tr>
+            <tr><td>IDA + VUELTA</td><td>true</td><td>Mult = 2. km = km_ida + km_vuelta.</td></tr>
+            <tr><td>Reparto multiple</td><td>&mdash;</td><td>N clientes = N entradas en cuenta_corriente</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Estados del Viaje</h3>
+      <p>El campo <span class="tag">estado</span> es texto libre. Los valores estandar son:</p>
+      <div class="impact-list">
+        <div class="impact-item"><span class="badge badge-emerald">Finalizado</span><span style="margin-left:8px;font-size:13px;color:var(--muted)">Default al crear. Viaje completado.</span></div>
+        <div class="impact-item"><span class="badge badge-amber">En curso</span><span style="margin-left:8px;font-size:13px;color:var(--muted)">Viaje en progreso (GPS tracking activo).</span></div>
+        <div class="impact-item"><span class="badge badge-rose">Cancelado</span><span style="margin-left:8px;font-size:13px;color:var(--muted)">Viaje anulado. No computa en KPIs.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- CLIENTES -->
+<div class="section" id="clientes">
+  <div class="section-header">
+    <div class="section-icon icon-emerald">&#127970;</div>
+    <div class="section-title">
+      <h2>Clientes &mdash; CRM y Cuenta Corriente</h2>
+      <p>Como funciona el libro mayor por cliente, los saldos y el ciclo de cobro</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Logica de Cuenta Corriente (Debe / Haber)</h3>
+    <p>La cuenta corriente funciona como un libro contable por partida doble. Cada movimiento tiene debe (lo que el cliente nos debe) o haber (lo que el cliente pago).</p>
+    <div class="formula">DEBE  -> El cliente nos debe dinero (aumenta saldo)
+HABER -> El cliente pago (reduce saldo)
+
+Saldo = SUM(debe) - SUM(haber)
+
+Si saldo > 0 -> Cliente nos debe
+Si saldo = 0 -> Esta al dia
+Si saldo &lt; 0 -> Tenemos saldo a favor del cliente</div>
+
+    <h4>Ejemplo de flujo tipico de un cliente</h4>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Fecha</th><th>Tipo Movimiento</th><th>Debe</th><th>Haber</th><th>Saldo Acum.</th></tr></thead>
+        <tbody>
+          <tr><td>01/03</td><td>Viaje REM-001 generado</td><td>$20.000</td><td>&mdash;</td><td>$20.000</td></tr>
+          <tr><td>05/03</td><td>Viaje REM-002 generado</td><td>$25.000</td><td>&mdash;</td><td>$45.000</td></tr>
+          <tr><td>10/03</td><td>Cobro parcial en caja</td><td>&mdash;</td><td>$15.000</td><td>$30.000</td></tr>
+          <tr><td>20/03</td><td>Cobro total restante</td><td>&mdash;</td><td>$30.000</td><td>$0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>estado_gestion &mdash; Ciclo del Cobro</h3>
+      <div class="impact-list">
+        <div class="impact-item">
+          <span class="badge badge-amber">por_cobrar</span>
+          <div style="margin-left:8px;font-size:13px;color:var(--muted)">Viaje registrado, pago pendiente. El debe esta acreditado pero no cobrado.</div>
+        </div>
+        <div class="impact-item">
+          <span class="badge badge-emerald">maestro</span>
+          <div style="margin-left:8px;font-size:13px;color:var(--muted)">Cobro recibido y confirmado. Factura emitida. Movimiento completo.</div>
+        </div>
+        <div class="impact-item">
+          <span class="badge badge-indigo">null</span>
+          <div style="margin-left:8px;font-size:13px;color:var(--muted)">Movimiento manual (ajuste, nota de credito, etc.).</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Destinos por Cliente</h3>
+      <p>Cada cliente puede tener multiples destinos configurados con sus propias tarifas y distancias:</p>
+      <div class="code">destinos_cliente {
+  nombre, direccion,
+  lat, lng,
+  tarifa_flete,
+  km_desde_base,
+  lts_estimados,
+  es_origen (bool),
+  activo (bool)
+}</div>
+      <p style="margin-top:8px">Al crear un viaje de reparto, seleccionar destino auto-completa km y litros.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Datos que se auto-completan en viajes desde la ficha del cliente</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Campo en Cliente</th><th>Se copia a Viaje como</th><th>Para que sirve</th></tr></thead>
+        <tbody>
+          <tr><td>tarifa_flete</td><td>tarifa_flete (editable)</td><td>Ingreso del viaje</td></tr>
+          <tr><td>pago_chofer</td><td>pago_chofer</td><td>Costo del chofer</td></tr>
+          <tr><td>lts_gasoil_estimado</td><td>lts_gasoil</td><td>Costo del gasoil</td></tr>
+          <tr><td>ruta_km_estimados</td><td>km_recorridos</td><td>Base para desgaste y actualizacion km camion</td></tr>
+          <tr><td>costo_descarga</td><td>costo_descarga</td><td>Gasto de descarga en destino</td></tr>
+          <tr><td>desgaste_por_km</td><td>desgaste_por_km</td><td>Fondo de reposicion del camion</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- CAJA -->
+<div class="section" id="caja">
+  <div class="section-header">
+    <div class="section-icon icon-amber">&#128181;</div>
+    <div class="section-title">
+      <h2>Caja &mdash; Gateway Financiero Central</h2>
+      <p>Como funciona cajaService, todas las categorias y la diferencia entre caja y banco</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Caja vs Banco &mdash; La Separacion Fundamental</h3>
+    <p>Todos los movimientos de dinero van a la misma tabla <span class="tag">movimientos_caja</span>, pero el campo <span class="tag">tipo_cuenta</span> los separa en dos flujos:</p>
+    <div class="grid-2">
+      <div class="alert alert-sky" style="flex-direction:column;gap:6px">
+        <strong>tipo_cuenta = 'caja'</strong>
+        <span>Efectivo fisico. Cobros al contado, pagos en mano, gastos operativos diarios. La caja chica del negocio.</span>
+      </div>
+      <div class="alert alert-indigo" style="flex-direction:column;gap:6px;background:rgba(99,102,241,0.08);border-left:3px solid var(--indigo);color:#c7d2fe;">
+        <strong>tipo_cuenta = 'banco'</strong>
+        <span>Cuenta bancaria. Transferencias, tarjeta YPF, seguros, impuestos, leasing, prestamos. Todo lo electronico.</span>
+      </div>
+    </div>
+    <div class="formula">saldo_caja  = SUM(ingresos) - SUM(egresos) WHERE tipo_cuenta='caja'
+saldo_banco = SUM(ingresos) - SUM(egresos) WHERE tipo_cuenta='banco'
+saldo_total = saldo_caja + saldo_banco</div>
+  </div>
+
+  <div class="card">
+    <h3>Todas las Categorias de Movimientos</h3>
+    <div class="grid-2">
+      <div>
+        <h4>INGRESOS</h4>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Categoria</th><th>Uso</th><th>tipo_cuenta</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tag">cobro_flete</span></td><td>Cliente paga viaje completo</td><td>caja o banco</td></tr>
+              <tr><td><span class="tag">cobro_parcial</span></td><td>Pago parcial de cliente</td><td>caja o banco</td></tr>
+              <tr><td><span class="tag">ingreso_otro</span></td><td>Otros ingresos</td><td>caja</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h4>EGRESOS &mdash; Operativos</h4>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Categoria</th><th>Uso</th><th>tipo_cuenta</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tag">pago_chofer</span></td><td>Liquidacion/adelanto</td><td>caja</td></tr>
+              <tr><td><span class="tag">combustible</span></td><td>Gasoil en efectivo</td><td>caja</td></tr>
+              <tr><td><span class="tag">combustible_ypf</span></td><td>Tarjeta YPF</td><td><strong>banco</strong></td></tr>
+              <tr><td><span class="tag">mantenimiento</span></td><td>Mecanico, repuestos</td><td>caja</td></tr>
+              <tr><td><span class="tag">neumaticos</span></td><td>Goma, recapado</td><td>caja</td></tr>
+              <tr><td><span class="tag">lavado</span></td><td>Lavado camion</td><td>caja</td></tr>
+              <tr><td><span class="tag">peaje</span></td><td>Autopistas</td><td>caja</td></tr>
+              <tr><td><span class="tag">compra</span></td><td>Insumos varios</td><td>caja</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <h4>EGRESOS &mdash; Administrativos / Financieros</h4>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Categoria</th><th>Uso</th><th>tipo_cuenta default</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag">multa</span></td><td>Pago de multa de transito</td><td>caja</td></tr>
+            <tr><td><span class="tag">seguro</span></td><td>Prima mensual/anual de seguro</td><td>banco</td></tr>
+            <tr><td><span class="tag">impuesto</span></td><td>IB, sellos, monotributo, etc.</td><td>banco</td></tr>
+            <tr><td><span class="tag">cuota_leasing</span></td><td>Cuota de leasing del camion</td><td>banco</td></tr>
+            <tr><td><span class="tag">cuota_prestamo</span></td><td>Cuota de prestamo</td><td>banco</td></tr>
+            <tr><td><span class="tag">costo_fijo</span></td><td>Alquiler, servicios, administrativo</td><td>banco</td></tr>
+            <tr><td><span class="tag">sueldo_administrativo</span></td><td>Personal de oficina</td><td>banco</td></tr>
+            <tr><td><span class="tag">transferencia_banco</span></td><td>Movimiento entre cuentas</td><td>banco</td></tr>
+            <tr><td><span class="tag">egreso_otro</span></td><td>Gasto no categorizado</td><td>caja</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Funciones de cajaService &mdash; Cuando se llama cada una</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Funcion</th><th>Se llama cuando...</th><th>Crea en movimientos_caja</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag">registrarCobroFlete()</span></td><td>Cliente paga un viaje</td><td>ingreso / cobro_flete / caja o banco</td></tr>
+          <tr><td><span class="tag">registrarPagoChofer()</span></td><td>Liquidacion o adelanto a chofer</td><td>egreso / pago_chofer / caja</td></tr>
+          <tr><td><span class="tag">registrarCombustible()</span></td><td>Se paga una carga de combustible</td><td>egreso / combustible o combustible_ypf</td></tr>
+          <tr><td><span class="tag">registrarMantenimiento()</span></td><td>Se paga un gasto de taller/flota</td><td>egreso / mantenimiento / caja</td></tr>
+          <tr><td><span class="tag">registrarPagoMulta()</span></td><td>Se paga una multa de transito</td><td>egreso / multa / caja</td></tr>
+          <tr><td><span class="tag">registrarPagoSeguro()</span></td><td>Se paga cuota de seguro</td><td>egreso / seguro / banco</td></tr>
+          <tr><td><span class="tag">registrarPagoImpuesto()</span></td><td>Se paga impuesto (IB, sellos, etc.)</td><td>egreso / impuesto / banco</td></tr>
+          <tr><td><span class="tag">anularMovimiento()</span></td><td>Se revierte un movimiento</td><td>Crea entrada inversa (signo opuesto)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>KPIs del Panel de Caja</h3>
+    <div class="kpi-grid">
+      <div class="kpi kpi-emerald">
+        <div class="kpi-label">Saldo Real Total</div>
+        <div class="kpi-value">$342k</div>
+        <div class="kpi-sub">Todo el historial, caja + banco</div>
+      </div>
+      <div class="kpi kpi-sky">
+        <div class="kpi-label">Ingresos del periodo</div>
+        <div class="kpi-value">$185k</div>
+        <div class="kpi-sub">Filtrado por rango de fecha</div>
+      </div>
+      <div class="kpi kpi-rose">
+        <div class="kpi-label">Egresos del periodo</div>
+        <div class="kpi-value">$78k</div>
+        <div class="kpi-sub">Filtrado por rango de fecha</div>
+      </div>
+      <div class="kpi kpi-amber">
+        <div class="kpi-label">Plata en la Calle</div>
+        <div class="kpi-value">$62k</div>
+        <div class="kpi-sub">Suma de saldos cuenta corriente</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- BANCO -->
+<div class="section" id="banco">
+  <div class="section-header">
+    <div class="section-icon icon-indigo">&#127978;</div>
+    <div class="section-title">
+      <h2>Banco &mdash; Cuenta Bancaria</h2>
+      <p>Vista exclusiva de los movimientos electronicos y saldo bancario</p>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Que aparece en Banco</h3>
+      <p>El modulo banco filtra <span class="tag">movimientos_caja</span> donde <span class="tag">tipo_cuenta = 'banco'</span> y muestra:</p>
+      <div class="impact-list">
+        <div class="impact-item">Transferencias recibidas de clientes (ingresos)</div>
+        <div class="impact-item">Pagos YPF tarjeta (combustible_ypf)</div>
+        <div class="impact-item">Seguros (debito automatico)</div>
+        <div class="impact-item">Impuestos pagados electronicamente</div>
+        <div class="impact-item">Cuotas de leasing / prestamo</div>
+        <div class="impact-item">Transferencias entre caja y banco</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Tipo de Cambio Dolar</h3>
+      <p>La tabla <span class="tag">configuracion</span> guarda el <span class="tag">tipo_cambio_dolar</span>. El banco puede mostrar los saldos equivalentes en USD.</p>
+      <div class="formula">saldo_banco_ars = SUM(ingresos_banco) - SUM(egresos_banco)
+saldo_banco_usd = saldo_banco_ars / tipo_cambio_dolar</div>
+      <div class="alert alert-amber">
+        El tipo de cambio se actualiza manualmente desde la configuracion del sistema. No hay cotizacion automatica.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- CHOFERES -->
+<div class="section" id="choferes">
+  <div class="section-header">
+    <div class="section-icon icon-violet">&#128100;</div>
+    <div class="section-title">
+      <h2>Choferes &mdash; Gestion de Personal</h2>
+      <p>Seguimiento de pagos, cuenta corriente por chofer, vencimientos y estadisticas</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Como funciona cuenta_corriente_choferes</h3>
+      <p>Cada viaje que asigna un chofer genera automaticamente una deuda de la empresa hacia ese chofer:</p>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-content">
+            <h4>Viaje creado</h4>
+            <p>INSERT {chofer_id, viaje_id, monto=pago_chofer, pagado=false, tipo='viaje'}</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-content">
+            <h4>Liquidacion</h4>
+            <p>Usuario abre ChoferPaymentModal, selecciona viajes a liquidar, confirma monto. Se llama a registrarPagoChofer().</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-content">
+            <h4>Impacto</h4>
+            <p>UPDATE pagado=true en los registros seleccionados. INSERT egreso en movimientos_caja categoria='pago_chofer'.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Estadisticas por Chofer</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Metrica</th><th>Fuente</th></tr></thead>
+          <tbody>
+            <tr><td>Km recorridos</td><td>SUM(km_recorridos) en viajes</td></tr>
+            <tr><td>Litros consumidos</td><td>SUM(lts_gasoil) en viajes</td></tr>
+            <tr><td>Viajes del mes</td><td>COUNT(viajes) filtrado por fecha</td></tr>
+            <tr><td>Deuda pendiente</td><td>SUM(monto) where pagado=false</td></tr>
+            <tr><td>Total ganado</td><td>SUM(monto) en CC choferes</td></tr>
+            <tr><td>Consumo medio</td><td>km_recorridos / lts_consumidos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Vencimientos que generan alertas</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Documento</th><th>Campo DB</th><th>Alerta generada</th></tr></thead>
+        <tbody>
+          <tr><td>Licencia de conducir</td><td>vto_licencia</td><td>&lt;= 30 dias: AVISO. Vencida: CRITICO en navbar</td></tr>
+          <tr><td>Libreta sanitaria</td><td>vto_libreta_sanitaria</td><td>Visible en ficha del chofer</td></tr>
+          <tr><td>Psicofisico</td><td>vto_psicofisico</td><td>Visible en ficha del chofer</td></tr>
+          <tr><td>LINTI</td><td>vto_linti</td><td>Visible en ficha del chofer</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- CAMIONES -->
+<div class="section" id="camiones">
+  <div class="section-header">
+    <div class="section-icon icon-orange">&#128666;</div>
+    <div class="section-title">
+      <h2>Camiones &mdash; Gestion de Flota</h2>
+      <p>Control de kilometros, mantenimiento, vencimientos y gastos por unidad</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Actualizacion de KM</h3>
+      <p>Los km del camion se actualizan automaticamente al guardar un viaje:</p>
+      <div class="code">UPDATE camiones
+SET km_actual = km_actual + {km_recorridos}
+WHERE id = {camion_id}</div>
+      <p style="margin-top:8px">La diferencia <span class="tag">km_actual - km_ultimo_service</span> dispara alertas de mantenimiento:</p>
+      <div class="formula">>= 25.000 km -> WARNING amarillo en navbar
+>= 32.000 km -> CRITICO rojo en navbar</div>
+    </div>
+    <div class="card">
+      <h3>Registro de Gastos de Taller</h3>
+      <p>Desde la ficha del camion, el boton "Nuevo Gasto" abre GastoModal que guarda en <span class="tag">gastos_camion</span>:</p>
+      <div class="code">gastos_camion {
+  camion_id, fecha,
+  descripcion, monto
+  // NO tiene campo "tipo"
+}</div>
+      <p style="margin-top:8px">Opcionalmente tambien llama a <span class="tag">registrarMantenimiento()</span> para impactar en caja.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Vencimientos que generan alertas en Navbar</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Documento</th><th>Campo DB</th><th>Umbral de alerta</th></tr></thead>
+        <tbody>
+          <tr><td>Revision Tecnica Obligatoria (RTO)</td><td>vto_rto</td><td>30 dias antes del vencimiento</td></tr>
+          <tr><td>SENASA (habilitacion frigorifico)</td><td>vto_senasa</td><td>30 dias antes del vencimiento</td></tr>
+          <tr><td>Servicio tecnico (km)</td><td>km_actual - km_ultimo_service</td><td>25.000 km: aviso / 32.000 km: critico</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-rose">
+      Las alertas aparecen en la navbar con un numero rojo indicando cuantos camiones/choferes tienen vencimientos. Al hacer click se despliega el detalle.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Integracion GPS Traccar (Opcional)</h3>
+    <p>Si <span class="tag">configuracion.traccar_activo = true</span>, el camion puede vincularse a un dispositivo GPS:</p>
+    <div class="impact-list">
+      <div class="impact-item">Cada camion tiene un <span class="tag">traccar_device_id</span> opcional</div>
+      <div class="impact-item">El viaje puede registrarse en modo tracking con traccar_trip_id</div>
+      <div class="impact-item">Se compara km_teoricos vs km_reales para detectar desvios</div>
+      <div class="impact-item">Si pct_desvio supera el umbral, alerta_combustible = true en el viaje</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- COMBUSTIBLE -->
+<div class="section" id="combustible">
+  <div class="section-header">
+    <div class="section-icon icon-amber">&#9981;</div>
+    <div class="section-title">
+      <h2>Combustible &mdash; Control de Cargas</h2>
+      <p>Registro de cargas, ciclos de pago y analisis de consumo</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Flujo Completo de una Carga de Combustible</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <h4>Nueva Carga</h4>
+          <p>Se registra: camion, chofer, litros, precio/litro (auto-completa desde config.precio_gasoil), fecha. Total = litros x precio. Estado: pagado=false.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <h4>Acumulacion de deuda (sin impacto en caja todavia)</h4>
+          <p>Las cargas quedan como deuda pendiente con el proveedor. El sistema muestra el total impago del ciclo.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <h4>Pago del resumen</h4>
+          <p>El usuario selecciona las cargas a pagar, abre PagarResumenModal, confirma. Se llama a <span class="tag">registrarCombustible()</span> por cada carga. Si es YPF tarjeta: tipo_cuenta='banco'. Si es efectivo: tipo_cuenta='caja'. Estado: pagado=true.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>KPIs del Ciclo de Combustible</h3>
+      <div class="formula">deuda           = SUM(total) WHERE pagado=false
+litrosPendiente = SUM(litros) WHERE pagado=false
+pagadoCiclo     = SUM(total) WHERE pagado=true (en rango)
+ltsTotales      = SUM(litros) en rango
+gastoTotal      = SUM(total) en rango
+diasParaCierre  = dias hasta fin del periodo</div>
+    </div>
+    <div class="card">
+      <h3>Modos de Vista</h3>
+      <div class="impact-list">
+        <div class="impact-item"><span class="badge badge-amber">impagos</span><div style="margin-left:8px">Cargas pendientes de pago dentro del periodo</div></div>
+        <div class="impact-item"><span class="badge badge-emerald">historial</span><div style="margin-left:8px">Cargas ya pagadas en el rango de fechas</div></div>
+        <div class="impact-item"><span class="badge badge-sky">resumen</span><div style="margin-left:8px">Todas las cargas del periodo (vista consolidada)</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- COSTOS -->
+<div class="section" id="costos">
+  <div class="section-header">
+    <div class="section-icon icon-rose">&#128203;</div>
+    <div class="section-title">
+      <h2>Costos Fijos, Impuestos y Multas</h2>
+      <p>Estructura de costos fijos, punto de equilibrio y como se gestionan las multas</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Estructura de Costos Fijos</h3>
+    <p>La tabla <span class="tag">costos_fijos</span> almacena tanto costos operativos fijos como impuestos. La diferencia esta en el campo <span class="tag">tipo</span>:</p>
+    <div class="grid-2">
+      <div>
+        <h4>Tipo = 'costo'</h4>
+        <p style="font-size:13px;color:var(--muted)">Alquiler de oficina, sueldos administrativos, servicios, leasing, etc. Montos fijos o semi-fijos.</p>
+      </div>
+      <div>
+        <h4>Tipo = 'impuesto'</h4>
+        <p style="font-size:13px;color:var(--muted)">Ingresos Brutos, Sellos, Monotributo, etc. Pueden tener formulas dinamicas basadas en ventas.</p>
+      </div>
+    </div>
+    <h4>Frecuencia de pago</h4>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Frecuencia</th><th>Equivalente mensual</th><th>Uso tipico</th></tr></thead>
+        <tbody>
+          <tr><td>mensual</td><td>monto x 1</td><td>Alquiler, servicios</td></tr>
+          <tr><td>trimestral</td><td>monto / 3</td><td>Sellos, impuestos provinciales</td></tr>
+          <tr><td>semestral</td><td>monto / 6</td><td>Seguros semestrales</td></tr>
+          <tr><td>anual</td><td>monto / 12</td><td>Seguros anuales, patentes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Punto de Equilibrio (Break-Even)</h3>
+    <p>La seccion PuntoEquilibrioSection calcula si la operacion del periodo cubre todos sus costos.</p>
+
+    <div class="grid-2">
+      <div>
+        <h4>Variables disponibles en formulas</h4>
+        <div class="code">VENTAS   -> SUM(tarifa_flete) del periodo
+GASOIL   -> SUM(cargas_combustible.monto)
+CHOFERES -> SUM(cc_choferes.monto)
+VIAJES   -> COUNT(viajes)
+NETO     -> VENTAS - GASOIL - CHOFERES</div>
+      </div>
+      <div>
+        <h4>Formula de equilibrio</h4>
+        <div class="formula">costosFijos     = SUM(costos_fijos.monto)
+                prorateados al periodo
+
+ticketPromedio  = VENTAS / VIAJES
+
+viajesNecesarios= costosFijos / ticketPromedio
+
+cobertura%      = (VENTAS / costosFijos) x 100</div>
+      </div>
+    </div>
+
+    <div class="alert alert-emerald">
+      Estado SALUDABLE: cobertura% mayor a 100%. Ingresos superan costos fijos. El excedente es la utilidad real del negocio.
+    </div>
+    <div class="alert alert-rose">
+      Estado CRITICO: cobertura% menor a 100%. La operacion no cubre sus costos fijos. Se requieren mas viajes o reduccion de costos.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Multas</h3>
+    <p>Las multas se registran en la tabla <span class="tag">multas</span> con su infractor (OBLIGATORIO), detalle, monto y estado.</p>
+    <div class="grid-2">
+      <div>
+        <h4>Ciclo de vida de una multa</h4>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-content">
+              <h4>Alta de multa</h4>
+              <p>Se registra: fecha, detalle, monto, infractor (nombre o patente), chofer_id o camion_id, estado='pendiente'.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content">
+              <h4>Pago</h4>
+              <p>Al marcar "Pagar", se llama a registrarPagoMulta(). Crea egreso en caja. estado='pagada'.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h4>Campos importantes de multa</h4>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Descripcion</th></tr></thead>
+            <tbody>
+              <tr><td>infractor</td><td><strong>NOT NULL</strong>. Nombre o patente.</td></tr>
+              <tr><td>detalle</td><td>Descripcion de la infraccion</td></tr>
+              <tr><td>nro_acta</td><td>Numero de acta</td></tr>
+              <tr><td>organismo</td><td>DNRPA, ANSV, Municipal, etc.</td></tr>
+              <tr><td>descuenta_a_chofer</td><td>Si el descuento aplica al chofer</td></tr>
+              <tr><td>monto_descuento_chofer</td><td>Parte que asume el chofer</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FACTURACION -->
+<div class="section" id="facturacion">
+  <div class="section-header">
+    <div class="section-icon icon-emerald">&#129534;</div>
+    <div class="section-title">
+      <h2>Facturacion ARCA / AFIP</h2>
+      <p>Integracion completa con AFIP: autenticacion, firma digital, emision y guardado</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Arquitectura de la Integracion AFIP</h3>
+    <div class="code">// Flujo de autenticacion y emision
+
+Frontend (FacturaWizard)
+  |
+  v POST /api/arca/facturar
+
+  |-- /api/arca/auth
+  |     Lee cert + clave privada de configuracion DB
+  |     Firma TRA (Ticket de Requerimiento de Acceso)
+  |     Obtiene Token+Sign de WSAA (AFIP)
+  |     Cachea el token 12 horas en memoria del servidor
+  |
+  |-- WSFE (Web Service Facturacion Electronica)
+        Envia: tipo_comprobante, punto_venta, cuit, importes
+        Recibe: CAE + fecha_vencimiento_CAE</div>
+  </div>
+
+  <div class="card">
+    <h3>Wizard de 4 Pasos para Emitir Factura</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <h4>Seleccionar Cliente y Datos Fiscales</h4>
+          <p>Se selecciona el cliente. Se auto-completa CUIT y condicion IVA. Esto determina el tipo de comprobante a emitir.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <h4>Seleccionar Origen del Monto</h4>
+          <p>Se puede vincular a un viaje (toma tarifa_flete), a un remito o ingresar monto manual.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <h4>Calculo de Impuestos</h4>
+          <div class="formula">importe_neto = importe_total / (1 + alicuota/100)
+importe_iva  = importe_total - importe_neto
+alicuota_iva = 21% (estandar) o 10.5% (reducida)</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-content">
+          <h4>Emision ante AFIP</h4>
+          <p>Se envia a /api/arca/facturar. AFIP responde con CAE. Se guarda en <span class="tag">facturas</span> y se actualiza <span class="tag">remitos.facturado = true</span>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tipos de Comprobante &mdash; Seleccion Automatica</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Codigo DB</th><th>Tipo</th><th>Cuando se usa</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-sky">1</span></td>
+            <td>Factura A</td>
+            <td>Emisor RI + Receptor RI (Responsables Inscriptos). Discrimina IVA.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-amber">6</span></td>
+            <td>Factura B</td>
+            <td>Emisor RI + Receptor Consumidor Final o Exento. No discrimina IVA.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-violet">11</span></td>
+            <td>Factura C</td>
+            <td>Emisor Monotributista, independientemente del receptor.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-sky">
+      El tipo se determina combinando la condicion IVA del <strong>emisor</strong> (configuracion) con la del <strong>receptor</strong> (cliente). El wizard lo selecciona automaticamente.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Que se guarda en la base de datos al emitir</h3>
+    <div class="code">-- Tabla facturas
+INSERT INTO facturas {
+  tipo_comprobante: '1' | '6' | '11',  -- texto, NO numero
+  punto_venta: 2,
+  numero_comprobante: 42,
+  fecha_comprobante: '2026-03-26',
+  cae: '12345678901234',
+  cae_vto: '2026-04-05',   -- columna cae_vto, NO vencimiento_cae
+  estado: 'emitida',
+  importe_neto: 37190.08,
+  importe_iva: 7809.92,
+  importe_total: 45000,
+  alicuota_iva: 21,
+  cliente_id: 'uuid...',
+  viaje_id: 'uuid...'
+}
+
+-- Se marca el remito como facturado
+UPDATE remitos SET facturado = true, factura_id = NEW_ID
+WHERE id = remito_id
+
+-- Se actualiza estado_gestion en cuenta corriente
+UPDATE cuenta_corriente SET estado_gestion = 'maestro'
+WHERE viaje_id = viaje_id</div>
+  </div>
+</div>
+
+
+<!-- REMITOS -->
+<div class="section" id="remitos">
+  <div class="section-header">
+    <div class="section-icon icon-teal">&#128196;</div>
+    <div class="section-title">
+      <h2>Remitos &mdash; El Puente entre Viaje y Factura</h2>
+      <p>Como funcionan los remitos, su ciclo de vida y la vinculacion con facturas</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Cadena: Viaje a Reparto a Remito a Factura</h3>
+    <div class="code">// Un viaje puede tener multiples repartos
+Viaje ID=V1 {
+  |-- reparto_viaje { destino_id=D1, monto_flete=20000, nro_remito='REM-001' }
+  |    |-- remito { numero_remito='REM-001', facturado=false }
+  |
+  |-- reparto_viaje { destino_id=D2, monto_flete=25000, nro_remito='REM-002' }
+       |-- remito { numero_remito='REM-002', facturado=false }
+
+// Al facturar (agrupado o individual):
+UPDATE remitos SET facturado=true, factura_id=F1 WHERE id IN (R1, R2)
+INSERT INTO facturas { importe_total=45000, cae='...' }</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Estados del Remito</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Campo</th><th>Valor</th><th>Significado</th></tr></thead>
+          <tbody>
+            <tr><td>estado</td><td><span class="badge badge-amber">generado</span></td><td>Remito creado, pendiente confirmacion</td></tr>
+            <tr><td>estado</td><td><span class="badge badge-sky">confirmado</span></td><td>Entregado, nro. de remito registrado</td></tr>
+            <tr><td>facturado</td><td>false</td><td>No tiene factura AFIP aun</td></tr>
+            <tr><td>facturado</td><td>true</td><td>Factura emitida, vinculada via factura_id</td></tr>
+            <tr><td>estado_cobro</td><td><span class="badge badge-amber">Pendiente</span></td><td>Cliente no pago</td></tr>
+            <tr><td>estado_cobro</td><td><span class="badge badge-emerald">Cobrado</span></td><td>Cliente pago</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Foto del Remito</h3>
+      <p>Cada remito puede tener una foto adjunta del comprobante fisico, guardada en <span class="tag">foto_url</span> (Supabase Storage).</p>
+      <div class="alert alert-sky">
+        Subir la foto del remito firmado por el cliente es evidencia de entrega. Es recomendable hacerlo antes de facturar.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- TAREAS -->
+<div class="section" id="tareas">
+  <div class="section-header">
+    <div class="section-icon icon-lime">&#9989;</div>
+    <div class="section-title">
+      <h2>Tareas y Recordatorios</h2>
+      <p>Sistema de gestion de tareas con notificaciones automaticas y recurrencia</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Configuracion de una Tarea</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Campo</th><th>Para que sirve</th></tr></thead>
+          <tbody>
+            <tr><td>titulo, descripcion</td><td>Nombre y detalle de la tarea</td></tr>
+            <tr><td>categoria</td><td>Clasificacion (mantenimiento, administrativo, etc.)</td></tr>
+            <tr><td>fecha_vencimiento</td><td>Cuando debe hacerse</td></tr>
+            <tr><td>dias_anticipacion</td><td>Con cuantos dias de anticipacion notificar (default: 3)</td></tr>
+            <tr><td>es_recurrente</td><td>Si se repite automaticamente</td></tr>
+            <tr><td>periodo_recurrencia</td><td>semanal / mensual / anual</td></tr>
+            <tr><td>afecta_caja</td><td>Si genera un egreso al completarse</td></tr>
+            <tr><td>monto</td><td>Monto del gasto si afecta_caja=true</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Sistema de Notificaciones</h3>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-content">
+            <h4>Deteccion automatica</h4>
+            <p>tareasNotificaciones.ts verifica: fecha_vencimiento &lt;= hoy + dias_anticipacion AND notificacion_enviada=false AND completada=false</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-content">
+            <h4>Envio multi-canal</h4>
+            <p>Resend (email) a notif_email de configuracion. CallMeBot (WhatsApp) a notif_whatsapp.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-content">
+            <h4>Marcado enviado</h4>
+            <p>UPDATE tareas SET notificacion_enviada=true. Evita envios duplicados.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MAPA DE IMPACTOS -->
+<div class="section" id="impactos">
+  <div class="section-header">
+    <div class="section-icon icon-violet">&#128279;</div>
+    <div class="section-title">
+      <h2>Mapa Completo de Impactos entre Modulos</h2>
+      <p>Que accion dispara que efecto en que tabla</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tabla Maestra de Relaciones</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Modulo Origen</th><th>Accion</th><th>Modulo Destino</th><th>Impacto</th></tr></thead>
+        <tbody>
+          <tr><td>Viajes</td><td>Crear viaje</td><td>Clientes (CC)</td><td>INSERT debe=tarifa_flete, estado='por_cobrar'</td></tr>
+          <tr><td>Viajes</td><td>Crear viaje</td><td>Choferes (CC)</td><td>INSERT monto=pago_chofer, pagado=false</td></tr>
+          <tr><td>Viajes</td><td>Crear viaje</td><td>Camiones</td><td>UPDATE km_actual+=km, lts_consumidos+=lts</td></tr>
+          <tr><td>Viajes</td><td>Crear viaje</td><td>Choferes</td><td>UPDATE km_recorridos+=km, lts_consumidos+=lts</td></tr>
+          <tr><td>Viajes</td><td>Cobrar al cliente</td><td>Caja</td><td>registrarCobroFlete() → ingreso cobro_flete</td></tr>
+          <tr><td>Viajes</td><td>Cobrar al cliente</td><td>Clientes (CC)</td><td>INSERT haber=monto_cobrado, reduce saldo</td></tr>
+          <tr><td>Remitos</td><td>Emitir factura</td><td>Facturas</td><td>UPDATE facturado=true, factura_id=nuevo</td></tr>
+          <tr><td>Remitos</td><td>Emitir factura</td><td>Clientes (CC)</td><td>UPDATE estado_gestion='maestro'</td></tr>
+          <tr><td>Choferes</td><td>Liquidar pago</td><td>Caja</td><td>registrarPagoChofer() → egreso pago_chofer</td></tr>
+          <tr><td>Choferes</td><td>Liquidar pago</td><td>Choferes (CC)</td><td>UPDATE pagado=true en cc_choferes</td></tr>
+          <tr><td>Camiones</td><td>Registrar gasto taller</td><td>Caja</td><td>registrarMantenimiento() → egreso mantenimiento</td></tr>
+          <tr><td>Camiones</td><td>Marcar service hecho</td><td>Camiones</td><td>UPDATE km_ultimo_service=km_actual</td></tr>
+          <tr><td>Combustible</td><td>Pagar resumen cargas</td><td>Caja</td><td>registrarCombustible() → egreso combustible</td></tr>
+          <tr><td>Combustible</td><td>Pagar resumen cargas</td><td>Combustible</td><td>UPDATE pagado=true en cargas_combustible</td></tr>
+          <tr><td>Costos</td><td>Pagar costo fijo</td><td>Caja (Banco)</td><td>registrarPagoImpuesto/Seguro() → egreso banco</td></tr>
+          <tr><td>Costos</td><td>Pagar multa</td><td>Caja</td><td>registrarPagoMulta() → egreso multa caja</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Restricciones y Reglas Criticas del Sistema</h3>
+    <div class="impact-list">
+      <div class="impact-item">
+        <strong>1.</strong>
+        <div>
+          <strong>infractor es NOT NULL en multas.</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Todo insert en multas DEBE incluir el campo infractor. Genera error 500 si se omite.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>2.</strong>
+        <div>
+          <strong>gastos_camion NO tiene columna "tipo".</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Solo tiene: camion_id, fecha, descripcion, monto, categoria. Incluir "tipo" genera error de columna.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>3.</strong>
+        <div>
+          <strong>facturas.cae_vto es el nombre correcto (NO vencimiento_cae).</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Usar vencimiento_cae en queries causa error de columna no encontrada.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>4.</strong>
+        <div>
+          <strong>tipo_comprobante en facturas es TEXT ('1', '6', '11'), no entero.</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Se guarda como string. El constraint fue eliminado para mayor flexibilidad.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>5.</strong>
+        <div>
+          <strong>estado en facturas solo acepta: 'emitida', 'error', 'pendiente', 'manual'.</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Cualquier otro valor viola el constraint facturas_estado_check.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>6.</strong>
+        <div>
+          <strong>tarifa_flete_calculada no existe en la DB.</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Es campo client-side. Siempre usar <code>|| Number(v.tarifa_flete) || 0</code> como fallback.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>7.</strong>
+        <div>
+          <strong>destinos_cliente usa lat/lng (no latitud/longitud).</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Filtrar activos con .eq('activo', true). Las coordenadas estan en lat y lng.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>8.</strong>
+        <div>
+          <strong>Todos los movimientos de dinero DEBEN pasar por cajaService.</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">Nunca un INSERT directo en movimientos_caja desde componentes. Usar siempre las funciones del gateway.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Sistema de Temas (Dark / Light)</h3>
+    <p>El ERP soporta modo oscuro y claro. El tema se persiste en localStorage y se aplica via clases CSS.</p>
+    <div class="grid-2">
+      <div>
+        <h4>Modo Oscuro (default)</h4>
+        <div class="code">bg: #141c28  cards: #1a2537
+elevated: #243248
+texto: text-slate-100/200/400</div>
+      </div>
+      <div>
+        <h4>Modo Claro</h4>
+        <div class="code">bg: #c8cfd8  cards: #d8dfe8
+elevated: #bcc4ce
+Overrides con html.light .clase</div>
+      </div>
+    </div>
+    <div class="alert alert-sky">
+      El toggle dark/light esta en la Navbar (icono Sol/Luna). El ThemeProvider en layout.tsx previene el flash de tema incorrecto al cargar con un script inline en &lt;head&gt;.
+    </div>
+  </div>
+</div>
+
+
+<div style="text-align:center; padding: 40px 0 60px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--border); margin-top: 40px;">
+  <div style="margin-bottom:8px; font-size:18px;">&#128666;</div>
+  <strong style="color:var(--muted)">Rutas del Sur ERP</strong>
+  <div style="margin-top:6px">Manual Operativo &mdash; Generado Marzo 2026</div>
+  <div style="margin-top:4px">Next.js 16 &middot; Supabase &middot; AFIP ARCA &middot; TypeScript 5</div>
+</div>
+
+</div>
+
+<a href="#top" class="scroll-top">&#8679;</a>
+
+</body>
+</html>

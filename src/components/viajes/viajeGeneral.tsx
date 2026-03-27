@@ -68,7 +68,7 @@ export function ViajesGeneral({ stats, viajes = [], precioGasoil = 0 }: ViajesGe
   // ✅ FIX #9: Calculamos stats por tramo desde los viajes directamente
   const calcularStats = (viajesFiltrados: any[]) => {
     return viajesFiltrados.reduce((acc, v) => {
-      const bruta = Number(v.tarifa_flete_calculada) || 0;
+      const bruta = Number(v.tarifa_flete_calculada) || Number(v.tarifa_flete) || 0;
       const pagoCh = Number(v.pago_chofer) || 0;
       const costoGas = (Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoil);
       const descarga = Number(v.costo_descarga) || 0;
@@ -113,7 +113,7 @@ export function ViajesGeneral({ stats, viajes = [], precioGasoil = 0 }: ViajesGe
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 italic font-sans">
       
       {/* SELECTOR TÁCTICO */}
-      <div className="flex flex-col sm:flex-row p-1.5 bg-slate-950/80 border border-white/5 rounded-[2rem] w-full sm:w-fit backdrop-blur-md mx-auto lg:mx-0 shadow-2xl">
+      <div className="flex flex-col sm:flex-row p-1.5 bg-[#141c28]/80 border border-white/5 rounded-[2rem] w-full sm:w-fit backdrop-blur-md mx-auto lg:mx-0 shadow-2xl">
         {views.map((view) => (
           <button
             key={view.id}
@@ -131,7 +131,7 @@ export function ViajesGeneral({ stats, viajes = [], precioGasoil = 0 }: ViajesGe
 
       {/* PANEL DE CONTROL */}
       <div className={`
-        relative bg-slate-900/40 rounded-[2.5rem] md:rounded-[3.5rem] border p-6 md:p-10 lg:p-14 backdrop-blur-xl transition-all duration-700 overflow-hidden shadow-2xl
+        relative bg-[#1a2537]/40 rounded-[2.5rem] md:rounded-[3.5rem] border p-6 md:p-10 lg:p-14 backdrop-blur-xl transition-all duration-700 overflow-hidden shadow-2xl
         ${activeView === 'total' ? `${t.border} ring-1 ${t.ring} ${t.shadow}` : 'border-white/5'}
       `}>
         
@@ -170,7 +170,7 @@ export function ViajesGeneral({ stats, viajes = [], precioGasoil = 0 }: ViajesGe
           </div>
 
           {/* BALANCE FINANCIERO */}
-          <div className="bg-slate-950/80 border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 flex flex-col justify-center space-y-10 shadow-2xl relative overflow-hidden">
+          <div className="bg-[#141c28]/80 border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 flex flex-col justify-center space-y-10 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
               <DollarSign size={100} className="text-white" />
             </div>
@@ -232,7 +232,7 @@ export function ViajesGeneral({ stats, viajes = [], precioGasoil = 0 }: ViajesGe
 
 function MetricBox({ label, value, prefix = "", suffix = "", icon }: any) {
   return (
-    <div className="bg-slate-950/40 border border-white/5 p-5 md:p-6 rounded-[2rem] group hover:bg-slate-900/80 transition-all shadow-inner relative overflow-hidden">
+    <div className="bg-[#141c28]/40 border border-white/5 p-5 md:p-6 rounded-[2rem] group hover:bg-[#1a2537]/80 transition-all shadow-inner relative overflow-hidden">
       <div className="flex items-center gap-3 text-slate-500 mb-2 group-hover:text-slate-300 transition-colors">
         <span className="p-1.5 bg-white/5 rounded-lg">{icon}</span>
         <span className="text-[9px] font-black uppercase tracking-widest truncate">{label}</span>

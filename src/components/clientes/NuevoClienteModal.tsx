@@ -19,8 +19,8 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
   }
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
-      <div className="bg-[#020617] border border-white/10 p-10 lg:p-14 rounded-[3.5rem] w-full max-w-2xl relative shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 p-10 lg:p-14 rounded-[3.5rem] w-full max-w-2xl relative shadow-2xl overflow-hidden">
         
         {/* Efectos Ambientales */}
         <div className="absolute -left-10 -top-10 w-40 h-40 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none" />
@@ -60,7 +60,7 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
                 name="razon_social" 
                 placeholder="EJ: LOGÍSTICA GLOBAL S.A." 
                 required 
-                className="w-full p-5 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-sky-500/50 transition-all uppercase text-xs placeholder:text-slate-800" 
+                className="w-full p-5 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-sky-500/50 transition-all uppercase text-xs placeholder:text-slate-800" 
               />
             </div>
 
@@ -73,7 +73,7 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
                 name="cuit" 
                 placeholder="30-00000000-0" 
                 required 
-                className="w-full p-5 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-sky-500/50 transition-all text-xs placeholder:text-slate-800" 
+                className="w-full p-5 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-sky-500/50 transition-all text-xs placeholder:text-slate-800" 
               />
             </div>
           </div>
@@ -87,7 +87,7 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
               <input 
                 name="nombre_contacto" 
                 placeholder="NOMBRE Y APELLIDO" 
-                className="w-full p-5 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-emerald-500/50 transition-all uppercase text-xs placeholder:text-slate-800" 
+                className="w-full p-5 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-emerald-500/50 transition-all uppercase text-xs placeholder:text-slate-800" 
               />
             </div>
 
@@ -99,7 +99,7 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
               <input 
                 name="telefono" 
                 placeholder="+54 9 261 ..." 
-                className="w-full p-5 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-emerald-500/50 transition-all text-xs placeholder:text-slate-800" 
+                className="w-full p-5 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-emerald-500/50 transition-all text-xs placeholder:text-slate-800" 
               />
             </div>
           </div>
@@ -112,7 +112,7 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
             <input 
               name="direccion" 
               placeholder="CALLE, LOCALIDAD, PROVINCIA" 
-              className="w-full p-5 bg-slate-950 border border-white/5 rounded-2xl outline-none text-white font-black focus:border-sky-500/50 transition-all uppercase text-xs placeholder:text-slate-800" 
+              className="w-full p-5 bg-[#141c28] border border-white/5 rounded-2xl outline-none text-white font-black focus:border-sky-500/50 transition-all uppercase text-xs placeholder:text-slate-800" 
             />
           </div>
 

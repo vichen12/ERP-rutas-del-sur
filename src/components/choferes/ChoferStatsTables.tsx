@@ -3,7 +3,7 @@ import { CheckCircle2 } from 'lucide-react'
 
 // VISTA 1: Lista de viajes pendientes para pagar
 export function LiquidacionList({ viajes, selectedViajes, toggleSelect, handleSelectAll }: any) {
-  const pendientes = viajes.filter((v: any) => !v.pago_chofer_realizado)
+  const pendientes = viajes
 
   if (pendientes.length === 0) {
     return (
@@ -54,7 +54,7 @@ export function LiquidacionList({ viajes, selectedViajes, toggleSelect, handleSe
 // VISTA 2: Tabla histórica completa
 export function BitacoraTable({ viajes }: any) {
   return (
-    <div className="bg-slate-900/40 rounded-[2rem] border border-white/5 overflow-hidden pb-24">
+    <div className="bg-[#1a2537]/40 rounded-[2rem] border border-white/5 overflow-hidden pb-24">
        <div className="overflow-x-auto">
          <table className="w-full text-left">
             <thead className="bg-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest">
@@ -82,11 +82,7 @@ export function BitacoraTable({ viajes }: any) {
                       <td className="p-6 text-center text-cyan-400 font-mono">{v.lts_gasoil || 0}</td>
                       <td className="p-6 text-right font-black italic text-lg text-white">$ {Number(v.pago_chofer || 0).toLocaleString()}</td>
                       <td className="p-6 text-center">
-                        {v.pago_chofer_realizado ? (
-                          <span className="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-lg border border-emerald-500/20 text-[8px] font-black">Pagado</span>
-                        ) : (
-                          <span className="bg-rose-500/10 text-rose-500 px-3 py-1 rounded-lg border border-rose-500/20 text-[8px] font-black">Pendiente</span>
-                        )}
+                        <span className="bg-rose-500/10 text-rose-500 px-3 py-1 rounded-lg border border-rose-500/20 text-[8px] font-black">Pendiente</span>
                       </td>
                    </tr>
                  )

@@ -57,8 +57,8 @@ export function PagoCostoModal({ isOpen, onClose, onConfirm, costo, isProcessing
   if (!isOpen || !costo) return null
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200 font-sans italic">
-      <div className="bg-[#020617] w-full max-w-lg rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#141c28]/90 backdrop-blur-md animate-in fade-in duration-200 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative">
         
         <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
           <X size={20}/>
@@ -90,7 +90,7 @@ export function PagoCostoModal({ isOpen, onClose, onConfirm, costo, isProcessing
         </div>
 
         {/* INPUT DE MONTO CON MODO FÓRMULA */}
-        <div className="bg-slate-900/50 rounded-3xl p-6 mb-6 border border-white/5 relative">
+        <div className="bg-[#1a2537]/50 rounded-3xl p-6 mb-6 border border-white/5 relative">
           <div className="flex justify-between items-center mb-4">
              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Importe a Liquidar</p>
              <button 
@@ -134,14 +134,14 @@ export function PagoCostoModal({ isOpen, onClose, onConfirm, costo, isProcessing
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[9px] font-black text-slate-500 uppercase pl-2">Fecha</label>
-              <input type="date" value={paymentData.fecha} onChange={e => setPaymentData({...paymentData, fecha: e.target.value})} className="w-full bg-black border border-white/10 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500 uppercase [color-scheme:dark]" />
+              <input type="date" value={paymentData.fecha} onChange={e => setPaymentData({...paymentData, fecha: e.target.value})} className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500 uppercase [color-scheme:dark]" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-black text-slate-500 uppercase pl-2">Cuenta</label>
               <select 
                 value={paymentData.metodo} 
                 onChange={e => setPaymentData({...paymentData, metodo: e.target.value})}
-                className="w-full bg-black border border-white/10 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500 uppercase appearance-none"
+                className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500 uppercase appearance-none"
               >
                 <option value="caja">Efectivo</option>
                 <option value="banco">Banco / Transf.</option>
@@ -151,14 +151,14 @@ export function PagoCostoModal({ isOpen, onClose, onConfirm, costo, isProcessing
 
           <div className="space-y-1.5">
             <label className="text-[9px] font-black text-slate-500 uppercase pl-2">Notas / Comprobante</label>
-            <input placeholder="DETALLE DEL GASTO..." value={paymentData.notas} onChange={e => setPaymentData({...paymentData, notas: e.target.value})} className="w-full bg-black border border-white/10 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800" />
+            <input placeholder="DETALLE DEL GASTO..." value={paymentData.notas} onChange={e => setPaymentData({...paymentData, notas: e.target.value})} className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800" />
           </div>
         </div>
 
         <button 
           onClick={() => onConfirm({ ...paymentData, montoReal: montoFinal })} 
           disabled={isProcessing || montoFinal <= 0} 
-          className="w-full mt-8 py-5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full mt-8 py-5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-[#243248] text-white rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <>Ejecutar Movimiento <CheckCircle2 size={18}/></>}
         </button>

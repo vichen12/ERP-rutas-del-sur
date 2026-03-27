@@ -1,5 +1,5 @@
 'use client'
-import { Wallet, Landmark, FileWarning, AlertCircle, TrendingUp, Loader2 } from 'lucide-react'
+import { Landmark, FileWarning, AlertCircle, TrendingUp, Loader2 } from 'lucide-react'
 
 interface ResumenData {
   totalCaja: number
@@ -17,16 +17,7 @@ export function CajaResumenGeneral({ resumen, loading }: { resumen: ResumenData,
 
   const bloques = [
     {
-      label: 'Caja',
-      sublabel: 'Efectivo disponible',
-      value: resumen.totalCaja,
-      icon: Wallet,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
-    },
-    {
-      label: 'Total Banco',
+      label: 'Saldo Banco',
       sublabel: 'Saldo bancario acumulado',
       value: resumen.totalBanco,
       icon: Landmark,
@@ -44,8 +35,8 @@ export function CajaResumenGeneral({ resumen, loading }: { resumen: ResumenData,
       border: 'border-orange-500/20',
     },
     {
-      label: 'Deudas del Mes',
-      sublabel: 'Egresos registrados',
+      label: 'Egresos del Período',
+      sublabel: 'Salidas registradas',
       value: -resumen.deudasMes,
       icon: AlertCircle,
       color: 'text-rose-400',
@@ -79,7 +70,7 @@ export function CajaResumenGeneral({ resumen, loading }: { resumen: ResumenData,
         Estado Patrimonial
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {bloques.map((b, i) => (
           <div
             key={i}

@@ -79,7 +79,7 @@ export function CamionCard({
   }
 
   return (
-    <div className={`group bg-[#020617] rounded-[2.5rem] border border-white/10 hover:border-white/20 transition-all duration-300 shadow-2xl flex flex-col h-full overflow-hidden relative ${estado === 'Inactivo' || estado === 'Vendido' ? 'opacity-70 grayscale-[0.3]' : ''}`}>
+    <div className={`group bg-[#141c28] rounded-[2.5rem] border border-white/10 hover:border-white/20 transition-all duration-300 shadow-2xl flex flex-col h-full overflow-hidden relative ${estado === 'Inactivo' || estado === 'Vendido' ? 'opacity-70 grayscale-[0.3]' : ''}`}>
       
       <div className={`absolute top-0 left-0 w-full h-[2px] opacity-70 ${
         isDanger ? 'bg-rose-500' : isWarning ? 'bg-amber-400' : 'bg-white/30'
@@ -96,7 +96,7 @@ export function CamionCard({
               }`}>
                 <Truck size={28} strokeWidth={1.5} />
               </div>
-              <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-[2.5px] border-[#020617] ${dotColor}`} />
+              <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-[2.5px] border-[#0a0a0f] ${dotColor}`} />
             </div>
 
             <div>
@@ -135,7 +135,7 @@ export function CamionCard({
 
         <div className="space-y-3 flex-1">
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-900/60 border border-white/5 rounded-[1.2rem] p-4 flex flex-col justify-center">
+            <div className="bg-[#1a2537]/60 border border-white/5 rounded-[1.2rem] p-4 flex flex-col justify-center">
                <div className="flex items-center gap-1.5 mb-1.5 text-slate-500">
                  <Gauge size={14} />
                  <span className="text-[9px] font-black uppercase tracking-widest">Odómetro</span>
@@ -148,7 +148,7 @@ export function CamionCard({
             <div className={`border rounded-[1.2rem] p-4 flex flex-col justify-center ${
               serviceVencido ? 'bg-rose-500/10 border-rose-500/30' : 
               serviceAlerta ? 'bg-amber-500/10 border-amber-500/30' : 
-              'bg-slate-900/60 border-white/5'
+              'bg-[#1a2537]/60 border-white/5'
             }`}>
                <div className="flex items-center gap-1.5 mb-1.5">
                  <Droplets size={14} className={serviceVencido ? 'text-rose-500' : serviceAlerta ? 'text-amber-500' : 'text-slate-400'} />
@@ -166,7 +166,7 @@ export function CamionCard({
 
           <div className="grid grid-cols-2 gap-3">
             <div className={`border rounded-[1.2rem] p-4 flex flex-col justify-center ${
-              rtoVencida ? 'bg-rose-500/10 border-rose-500/30' : rtoPorVencer ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-900/60 border-white/5'
+              rtoVencida ? 'bg-rose-500/10 border-rose-500/30' : rtoPorVencer ? 'bg-amber-500/10 border-amber-500/30' : 'bg-[#1a2537]/60 border-white/5'
             }`}>
                 <div className="flex items-center gap-1.5 mb-1.5 text-slate-500">
                    <Calendar size={14} className={rtoVencida ? 'text-rose-500' : rtoPorVencer ? 'text-amber-500' : ''} />
@@ -178,7 +178,7 @@ export function CamionCard({
             </div>
 
             <div className={`border rounded-[1.2rem] p-4 flex flex-col justify-center ${
-              senasaVencido ? 'bg-rose-500/10 border-rose-500/30' : senasaPorVencer ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-900/60 border-white/5'
+              senasaVencido ? 'bg-rose-500/10 border-rose-500/30' : senasaPorVencer ? 'bg-amber-500/10 border-amber-500/30' : 'bg-[#1a2537]/60 border-white/5'
             }`}>
                 <div className="flex items-center gap-1.5 mb-1.5 text-slate-500">
                    <ShieldCheck size={14} className={senasaVencido ? 'text-rose-500' : senasaPorVencer ? 'text-amber-500' : ''} />
@@ -191,7 +191,7 @@ export function CamionCard({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-900/60 border border-white/5 p-4 rounded-[1.2rem]">
+            <div className="bg-[#1a2537]/60 border border-white/5 p-4 rounded-[1.2rem]">
                <div className="flex items-center gap-1.5 mb-1.5 text-slate-500">
                   <User size={14} />
                   <span className="text-[9px] font-black uppercase tracking-widest">Operador</span>

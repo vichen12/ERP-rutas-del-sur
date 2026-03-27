@@ -1,7 +1,8 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
   Loader2, Truck, SearchX, ArrowRightLeft,
@@ -41,7 +42,7 @@ function ViajeDetalleModal({ isOpen, onClose, viaje, precioGasoilGlobal }: any) 
   if (!isOpen || !viaje) return null;
 
   const pGasoil = Number(viaje.precio_gasoil) || precioGasoilGlobal;
-  const bruta = Number(viaje.tarifa_flete_calculada) || 0;
+  const bruta = Number(viaje.tarifa_flete_calculada) || Number(viaje.tarifa_flete) || 0;
   const pagoCh = Number(viaje.pago_chofer) || 0;
   const costoGas = (Number(viaje.lts_gasoil) || 0) * pGasoil;
   const descarga = Number(viaje.costo_descarga) || 0;
@@ -51,11 +52,11 @@ function ViajeDetalleModal({ isOpen, onClose, viaje, precioGasoilGlobal }: any) 
 
   return (
     <div
-      className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans italic"
+      className="fixed inset-0 z-[999] bg-[#141c28]/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans italic"
       onClick={onClose}
     >
       <div
-        className="bg-[#02050A] w-full max-w-2xl max-h-[90vh] border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col animate-in zoom-in-95 duration-200 relative overflow-hidden"
+        className="bg-[#141c28] w-full max-w-2xl max-h-[90vh] border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col animate-in zoom-in-95 duration-200 relative overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Glow dinámico */}
@@ -103,7 +104,7 @@ function ViajeDetalleModal({ isOpen, onClose, viaje, precioGasoilGlobal }: any) 
               { label: 'Chofer + Desc.', value: pagoCh + descarga, color: 'text-rose-400', prefix: '-' },
               { label: 'Fondo Desgaste', value: desgaste, color: 'text-slate-400', prefix: '-' },
             ].map((item, i) => (
-              <div key={i} className="bg-slate-900/50 border border-white/5 p-4 rounded-xl text-center">
+              <div key={i} className="bg-[#1a2537]/50 border border-white/5 p-4 rounded-xl text-center">
                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">{item.label}</p>
                 <p className={`text-sm font-black tabular-nums ${item.color}`}>{item.prefix}${Math.round(item.value).toLocaleString('es-AR')}</p>
               </div>
@@ -162,7 +163,8 @@ function ViajeDetalleModal({ isOpen, onClose, viaje, precioGasoilGlobal }: any) 
   )
 }
 
-export default function ViajesPage() {
+function ViajesContent() {
+  const searchParams = useSearchParams()
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'ida' | 'retorno' | 'global'>('global')
@@ -195,6 +197,15 @@ export default function ViajesPage() {
   useEffect(() => {
     setMounted(true)
     fetchData()
+    // Si viene desde clientes con cliente_id, abrir modal pre-cargado
+    const clienteIdParam = searchParams?.get('cliente_id')
+    if (clienteIdParam) {
+      setFormData((prev: any) => ({
+        ...prev,
+        repartos_ida: [{ cliente_id: clienteIdParam, destino_id: '', destino_nombre: '', monto_flete: '' }]
+      }))
+      setIsModalOpen(true)
+    }
   }, [])
 
   async function fetchData() {
@@ -263,7 +274,7 @@ export default function ViajesPage() {
 
   const stats = useMemo(() => {
     return filteredViajes.reduce((acc, v) => {
-      const bruta = Number(v.tarifa_flete_calculada) || 0;
+      const bruta = Number(v.tarifa_flete_calculada) || Number(v.tarifa_flete) || 0;
       const pagoCh = Number(v.pago_chofer) || 0;
       const pGasoil = Number(v.precio_gasoil) || precioGasoilGlobal;
       const costoGas = (Number(v.lts_gasoil) || 0) * pGasoil;
@@ -304,6 +315,9 @@ export default function ViajesPage() {
       ) => {
         if (!repartos || repartos.length === 0) return 0;
 
+        // Suma real de todos los fletes del tramo (para que dashboard muestre ingresos correctos)
+        const tarifaRealTramo = repartos.reduce((acc: number, r: any) => acc + (Number(r.monto_flete) || 0), 0);
+
         const viajeObj = {
           ...dataLimpia,
           es_retorno: esRetorno,
@@ -311,6 +325,7 @@ export default function ViajesPage() {
           destino: dest,
           km_recorridos: kmTramo || dataLimpia.km_recorridos,
           lts_gasoil: ltsTramo || dataLimpia.lts_gasoil,
+          tarifa_flete: tarifaRealTramo || dataLimpia.tarifa_flete,
         };
 
         const { data: nV, error: eV } = await supabase.from('viajes').insert([viajeObj]).select().single();
@@ -343,55 +358,6 @@ export default function ViajesPage() {
         const uuid = (v: any) => (v && String(v).trim() !== '' ? v : null)
         const camionId = uuid(dataLimpia.camion_id)
         const choferIdLimpio = uuid(dataLimpia.chofer_id)
-
-        // 3. COMBUSTIBLE — lógica Tanque Lleno a Tanque Lleno
-        // Los litros cargados HOY corresponden al consumo del VIAJE ANTERIOR de este camión.
-        // Buscamos el último viaje del mismo camión (excluyendo el que acabamos de crear).
-        const lts = Number(ltsTramo || dataLimpia.lts_gasoil || 0);
-        const pGasoil = Number(dataLimpia.precio_gasoil || precioGasoilGlobal || 0);
-        const costoGas = lts * pGasoil;
-
-        if (lts > 0 && camionId) {
-          // Buscar el último viaje de este camión que NO sea el que recién creamos
-          const { data: viajesAnteriores } = await supabase
-            .from('viajes')
-            .select('id')
-            .eq('camion_id', camionId)
-            .neq('id', nV.id)
-            .order('fecha', { ascending: false })
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-          // Si existe un viaje anterior, el combustible se carga a ÉSE viaje (tank-to-tank)
-          // Si no existe (es el primer viaje de este camión), se registra en el viaje actual
-          const viajeDestinoCombustible = viajesAnteriores?.[0]?.id || nV.id;
-
-          await supabase.from('cargas_combustible').insert([{
-            fecha: dataLimpia.fecha,
-            camion_id: camionId,
-            chofer_id: choferIdLimpio,
-            responsable_externo: null,
-            litros: lts,
-            precio_litro: pGasoil,
-            total: costoGas,
-            estacion: 'CARGA EN VIAJE',
-            pagado: false,
-            viaje_id: viajeDestinoCombustible
-          }]);
-
-          // También actualizamos lts_gasoil en el viaje destino para que la utilidad sea correcta
-          if (viajeDestinoCombustible !== nV.id) {
-            const { data: vAnterior } = await supabase
-              .from('viajes')
-              .select('lts_gasoil')
-              .eq('id', viajeDestinoCombustible)
-              .single();
-            const ltsAnteriores = Number(vAnterior?.lts_gasoil || 0);
-            await supabase.from('viajes')
-              .update({ lts_gasoil: ltsAnteriores + lts })
-              .eq('id', viajeDestinoCombustible);
-          }
-        }
 
         // 🔥 4. DEUDA CON EL CHOFER (Sueldo + Viáticos/Descarga)
         const pagoChofer = Number(dataLimpia.pago_chofer || 0);
@@ -455,10 +421,9 @@ export default function ViajesPage() {
   // ─── ELIMINACIÓN ─────────────────────────────────────────────────────────────
   const handleDeleteViaje = async (e: React.MouseEvent, viaje: any) => {
     e.stopPropagation(); // 🚀 Evita que al tocar borrar se abra el modal de detalles
-    if (!confirm(`⚠️ ¿Eliminar viaje? Se borrarán repartos, deudas (combustible, choferes y clientes) y movimientos asociados.`)) return;
+    if (!confirm(`⚠️ ¿Eliminar viaje? Se borrarán repartos, deudas de choferes y clientes, y movimientos asociados.`)) return;
     try {
       const kmRestar = Number(viaje.km_recorridos) || 0;
-      const ltsRestar = Number(viaje.lts_gasoil) || 0;
       const cam = camiones.find(c => c.id === viaje.camion_id);
       const cho = choferes.find(ch => ch.id === viaje.chofer_id);
 
@@ -466,18 +431,15 @@ export default function ViajesPage() {
         supabase.from('reparto_viaje').delete().eq('viaje_id', viaje.id),
         supabase.from('cuenta_corriente').delete().eq('viaje_id', viaje.id),
         supabase.from('movimientos_caja').delete().eq('referencia_origen_id', viaje.id),
-        supabase.from('cargas_combustible').delete().eq('viaje_id', viaje.id),
         supabase.from('cuenta_corriente_choferes').delete().eq('viaje_id', viaje.id)
       ]);
 
       const updates: any[] = [];
       if (cam) updates.push(supabase.from('camiones').update({
         km_actual: Math.max(0, cam.km_actual - kmRestar),
-        lts_consumidos: Math.max(0, cam.lts_consumidos - ltsRestar)
       }).eq('id', viaje.camion_id));
       if (cho) updates.push(supabase.from('choferes').update({
         km_recorridos: Math.max(0, cho.km_recorridos - kmRestar),
-        lts_consumidos: Math.max(0, cho.lts_consumidos - ltsRestar)
       }).eq('id', viaje.chofer_id));
       await Promise.all(updates);
 
@@ -495,14 +457,14 @@ export default function ViajesPage() {
   }
 
   if (!mounted || loading) return (
-    <div className="h-screen bg-[#020617] flex flex-col items-center justify-center">
+    <div className="h-screen bg-[#141c28] flex flex-col items-center justify-center">
       <Loader2 className="animate-spin text-cyan-500 w-12 h-12 mb-4" />
       <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 animate-pulse">Refrescando Inteligencia...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-20 pt-24 md:pt-32 font-sans italic selection:bg-cyan-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-20 pt-24 md:pt-32 font-sans italic selection:bg-cyan-500/30 overflow-x-hidden">
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_-20%,#1e1b4b,transparent)] opacity-40" />
       <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] opacity-10" />
 
@@ -521,7 +483,7 @@ export default function ViajesPage() {
         />
 
         {filteredViajes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-white/5 rounded-[3rem] bg-slate-900/10 backdrop-blur-sm mx-4">
+          <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-white/5 rounded-[3rem] bg-[#1a2537]/10 backdrop-blur-sm mx-4">
             <SearchX size={64} className="text-slate-800 mb-6" />
             <h3 className="text-xl font-black text-slate-500 uppercase tracking-widest text-center">Sin Coincidencias</h3>
             <button onClick={() => { setSearch(''); setShowAllTime(true) }} className="mt-8 px-8 py-4 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-500 rounded-2xl text-[9px] font-black uppercase border border-cyan-500/20 transition-all">Limpiar Filtros</button>
@@ -530,7 +492,7 @@ export default function ViajesPage() {
           <div className="space-y-10 animate-in fade-in duration-700">
 
             {/* TABLA DESKTOP */}
-            <div className="hidden xl:block overflow-hidden rounded-[3rem] border border-white/10 bg-slate-900/20 backdrop-blur-xl shadow-2xl">
+            <div className="hidden xl:block overflow-hidden rounded-[3rem] border border-white/10 bg-[#1a2537]/20 backdrop-blur-xl shadow-2xl">
               <table className="w-full text-left">
                 <thead className="bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                   <tr>
@@ -547,7 +509,7 @@ export default function ViajesPage() {
                     const pGasoil = Number(v.precio_gasoil) || precioGasoilGlobal;
                     const costoGas = (Number(v.lts_gasoil) || 0) * pGasoil;
                     const desgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
-                    const netaViaje = Number(v.tarifa_flete_calculada) - (Number(v.pago_chofer) + costoGas + Number(v.costo_descarga) + desgaste);
+                    const netaViaje = (Number(v.tarifa_flete_calculada) || Number(v.tarifa_flete) || 0) - (Number(v.pago_chofer) + costoGas + Number(v.costo_descarga) + desgaste);
 
                     return (
                       <tr
@@ -583,7 +545,7 @@ export default function ViajesPage() {
                           <p className="text-[10px] text-slate-500 uppercase font-bold">{v.choferes?.nombre}</p>
                         </td>
                         <td className="p-7 text-right font-black text-white tabular-nums text-lg">
-                          $ {Number(v.tarifa_flete_calculada || 0).toLocaleString()}
+                          $ {Number(v.tarifa_flete_calculada || v.tarifa_flete || 0).toLocaleString()}
                         </td>
                         <td className={`p-7 text-right font-black tabular-nums text-sm ${netaViaje > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                           $ {Math.round(netaViaje).toLocaleString()}
@@ -611,7 +573,7 @@ export default function ViajesPage() {
                 <div
                   key={v.id}
                   onClick={() => handleOpenDetalle(v)}
-                  className="bg-slate-900/60 border border-white/10 p-8 rounded-[3rem] space-y-6 backdrop-blur-md relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer hover:border-white/20"
+                  className="bg-[#1a2537]/60 border border-white/10 p-8 rounded-[3rem] space-y-6 backdrop-blur-md relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer hover:border-white/20"
                 >
                   <div className="flex justify-between items-start pointer-events-none">
                     <div className="space-y-1">
@@ -629,18 +591,18 @@ export default function ViajesPage() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 relative z-10 pointer-events-none">
-                    <div className="bg-black/30 p-5 rounded-[2.2rem] border border-white/5 shadow-inner">
+                    <div className="bg-[#141c28]/30 p-5 rounded-[2.2rem] border border-white/5 shadow-inner">
                       <p className="text-[8px] font-black text-slate-500 uppercase mb-1 tracking-widest">Flete Bruto</p>
-                      <p className="text-xl font-black text-emerald-400 tabular-nums">$ {Number(v.tarifa_flete_calculada || 0).toLocaleString()}</p>
+                      <p className="text-xl font-black text-emerald-400 tabular-nums">$ {Number(v.tarifa_flete_calculada || v.tarifa_flete || 0).toLocaleString()}</p>
                     </div>
-                    <div className="bg-black/30 p-5 rounded-[2.2rem] border border-white/5 shadow-inner">
+                    <div className="bg-[#141c28]/30 p-5 rounded-[2.2rem] border border-white/5 shadow-inner">
                       <p className="text-[8px] font-black text-slate-500 uppercase mb-1 tracking-widest">Unidad</p>
                       <p className="text-lg font-black text-white uppercase">{v.camiones?.patente || 'S/P'}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between pt-4 border-t border-white/5">
                     <div className="flex items-center gap-3 pointer-events-none">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400"><Truck size={14} /></div>
+                      <div className="w-8 h-8 rounded-full bg-[#243248] flex items-center justify-center text-slate-400"><Truck size={14} /></div>
                       <p className="text-[10px] font-black text-slate-300 uppercase truncate max-w-[120px]">{v.choferes?.nombre || 'S/C'}</p>
                     </div>
                     <button onClick={(e) => handleDeleteViaje(e, v)} className="p-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all border border-rose-500/20">
@@ -683,5 +645,13 @@ export default function ViajesPage() {
         precioGasoilGlobal={precioGasoilGlobal}
       />
     </div>
+  )
+}
+
+export default function ViajesPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div></div>}>
+      <ViajesContent />
+    </Suspense>
   )
 }

@@ -36,8 +36,8 @@ export function PagarModal({ isOpen, onClose, onConfirm, isSaving, item, variabl
   const esFormula = isNaN(Number(item.monto)) && item.monto?.trim() !== ''
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 font-sans italic">
-      <div className="bg-[#020617] w-full max-w-sm rounded-[2rem] border border-white/10 p-7 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-sm rounded-[2rem] border border-white/10 p-7 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
 
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2rem] bg-emerald-500" />
 
@@ -53,7 +53,7 @@ export function PagarModal({ isOpen, onClose, onConfirm, isSaving, item, variabl
         </div>
 
         {/* Info del item */}
-        <div className="bg-slate-900/60 rounded-xl p-4 mb-5 space-y-2">
+        <div className="bg-[#1a2537]/60 rounded-xl p-4 mb-5 space-y-2">
           <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest">
             <span className="text-slate-500">Tipo</span>
             <span className={item.tipo === 'impuesto' ? 'text-violet-400' : 'text-orange-400'}>
@@ -95,7 +95,7 @@ export function PagarModal({ isOpen, onClose, onConfirm, isSaving, item, variabl
               type="number" step="0.01" min="0"
               value={montoStr}
               onChange={e => setMontoStr(e.target.value)}
-              className="w-full bg-slate-900 border border-emerald-500/30 rounded-xl py-4 pl-12 pr-5 text-emerald-400 font-black text-2xl tabular-nums outline-none focus:border-emerald-500 transition-all"
+              className="w-full bg-[#1a2537] border border-emerald-500/30 rounded-xl py-4 pl-12 pr-5 text-emerald-400 font-black text-2xl tabular-nums outline-none focus:border-emerald-500 transition-all"
             />
           </div>
           {/* Diferencia con el sugerido */}
@@ -123,7 +123,7 @@ export function PagarModal({ isOpen, onClose, onConfirm, isSaving, item, variabl
           <button
             onClick={() => montoFinal > 0 && onConfirm(item, montoFinal)}
             disabled={isSaving || montoFinal <= 0}
-            className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white disabled:text-slate-600 font-black uppercase text-[9px] tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl">
+            className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-[#243248] text-white disabled:text-slate-600 font-black uppercase text-[9px] tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl">
             {isSaving ? <Loader2 className="animate-spin" size={16} /> : <><Banknote size={16} />Confirmar Pago</>}
           </button>
         </div>

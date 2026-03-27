@@ -45,7 +45,7 @@ export function ClienteStats({ selected }: { selected: any }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 font-sans italic">
       {stats.map((stat, i) => (
-        <div key={i} className="bg-slate-900/40 p-10 rounded-[3.5rem] border border-white/5 relative overflow-hidden group shadow-2xl backdrop-blur-sm">
+        <div key={i} className="bg-[#1a2537]/40 p-10 rounded-[3.5rem] border border-white/5 relative overflow-hidden group shadow-2xl backdrop-blur-sm">
           
           {/* Icono de fondo gigante con efecto hover */}
           <stat.icon className="absolute -top-6 -right-6 w-40 h-40 opacity-[0.03] group-hover:opacity-[0.07] group-hover:scale-110 group-hover:rotate-12 transition-all duration-700 pointer-events-none text-white" />

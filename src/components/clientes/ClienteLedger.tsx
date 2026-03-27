@@ -3,15 +3,16 @@ import { ArrowUpRight, ArrowDownLeft, ReceiptText, Calendar, Hash, FileSpreadshe
 
 export function ClienteLedger({ historial }: { historial: any[] }) {
   // Calculamos los saldos de forma eficiente (Cumulative Balance)
-  const historialConSaldo = [...historial].reverse().reduce((acc: any[], curr: any, idx: number) => {
+  // Acumulamos de más antiguo a más nuevo (orden cronológico correcto)
+  const historialConSaldo = [...historial].reduce((acc: any[], curr: any, idx: number) => {
     const prevSaldo = idx === 0 ? 0 : acc[idx - 1].saldo;
     const nuevoSaldo = prevSaldo + (Number(curr.debe || 0) - Number(curr.haber || 0));
     acc.push({ ...curr, saldo: nuevoSaldo });
     return acc;
-  }, []).reverse();
+  }, []);
 
   return (
-    <div className="bg-slate-900/40 rounded-[2.5rem] lg:rounded-[3.5rem] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-md font-sans italic">
+    <div className="bg-[#1a2537]/40 rounded-[2.5rem] lg:rounded-[3.5rem] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-md font-sans italic">
       
       {/* HEADER DE LA TABLA */}
       <div className="p-8 lg:p-10 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/[0.01]">
@@ -58,7 +59,7 @@ export function ClienteLedger({ historial }: { historial: any[] }) {
                          <div>
                            <span className="font-black text-white text-sm uppercase italic block leading-tight">
                              {/* Mostramos el detalle o el nro de remito si existe */}
-                             {m.remitos?.numero_remito ? `REMITO: ${m.remitos.numero_remito}` : m.detalle}
+                             {m.remito ? `REMITO: ${m.remito}` : m.detalle}
                            </span>
                            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
                              {m.tipo_movimiento || 'MOVIMIENTO MANUAL'}

@@ -20,13 +20,12 @@ export async function checkAndSendNotificaciones(
   // 3. Estén dentro del rango de días de anticipación
   const tareasParaNotificar = tareas.filter(t => {
     if (t.completada) return false
-    if (t.notificacion_enviada) return false
 
     const fechaVto = new Date(t.fecha_vencimiento + 'T00:00:00')
     const diffDays = Math.ceil((fechaVto.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24))
-    
-    // Avisar cuando quedan exactamente dias_anticipacion días o menos (y no está vencida hace más de 3 días)
-    return diffDays <= t.dias_anticipacion && diffDays >= -3
+
+    // Avisar cuando quedan dias_anticipacion días o menos (default 3). Rango hasta 3 días vencida.
+    return diffDays <= (t.dias_anticipacion ?? 3) && diffDays >= -3
   })
 
   if (tareasParaNotificar.length === 0) return
@@ -46,12 +45,12 @@ export async function checkAndSendNotificaciones(
 
   await Promise.allSettled(promises)
 
-  // Marcar como notificadas
-  const ids = tareasParaNotificar.map(t => t.id)
-  await supabase
-    .from('tareas')
-    .update({ notificacion_enviada: true })
-    .in('id', ids)
+  // Marcar notificacion_enviada para no reenviar en la misma sesión
+  await Promise.allSettled(
+    tareasParaNotificar.map((t: any) =>
+      supabase.from('tareas').update({ notificacion_enviada: true }).eq('id', t.id)
+    )
+  )
 }
 
 function buildMensaje(tareas: any[], hoy: Date): string {

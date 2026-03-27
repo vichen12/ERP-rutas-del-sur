@@ -1,9 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { X, Loader2, DollarSign, Calendar, Tag, Wallet, Landmark, ArrowUpCircle, ArrowDownCircle, FileText, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { X, Loader2, DollarSign, Calendar, Tag, Landmark, ArrowUpCircle, ArrowDownCircle, FileText, ChevronRight, CheckCircle2 } from 'lucide-react'
 
 const CATEGORIAS_INGRESO = [
   { value: 'cobro_flete', label: 'Cobro de Flete' },
+  { value: 'cheque', label: 'Cobro con Cheque' },
   { value: 'ingreso_otro', label: 'Ingreso Varios' },
 ]
 
@@ -12,6 +13,7 @@ const CATEGORIAS_EGRESO = [
   { value: 'gasto_camion', label: 'Gasto de Unidad' },
   { value: 'costo_fijo', label: 'Costo Fijo' },
   { value: 'multa', label: 'Multa' },
+  { value: 'cheque', label: 'Cheque Emitido' },
   { value: 'egreso_otro', label: 'Egreso Varios' },
 ]
 
@@ -82,8 +84,8 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#020617] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
 
         {/* Línea superior */}
         <div className={`absolute top-0 left-0 w-full h-1.5 rounded-t-full transition-colors duration-500 ${form.tipo === 'ingreso' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
@@ -95,8 +97,8 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
               {editingData ? 'Editando Movimiento' : 'Nuevo Movimiento'}
             </p>
             <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
-              Caja / <span className={form.tipo === 'ingreso' ? 'text-emerald-500' : 'text-rose-500'}>
-                Banco
+              <span className={form.tipo === 'ingreso' ? 'text-emerald-500' : 'text-rose-500'}>
+                {form.tipo_cuenta === 'caja' ? 'Caja' : 'Banco'}
               </span>
             </h2>
           </div>
@@ -109,7 +111,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
 
           {/* TIPO: INGRESO / EGRESO */}
           {!editingData && (
-            <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-white/5 shadow-inner">
+            <div className="flex bg-[#141c28] p-1.5 rounded-2xl border border-white/5 shadow-inner">
               <button
                 type="button"
                 onClick={() => setForm(p => ({ ...p, tipo: 'ingreso', categoria: '' }))}
@@ -131,30 +133,10 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
             </div>
           )}
 
-          {/* CUENTA: CAJA / BANCO */}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setForm(p => ({ ...p, tipo_cuenta: 'caja' }))}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[10px] font-black uppercase border transition-all ${
-                form.tipo_cuenta === 'caja'
-                  ? 'bg-amber-600/20 border-amber-500/50 text-amber-400'
-                  : 'bg-slate-950 border-white/5 text-slate-600 hover:text-slate-400'
-              }`}
-            >
-              <Wallet size={14} /> Efectivo
-            </button>
-            <button
-              type="button"
-              onClick={() => setForm(p => ({ ...p, tipo_cuenta: 'banco' }))}
-              className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[10px] font-black uppercase border transition-all ${
-                form.tipo_cuenta === 'banco'
-                  ? 'bg-sky-600/20 border-sky-500/50 text-sky-400'
-                  : 'bg-slate-950 border-white/5 text-slate-600 hover:text-slate-400'
-              }`}
-            >
-              <Landmark size={14} /> Banco
-            </button>
+          {/* CUENTA: BANCO */}
+          <div className="flex items-center gap-3 px-5 py-3 bg-sky-600/10 border border-sky-500/30 rounded-2xl">
+            <Landmark size={16} className="text-sky-400" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-sky-400">Banco</span>
           </div>
 
           {/* CATEGORÍA */}
@@ -167,7 +149,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
                 required
                 value={form.categoria}
                 onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black text-sm outline-none focus:border-emerald-500 appearance-none cursor-pointer uppercase"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black text-sm outline-none focus:border-emerald-500 appearance-none cursor-pointer uppercase"
               >
                 <option value="">-- SELECCIONAR CATEGORÍA --</option>
                 {categorias.map(c => (
@@ -190,7 +172,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
                 placeholder="EJ: COBRO FLETE CLIENTE X"
                 value={form.descripcion}
                 onChange={e => setForm(p => ({ ...p, descripcion: e.target.value.toUpperCase() }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-white font-black text-sm uppercase outline-none focus:border-emerald-500 transition-all placeholder:text-slate-700"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-white font-black text-sm uppercase outline-none focus:border-emerald-500 transition-all placeholder:text-slate-700"
               />
             </div>
           </div>
@@ -208,7 +190,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
                   placeholder="0.00"
                   value={form.monto}
                   onChange={e => setForm(p => ({ ...p, monto: e.target.value }))}
-                  className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-white font-black text-xl tabular-nums outline-none focus:border-white/20 transition-all"
+                  className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-white font-black text-xl tabular-nums outline-none focus:border-white/20 transition-all"
                 />
               </div>
             </div>
@@ -221,7 +203,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
                   type="date"
                   value={form.fecha}
                   onChange={e => setForm(p => ({ ...p, fecha: e.target.value }))}
-                  className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-white font-black text-sm outline-none focus:border-white/20 [color-scheme:dark] uppercase"
+                  className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 pl-14 pr-4 text-white font-black text-sm outline-none focus:border-white/20 [color-scheme:dark] uppercase"
                 />
               </div>
             </div>
@@ -236,7 +218,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
               placeholder="EJ: RECIBO-001 / TRANSFERENCIA X"
               value={form.referencia}
               onChange={e => setForm(p => ({ ...p, referencia: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-6 text-white font-black text-sm uppercase outline-none focus:border-white/20 transition-all placeholder:text-slate-700"
+              className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-6 text-white font-black text-sm uppercase outline-none focus:border-white/20 transition-all placeholder:text-slate-700"
             />
           </div>
 
@@ -247,7 +229,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
               <select
                 value={form.cliente_id}
                 onChange={e => setForm(p => ({ ...p, cliente_id: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-3 px-4 text-white font-bold text-xs outline-none focus:border-sky-500 appearance-none uppercase"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-3 px-4 text-white font-bold text-xs outline-none focus:border-sky-500 appearance-none uppercase"
               >
                 <option value="">SIN VINCULAR</option>
                 {clientes.map(c => <option key={c.id} value={c.id}>{c.razon_social}</option>)}
@@ -258,7 +240,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
               <select
                 value={form.chofer_id}
                 onChange={e => setForm(p => ({ ...p, chofer_id: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-3 px-4 text-white font-bold text-xs outline-none focus:border-indigo-500 appearance-none uppercase"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-3 px-4 text-white font-bold text-xs outline-none focus:border-indigo-500 appearance-none uppercase"
               >
                 <option value="">SIN VINCULAR</option>
                 {choferes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
@@ -269,7 +251,7 @@ export function CajaModal({ isOpen, onClose, onSubmit, isSaving, editingData, cl
               <select
                 value={form.camion_id}
                 onChange={e => setForm(p => ({ ...p, camion_id: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-3 px-4 text-white font-bold text-xs outline-none focus:border-amber-500 appearance-none uppercase"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-3 px-4 text-white font-bold text-xs outline-none focus:border-amber-500 appearance-none uppercase"
               >
                 <option value="">SIN VINCULAR</option>
                 {camiones.map(c => <option key={c.id} value={c.id}>{c.patente}</option>)}

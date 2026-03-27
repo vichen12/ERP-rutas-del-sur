@@ -59,7 +59,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
             formData.repartos_ida.map((rep: any, idx: number) => {
               const dador = clientes.find((c: any) => c.id === rep.cliente_id);
               return (
-                <div key={`f-ida-${idx}`} className="group relative bg-black/40 border border-white/5 p-4 rounded-2xl hover:border-emerald-500/30 transition-all shadow-md">
+                <div key={`f-ida-${idx}`} className="group relative bg-[#141c28]/40 border border-white/5 p-4 rounded-2xl hover:border-emerald-500/30 transition-all shadow-md">
                   <p className="text-[9px] font-black text-slate-400 uppercase mb-2 flex items-center justify-between">
                     {dador?.razon_social || "Cliente no definido"}
                     <Edit3 size={10} className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -96,7 +96,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
             formData.repartos_vuelta.map((rep: any, idx: number) => {
               const dador = clientes.find((c: any) => c.id === rep.cliente_id);
               return (
-                <div key={`f-vuelta-${idx}`} className="group relative bg-black/40 border border-white/5 p-4 rounded-2xl hover:border-indigo-500/30 transition-all shadow-md">
+                <div key={`f-vuelta-${idx}`} className="group relative bg-[#141c28]/40 border border-white/5 p-4 rounded-2xl hover:border-indigo-500/30 transition-all shadow-md">
                   <p className="text-[9px] font-black text-slate-400 uppercase mb-2 flex items-center justify-between">
                     {dador?.razon_social || "Cliente no definido"}
                     <Edit3 size={10} className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -119,7 +119,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
       </div>
 
       {/* --- SECCIÓN 2: COSTOS OPERATIVOS --- */}
-      <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-6 shadow-xl">
+      <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-6 shadow-xl">
         <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-3">
           <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
             <Calculator size={14} /> Costos de Operación
@@ -145,7 +145,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500/50 font-black">$</span>
               <input 
                 type="number" step="0.01" 
-                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-7 pr-3 text-white font-bold outline-none focus:border-amber-500 text-sm tabular-nums" 
+                className="w-full bg-[#141c28]/40 border border-white/10 rounded-xl py-2.5 pl-7 pr-3 text-white font-bold outline-none focus:border-amber-500 text-sm tabular-nums" 
                 value={formData.precio_gasoil || ""} 
                 onChange={(e) => setFormData((prev:any) => ({...prev, precio_gasoil: e.target.value}))} 
               />
@@ -157,7 +157,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
             <div className="relative">
               <input 
                 type="number" 
-                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 pr-10 text-white font-bold outline-none focus:border-amber-500 text-sm tabular-nums" 
+                className="w-full bg-[#141c28]/40 border border-white/10 rounded-xl py-2.5 px-4 pr-10 text-white font-bold outline-none focus:border-amber-500 text-sm tabular-nums" 
                 value={formData.lts_gasoil || ""} 
                 onChange={(e) => setFormData((prev:any) => ({...prev, lts_gasoil: e.target.value}))} 
               />
@@ -172,7 +172,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-500/50 font-black">$</span>
               <input 
                 type="number" 
-                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-7 pr-3 text-white font-bold outline-none focus:border-rose-500 text-sm tabular-nums" 
+                className="w-full bg-[#141c28]/40 border border-white/10 rounded-xl py-2.5 pl-7 pr-3 text-white font-bold outline-none focus:border-rose-500 text-sm tabular-nums" 
                 value={formData.pago_chofer || ""} 
                 onChange={(e) => setFormData((prev:any) => ({...prev, pago_chofer: e.target.value}))} 
               />
@@ -185,7 +185,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-500/50 font-black">$</span>
               <input 
                 type="number" 
-                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-7 pr-3 text-white font-bold outline-none focus:border-rose-500 text-sm tabular-nums" 
+                className="w-full bg-[#141c28]/40 border border-white/10 rounded-xl py-2.5 pl-7 pr-3 text-white font-bold outline-none focus:border-rose-500 text-sm tabular-nums" 
                 value={formData.costo_descarga || ""} 
                 onChange={(e) => setFormData((prev:any) => ({...prev, costo_descarga: e.target.value}))} 
               />
@@ -204,7 +204,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
               <span className="text-[10px] text-slate-400">$</span>
               <input 
                 type="number" step="0.01" 
-                className="w-20 bg-black/40 border border-sky-500/20 rounded-lg py-1 px-2 text-white font-bold focus:border-sky-500 outline-none text-xs tabular-nums" 
+                className="w-20 bg-[#141c28]/40 border border-sky-500/20 rounded-lg py-1 px-2 text-white font-bold focus:border-sky-500 outline-none text-xs tabular-nums" 
                 value={formData.desgaste_por_km || ""} 
                 onChange={(e) => setFormData((prev: any) => ({ ...prev, desgaste_por_km: e.target.value }))} 
               />
@@ -224,7 +224,7 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
       </div>
 
       {/* --- SECCIÓN 4: DASHBOARD FINAL --- */}
-      <div className={`bg-black border-2 rounded-[3rem] p-8 md:p-10 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700 ${finanzas.neta >= 0 ? "border-emerald-500/30 shadow-emerald-500/10" : "border-rose-500/30 shadow-rose-500/10"}`}>
+      <div className={`bg-[#141c28] border-2 rounded-[3rem] p-8 md:p-10 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-700 ${finanzas.neta >= 0 ? "border-emerald-500/30 shadow-emerald-500/10" : "border-rose-500/30 shadow-rose-500/10"}`}>
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-6 relative z-10">
           <div>
@@ -243,12 +243,12 @@ export function ViajeModalFinanciero({ formData, setFormData, finanzas, clientes
         </div>
 
         {/* 📊 Barra de Distribución Visual */}
-        <div className="space-y-3 relative z-10 bg-slate-900/50 p-5 rounded-2xl border border-white/5 backdrop-blur-sm">
+        <div className="space-y-3 relative z-10 bg-[#1a2537]/50 p-5 rounded-2xl border border-white/5 backdrop-blur-sm">
           <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
             <span className="text-rose-400 flex items-center gap-1.5"><Activity size={12}/> Operativo {Math.round(porcEgresos)}%</span>
             <span className="text-emerald-400 flex items-center gap-1.5">Neta {Math.round(porcUtilidad)}% <TrendingUp size={12}/></span>
           </div>
-          <div className="h-4 w-full bg-slate-950 rounded-full overflow-hidden flex border border-white/5 shadow-inner">
+          <div className="h-4 w-full bg-[#141c28] rounded-full overflow-hidden flex border border-white/5 shadow-inner">
             <div className="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-all duration-1000" style={{ width: `${porcEgresos}%` }} />
             <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-1000" style={{ width: `${porcUtilidad}%` }} />
           </div>

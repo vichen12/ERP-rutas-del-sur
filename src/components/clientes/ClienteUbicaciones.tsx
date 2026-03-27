@@ -137,7 +137,7 @@ export function ClienteUbicaciones({
             return (
               <div
                 key={u.id}
-                className={`relative bg-[#020617] border rounded-[2.5rem] p-6 shadow-2xl group transition-all hover:border-white/10 overflow-hidden ${
+                className={`relative bg-[#141c28] border rounded-[2.5rem] p-6 shadow-2xl group transition-all hover:border-white/10 overflow-hidden ${
                   u.es_origen ? 'border-sky-500/20' : 'border-white/5'
                 }`}
               >
@@ -150,7 +150,7 @@ export function ClienteUbicaciones({
 
                 {/* Nombre */}
                 <div className="flex items-start gap-3 mb-4">
-                  <div className={`p-2.5 rounded-xl mt-0.5 ${tieneCoords ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-600'}`}>
+                  <div className={`p-2.5 rounded-xl mt-0.5 ${tieneCoords ? 'bg-emerald-500/10 text-emerald-500' : 'bg-[#243248] text-slate-600'}`}>
                     <MapPin size={16} />
                   </div>
                   <div className="flex-1 min-w-0">

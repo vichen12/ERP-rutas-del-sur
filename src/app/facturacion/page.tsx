@@ -8,6 +8,8 @@ import { FacturasKpis } from '@/components/facturacion/FacturasKpis'
 import { FacturasTabla } from '@/components/facturacion/FacturasTabla'
 import { FacturaWizard } from '@/components/facturacion/Facturawizard'
 import { ArcaConfigModal } from '@/components/facturacion/ArcaConfigModal'
+import { FacturaManualModal } from '@/components/facturacion/FacturaManualModal'
+import { FileText } from 'lucide-react'
 
 const supabase = (supabaseLib as any).supabase || ((supabaseLib as any).getSupabase?.()) || supabaseLib
 
@@ -24,6 +26,7 @@ function FacturacionInner() {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
   const [isEmitting, setIsEmitting] = useState(false)
   const [preloadData, setPreloadData] = useState<any>(null)
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false)
 
   const [dateStart, setDateStart] = useState(() => {
     const d = new Date()
@@ -60,7 +63,7 @@ function FacturacionInner() {
         supabase.from('facturas').select('*, clientes(razon_social)').order('fecha_comprobante', { ascending: false }),
         supabase.from('clientes').select('id, razon_social, cuit, condicion_iva').order('razon_social'),
         supabase.from('viajes').select('id, fecha, cliente_id, clientes(razon_social), tarifa_flete').order('fecha', { ascending: false }),
-        supabase.from('remitos').select('id, fecha, numero, cliente_id, clientes(razon_social), facturado').order('fecha', { ascending: false }),
+        supabase.from('remitos').select('id, numero_remito, cliente_id, clientes(razon_social), facturado'),
         supabase.from('configuracion').select('arca_cuit, arca_razon_social, arca_punto_venta, arca_condicion_iva, arca_entorno, arca_certificado, arca_clave_privada').eq('id', 1).single(),
       ])
       setFacturas(facturasRes.data || [])
@@ -111,6 +114,21 @@ function FacturacionInner() {
     )
   }
 
+  async function handleSaveManual(data: any) {
+    setIsEmitting(true)
+    try {
+      const { error } = await supabase.from('facturas').insert([data])
+      if (error) throw error
+      toast.success('Factura manual registrada')
+      setIsManualModalOpen(false)
+      fetchAll()
+    } catch (e: any) {
+      toast.error('Error: ' + e.message)
+    } finally {
+      setIsEmitting(false)
+    }
+  }
+
   async function handleSaveConfig(configData: any) {
     try {
       const { error } = await supabase.from('configuracion').update(configData).eq('id', 1)
@@ -132,16 +150,25 @@ function FacturacionInner() {
     }
   }
 
-  const arcaConfigurado = !!(config?.arca_cuit && config?.arca_razon_social)
+  const arcaConfigurado = !!(config?.arca_cuit && config?.arca_certificado)
 
   return (
-    <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20 font-sans italic">
+    <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20 font-sans italic">
       <div className="max-w-[1600px] mx-auto px-4 md:px-8 space-y-8">
         <FacturasHeader arcaConfigurado={arcaConfigurado} entorno={config?.arca_entorno || 'homologacion'} dateStart={dateStart} setDateStart={setDateStart} dateEnd={dateEnd} setDateEnd={setDateEnd} onNuevaFactura={() => { setPreloadData(null); setIsWizardOpen(true) }} onOpenConfig={() => setIsConfigModalOpen(true)} />
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsManualModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1a2537] border border-slate-700/50 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/30 text-[11px] font-black uppercase tracking-widest transition-all"
+          >
+            <FileText size={14} /> Registrar Factura Manual
+          </button>
+        </div>
         <FacturasKpis kpis={kpis} loading={loading} />
         <FacturasTabla facturas={facturasFiltradas} loading={loading} />
         <FacturaWizard isOpen={isWizardOpen} onClose={handleCloseWizard} onSubmit={handleEmitir} isEmitting={isEmitting} clientes={clientes} viajes={viajes} remitos={remitos} puntoVenta={config?.arca_punto_venta || 1} condicionIvaEmisor={config?.arca_condicion_iva || 'RI'} preloadData={preloadData} />
         <ArcaConfigModal isOpen={isConfigModalOpen} onClose={() => setIsConfigModalOpen(false)} onSave={handleSaveConfig} initialConfig={config} />
+        <FacturaManualModal isOpen={isManualModalOpen} onClose={() => setIsManualModalOpen(false)} onSave={handleSaveManual} isSaving={isEmitting} clientes={clientes} />
       </div>
     </main>
   )

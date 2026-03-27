@@ -1,11 +1,11 @@
 'use client'
 // src/components/clientes/ClienteViewSelector.tsx
-// Agregado el tab "Ubicaciones" al switcher existente
-import { LayoutDashboard, UserCircle2, BarChart3, Users2, ShieldCheck, Bell, Map } from 'lucide-react'
+import { BarChart3, Users2, ShieldCheck, Bell, Map, UserCircle2, Route } from 'lucide-react'
+import Link from 'next/link'
 
-export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalAlertas = 0 }: any) {
+export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalAlertas = 0, selectedClienteId }: any) {
   return (
-    <div className="sticky top-0 z-[100] px-6 py-4 bg-[#020617]/80 backdrop-blur-2xl border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] font-sans italic">
+    <div className="sticky top-0 z-[100] px-6 py-4 bg-[#141c28]/80 backdrop-blur-2xl border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] font-sans italic">
       
       {/* BRANDING */}
       <div className="flex items-center gap-4">
@@ -30,13 +30,13 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
       </div>
 
       {/* SWITCHER DE VISTA */}
-      <div className="p-1.5 bg-slate-950/80 rounded-[1.5rem] border border-white/5 flex gap-1.5 shadow-inner overflow-x-auto no-scrollbar">
+      <div className="p-1.5 bg-[#141c28]/80 rounded-[1.5rem] border border-white/5 flex gap-1.5 shadow-inner overflow-x-auto no-scrollbar">
         {/* Visión Global */}
-        <button 
+        <button
           onClick={() => setViewMode('general')}
-          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
-            viewMode === 'general' 
-            ? 'bg-sky-600 text-white shadow-[0_0_20px_rgba(2,132,199,0.3)] scale-105 border border-sky-400/20' 
+          className={`cursor-pointer flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
+            viewMode === 'general'
+            ? 'bg-sky-600 text-white shadow-[0_0_20px_rgba(2,132,199,0.3)] scale-105 border border-sky-400/20'
             : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
           }`}
         >
@@ -45,14 +45,14 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
         </button>
 
         {/* Perfil Individual */}
-        <button 
+        <button
           onClick={() => hasSelected && setViewMode('individual')}
           disabled={!hasSelected}
           className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
-            viewMode === 'individual' 
-            ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-105 border border-emerald-400/20' 
-            : hasSelected 
-              ? 'text-slate-500 hover:text-slate-300 hover:bg-white/5' 
+            viewMode === 'individual'
+            ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-105 border border-emerald-400/20'
+            : hasSelected
+              ? 'cursor-pointer text-slate-500 hover:text-slate-300 hover:bg-white/5'
               : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
           }`}
         >
@@ -60,21 +60,37 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
           Perfil
         </button>
 
-        {/* ★ NUEVO: Ubicaciones */}
-        <button 
+        {/* Ubicaciones */}
+        <button
           onClick={() => hasSelected && setViewMode('ubicaciones')}
           disabled={!hasSelected}
           className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
-            viewMode === 'ubicaciones' 
-            ? 'bg-violet-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] scale-105 border border-violet-400/20' 
-            : hasSelected 
-              ? 'text-slate-500 hover:text-slate-300 hover:bg-white/5' 
+            viewMode === 'ubicaciones'
+            ? 'bg-violet-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] scale-105 border border-violet-400/20'
+            : hasSelected
+              ? 'cursor-pointer text-slate-500 hover:text-slate-300 hover:bg-white/5'
               : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
           }`}
         >
           <Map size={14} strokeWidth={2.5} />
           Ubicaciones
         </button>
+
+        {/* Cargar Viaje */}
+        {hasSelected && selectedClienteId ? (
+          <Link
+            href={`/viajes?cliente_id=${selectedClienteId}`}
+            className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-white hover:border-amber-400"
+          >
+            <Route size={14} strokeWidth={2.5} />
+            Cargar Viaje
+          </Link>
+        ) : (
+          <button disabled className="flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap opacity-20 grayscale cursor-not-allowed text-slate-700">
+            <Route size={14} strokeWidth={2.5} />
+            Cargar Viaje
+          </button>
+        )}
       </div>
 
       {/* CAMPANA + ACCESO SEGURO */}

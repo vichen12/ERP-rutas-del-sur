@@ -6,6 +6,7 @@ import { CajaResumenGeneral } from '@/components/caja/CajaResumenGeneral'
 import { CajaMovimientosTable } from '@/components/caja/CajaMovimientosTable'
 import { CajaModal } from '@/components/caja/CajaModal'
 import { CajaDolarPanel } from '@/components/caja/CajaDolarPanel'
+import { Landmark, FileCheck, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 
 export default function CajaBancoPage() {
   const supabase = getSupabase()
@@ -19,13 +20,16 @@ export default function CajaBancoPage() {
   const [loading, setLoading] = useState(true)
 
   // --- FILTROS ---
-  const [tipoCuenta, setTipoCuenta] = useState<'todas' | 'caja' | 'banco'>('todas')
+  const [tipoCuenta, setTipoCuenta] = useState<'todas' | 'caja' | 'banco'>('banco')
   const [dateStart, setDateStart] = useState(() => {
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]
   })
   const [dateEnd, setDateEnd] = useState(() => new Date().toISOString().split('T')[0])
   const [showAllTime, setShowAllTime] = useState(false)
+
+  // --- TABS ---
+  const [activeTab, setActiveTab] = useState<'movimientos' | 'cheques'>('movimientos')
 
   // --- MODAL ---
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -127,6 +131,13 @@ export default function CajaBancoPage() {
     }
   }, [movimientos, movimientosFiltrados, tipoCambioDolar])
 
+  // --- CHEQUES ---
+  const cheques = useMemo(() => {
+    return movimientos
+      .filter(m => m.categoria === 'cheque')
+      .sort((a, b) => b.fecha.localeCompare(a.fecha))
+  }, [movimientos])
+
   // --- GUARDAR MOVIMIENTO ---
   async function handleSaveMovimiento(data: any) {
     setIsSaving(true)
@@ -183,7 +194,7 @@ export default function CajaBancoPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20">
+    <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20">
       <div className="max-w-[1600px] mx-auto px-4 md:px-8 space-y-8">
 
         {/* HEADER PRINCIPAL */}
@@ -211,16 +222,83 @@ export default function CajaBancoPage() {
           totalEnDolarTotal={resumen.totalEnDolarTotal}
         />
 
-        {/* RESUMEN GENERAL (los 5 bloques del Excel) */}
+        {/* RESUMEN GENERAL */}
         <CajaResumenGeneral resumen={resumen} loading={loading} />
 
+        {/* TABS: MOVIMIENTOS / CHEQUES */}
+        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit font-sans italic">
+          <button onClick={() => setActiveTab('movimientos')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'movimientos' ? 'bg-sky-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+            <Landmark size={13} /> Movimientos
+          </button>
+          <button onClick={() => setActiveTab('cheques')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'cheques' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+            <FileCheck size={13} /> Cheques {cheques.length > 0 && <span className="ml-1 px-2 py-0.5 rounded-lg text-[8px] tabular-nums bg-white/20">{cheques.length}</span>}
+          </button>
+        </div>
+
         {/* TABLA DE MOVIMIENTOS */}
-        <CajaMovimientosTable
-          movimientos={movimientosFiltrados}
-          loading={loading}
-          onEdit={(m) => { setEditingMovimiento(m); setIsModalOpen(true) }}
-          onDelete={handleDeleteMovimiento}
-        />
+        {activeTab === 'movimientos' && (
+          <CajaMovimientosTable
+            movimientos={movimientosFiltrados}
+            loading={loading}
+            onEdit={(m) => { setEditingMovimiento(m); setIsModalOpen(true) }}
+            onDelete={handleDeleteMovimiento}
+          />
+        )}
+
+        {/* TABLA DE CHEQUES */}
+        {activeTab === 'cheques' && (
+          <div className="space-y-4 font-sans italic">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] px-2">
+                Registro de Cheques ({cheques.length})
+              </h2>
+              <button
+                onClick={() => { setEditingMovimiento(null); setIsModalOpen(true) }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase text-[9px] tracking-widest transition-all active:scale-95"
+              >
+                + Nuevo Cheque
+              </button>
+            </div>
+            {cheques.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-white/5 rounded-[2rem]">
+                <FileCheck size={40} className="text-slate-700 mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">No hay cheques registrados</p>
+                <p className="text-[9px] text-slate-700 mt-1">Registrá un movimiento con categoría &quot;Cheque Emitido&quot; o &quot;Cobro con Cheque&quot;</p>
+              </div>
+            ) : (
+              <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2rem] overflow-hidden">
+                <div className="grid grid-cols-5 px-6 py-3 border-b border-white/5">
+                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Fecha</p>
+                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Tipo</p>
+                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest col-span-2">Beneficiario / Descripción</p>
+                  <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest text-right">Monto</p>
+                </div>
+                <div className="divide-y divide-white/5">
+                  {cheques.map((c) => (
+                    <div key={c.id} className="grid grid-cols-5 px-6 py-4 hover:bg-white/[0.02] transition-colors group">
+                      <div>
+                        <p className="text-xs font-black text-white">{new Date(c.fecha + 'T12:00:00').toLocaleDateString('es-AR')}</p>
+                        {c.referencia && <p className="text-[9px] text-indigo-400 font-bold mt-0.5">Nro: {c.referencia}</p>}
+                      </div>
+                      <div className="flex items-center">
+                        <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[8px] font-black uppercase ${c.tipo === 'ingreso' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                          {c.tipo === 'ingreso' ? <ArrowUpRight size={10} /> : <ArrowDownLeft size={10} />}
+                          {c.tipo === 'ingreso' ? 'Cobro' : 'Pago'}
+                        </span>
+                      </div>
+                      <p className="text-sm font-black text-white col-span-2 truncate pr-4">{c.descripcion || '—'}</p>
+                      <p className={`text-sm font-black tabular-nums text-right ${c.tipo === 'ingreso' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {c.tipo === 'egreso' ? '-' : '+'}$ {Number(c.monto).toLocaleString('es-AR')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* MODAL NUEVO/EDITAR MOVIMIENTO */}
         <CajaModal

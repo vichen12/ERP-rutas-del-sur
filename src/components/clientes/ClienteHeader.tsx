@@ -9,7 +9,7 @@ export function ClienteHeader({ selected, onBackup, onDelete, onEdit, onNuevaOp,
   const destinoFinal = selected.ruta_destino || 'SIN DESTINO DEFINIDO'
 
   return (
-    <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-[#020617]/60 backdrop-blur-2xl p-8 lg:p-12 rounded-[3rem] border border-white/5 gap-8 relative overflow-hidden group italic shadow-2xl font-sans">
+    <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-[#141c28]/60 backdrop-blur-2xl p-8 lg:p-12 rounded-[3rem] border border-white/5 gap-8 relative overflow-hidden group italic shadow-2xl font-sans">
       
       {/* Decoración de fondo */}
       <div className="absolute -right-20 -top-20 w-80 h-80 bg-sky-500/5 blur-[120px] rounded-full group-hover:bg-sky-500/10 transition-all duration-1000 pointer-events-none" />

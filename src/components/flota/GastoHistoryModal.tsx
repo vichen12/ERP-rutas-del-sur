@@ -33,8 +33,8 @@ export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRe
   const totalFiltrado = filteredGastos.reduce((acc: number, curr: any) => acc + Number(curr.monto), 0)
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#020617]/95 backdrop-blur-md animate-in fade-in duration-300 font-sans italic">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col max-h-[85vh] relative overflow-hidden">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in duration-300 font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col max-h-[85vh] relative overflow-hidden">
         
         {/* Indicador de Línea Superior */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-cyan-500 to-sky-500" />
@@ -59,7 +59,7 @@ export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRe
         </div>
 
         {/* --- FILTROS DE RANGO --- */}
-        <div className="p-6 md:p-8 border-b border-white/5 bg-slate-900/20 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-6 md:p-8 border-b border-white/5 bg-[#1a2537]/20 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-[9px] font-black text-slate-500 uppercase ml-4 tracking-widest">Desde</label>
             <div className="relative group">
@@ -68,7 +68,7 @@ export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRe
                 type="date" 
                 value={fromDate} 
                 onChange={e => setFromDate(e.target.value)} 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs text-white font-bold outline-none focus:border-sky-500/50 [color-scheme:dark] transition-all" 
+                className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs text-white font-bold outline-none focus:border-sky-500/50 [color-scheme:dark] transition-all" 
               />
             </div>
           </div>
@@ -80,7 +80,7 @@ export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRe
                 type="date" 
                 value={toDate} 
                 onChange={e => setToDate(e.target.value)} 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs text-white font-bold outline-none focus:border-sky-500/50 [color-scheme:dark] transition-all" 
+                className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-xs text-white font-bold outline-none focus:border-sky-500/50 [color-scheme:dark] transition-all" 
               />
             </div>
           </div>
@@ -92,7 +92,7 @@ export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRe
             filteredGastos.map((g: any) => (
               <div key={g.id} className="flex justify-between items-center p-5 bg-white/[0.02] rounded-[2rem] border border-white/5 group hover:bg-white/[0.04] hover:border-white/10 transition-all">
                 <div className="flex gap-5 items-center">
-                  <div className="p-3 bg-slate-900 rounded-2xl text-slate-600 group-hover:text-sky-500 transition-colors border border-white/5">
+                  <div className="p-3 bg-[#1a2537] rounded-2xl text-slate-600 group-hover:text-sky-500 transition-colors border border-white/5">
                     <FileText size={20} />
                   </div>
                   <div>

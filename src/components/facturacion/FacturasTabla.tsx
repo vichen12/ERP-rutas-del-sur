@@ -1,6 +1,9 @@
 'use client'
 import { FileText, Loader2 } from 'lucide-react'
 
+// tipo_comprobante puede ser número (1/6/11) o letra ('A'/'B'/'C') según el origen
+const TIPO_MAP: Record<number, string> = { 1: 'A', 6: 'B', 11: 'C' }
+
 const TC: Record<string, string> = {
   A: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
   B: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
@@ -10,6 +13,7 @@ const TC: Record<string, string> = {
 function ec(e: string) {
   if (e === 'emitida') return 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
   if (e === 'error') return 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+  if (e === 'manual') return 'text-amber-400 border-amber-500/20 bg-amber-500/10'
   return 'bg-slate-500/10 border-slate-500/20 text-slate-400'
 }
 
@@ -21,7 +25,7 @@ export function FacturasTabla({ facturas, loading }: any) {
         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Historial</p>
         <span className="text-[9px] font-black text-slate-600 uppercase bg-white/5 px-3 py-1 rounded-lg border border-white/5">{facturas.length} registros</span>
       </div>
-      <div className="bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
+      <div className="bg-[#1a2537]/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl">
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left min-w-[900px]">
             <thead className="bg-white/[0.02] text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] border-b border-white/5">
@@ -30,7 +34,7 @@ export function FacturasTabla({ facturas, loading }: any) {
             <tbody className="divide-y divide-white/[0.03]">
               {facturas.length === 0 && <tr><td colSpan={8} className="py-20 text-center"><div className="flex flex-col items-center gap-3 opacity-30"><FileText size={40} className="text-slate-600" /><p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Sin facturas</p></div></td></tr>}
               {facturas.map((f: any) => {
-                const l = f.tipo_comprobante || 'B'
+                const l = TIPO_MAP[Number(f.tipo_comprobante)] || String(f.tipo_comprobante) || 'B'
                 return (
                   <tr key={f.id} className="hover:bg-white/[0.02] transition-all">
                     <td className="p-6 pl-8 text-sm font-bold text-slate-400">{new Date(f.fecha_comprobante+'T00:00:00').toLocaleDateString('es-AR')}</td>

@@ -126,8 +126,8 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* CONTROLADOR DE VISTAS (TODO VS FILTRO)                         */}
       {/* ══════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/30 p-2 rounded-3xl border border-white/5 backdrop-blur-md">
-        <div className="flex w-full sm:w-auto bg-black/40 p-1 rounded-2xl border border-white/5">
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#1a2537]/30 p-2 rounded-3xl border border-white/5 backdrop-blur-md">
+        <div className="flex w-full sm:w-auto bg-[#141c28]/40 p-1 rounded-2xl border border-white/5">
           <button 
             onClick={() => {
               setModoVista('todo')
@@ -154,7 +154,7 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
         {/* Muestra los calendarios SOLO si apretó el botón de Filtrar */}
         {modoVista === 'filtro' && (
           <div className="flex items-center gap-3 w-full sm:w-auto animate-in slide-in-from-left-4 fade-in duration-300">
-            <div className="flex items-center gap-2 bg-black/40 px-4 py-2 rounded-2xl border border-emerald-500/20 w-full sm:w-auto">
+            <div className="flex items-center gap-2 bg-[#141c28]/40 px-4 py-2 rounded-2xl border border-emerald-500/20 w-full sm:w-auto">
               <div className="flex flex-col">
                 <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">Desde</span>
                 <input 
@@ -193,7 +193,7 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* --- LISTA DE INGRESOS --- */}
-            <div className="bg-slate-900/30 border border-white/5 rounded-[2rem] p-8 shadow-xl">
+            <div className="bg-[#1a2537]/30 border border-white/5 rounded-[2rem] p-8 shadow-xl">
               <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] flex items-center gap-2 mb-6">
                 <ArrowUpRight size={16} /> Origen de los Ingresos
               </h3>
@@ -216,7 +216,7 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
                             <span className="text-[10px] font-bold text-slate-500 ml-2">{porcentaje}%</span>
                           </div>
                         </div>
-                        <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-[#141c28]/40 h-2 rounded-full overflow-hidden">
                           <div className={`h-full ${barColor} rounded-full`} style={{ width: `${porcentaje}%` }} />
                         </div>
                       </div>
@@ -227,7 +227,7 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
             </div>
 
             {/* --- LISTA DE EGRESOS --- */}
-            <div className="bg-slate-900/30 border border-white/5 rounded-[2rem] p-8 shadow-xl">
+            <div className="bg-[#1a2537]/30 border border-white/5 rounded-[2rem] p-8 shadow-xl">
               <h3 className="text-[10px] font-black text-rose-400 uppercase tracking-[0.3em] flex items-center gap-2 mb-6">
                 <ArrowDownLeft size={16} /> Destino de los Egresos
               </h3>
@@ -250,7 +250,7 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
                             <span className="text-[10px] font-bold text-slate-500 ml-2">{porcentaje}%</span>
                           </div>
                         </div>
-                        <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-[#141c28]/40 h-2 rounded-full overflow-hidden">
                           <div className={`h-full ${barColor} rounded-full`} style={{ width: `${porcentaje}%` }} />
                         </div>
                       </div>
@@ -280,7 +280,7 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
           </span>
         </div>
 
-        <div className="bg-slate-900/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
+        <div className="bg-[#1a2537]/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
 
           {/* --- VISTA MOBILE --- */}
           <div className="md:hidden divide-y divide-white/5">

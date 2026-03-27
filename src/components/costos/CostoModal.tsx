@@ -56,8 +56,8 @@ export function CostoModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 font-sans italic">
-      <div className="bg-[#020617] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
 
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-orange-500" />
 
@@ -80,7 +80,7 @@ export function CostoModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
             <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Nombre del Costo</label>
             <input required placeholder="EJ: FRENOS CAMIÓN / ALQUILER / SERVICIO GPS"
               value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm uppercase outline-none focus:border-orange-500 transition-all placeholder:text-slate-700" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm uppercase outline-none focus:border-orange-500 transition-all placeholder:text-slate-700" />
           </div>
 
           {/* MONTO */}
@@ -90,7 +90,7 @@ export function CostoModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
               <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={16} />
               <input required type="number" step="0.01" min="0" placeholder="0.00"
                 value={form.monto} onChange={e => setForm(p => ({ ...p, monto: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 pl-12 pr-5 text-white font-black text-xl tabular-nums outline-none focus:border-orange-500 transition-all" />
+                className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 pl-12 pr-5 text-white font-black text-xl tabular-nums outline-none focus:border-orange-500 transition-all" />
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export function CostoModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
             <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest flex items-center gap-1.5">
               <RefreshCw size={10} /> ¿Es recurrente?
             </label>
-            <div className="flex bg-slate-900 border border-white/5 p-1 rounded-xl">
+            <div className="flex bg-[#1a2537] border border-white/5 p-1 rounded-xl">
               <button type="button" onClick={() => setForm(p => ({ ...p, recurrente: false }))}
                 className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
                   !form.recurrente ? 'bg-slate-700 text-white' : 'text-slate-600 hover:text-white'
@@ -139,7 +139,7 @@ export function CostoModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
               <div className="space-y-1.5">
                 <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Próximo Vencimiento</label>
                 <input type="date" value={form.proximo_pago} onChange={e => setForm(p => ({ ...p, proximo_pago: e.target.value }))}
-                  className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm outline-none focus:border-orange-500 transition-all [color-scheme:dark]" />
+                  className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm outline-none focus:border-orange-500 transition-all [color-scheme:dark]" />
               </div>
             </>
           )}
@@ -149,7 +149,7 @@ export function CostoModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
             <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Notas <span className="text-slate-700">(Opcional)</span></label>
             <input placeholder="EJ: FACTURA A-0001-00234 / PROVEEDOR TAL"
               value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-bold text-sm uppercase outline-none focus:border-orange-500 transition-all placeholder:text-slate-700" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-bold text-sm uppercase outline-none focus:border-orange-500 transition-all placeholder:text-slate-700" />
           </div>
 
           {/* SUBMIT */}

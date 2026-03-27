@@ -60,7 +60,7 @@ export default function TareasPage() {
   )
   const cumplidas = useMemo(() =>
     tareas.filter(t => t.completada)
-      .sort((a, b) => (b.fecha_completada || '').localeCompare(a.fecha_completada || '')),
+      .sort((a, b) => (b.fecha_vencimiento || '').localeCompare(a.fecha_vencimiento || '')),
     [tareas]
   )
 
@@ -82,10 +82,11 @@ export default function TareasPage() {
       if (descontarCaja && tarea.afecta_caja && tarea.monto) {
         await supabase.from('movimientos_caja').insert([{
           tipo: 'egreso',
+          tipo_cuenta: 'banco',
+          categoria: 'costo_fijo',
           monto: Number(tarea.monto),
           descripcion: `TAREA: ${tarea.titulo}`,
-          fecha: new Date().toISOString(),
-          tipo_gasto: 'tarea',
+          fecha: new Date().toISOString().split('T')[0],
         }])
       }
 
@@ -141,7 +142,7 @@ export default function TareasPage() {
         fecha_inicio: data.fecha_inicio || data.fecha_vencimiento,
         fecha_vencimiento: data.fecha_vencimiento,
         es_recurrente: data.es_recurrente || false,
-        periodo_recurrencia: data.es_recurrente ? data.periodo_recurrencia : null,
+        periodo_recurrencia: data.es_recurrente ? data.periodo_recurrencia : 'mensual',
         afecta_caja: data.afecta_caja || false,
         monto: data.afecta_caja ? Number(data.monto) || null : null,
         categoria: data.categoria || 'operativa',
@@ -184,7 +185,7 @@ export default function TareasPage() {
   const tareasActivas = activeTab === 'por_cumplir' ? porCumplir : activeTab === 'atrasadas' ? atrasadas : cumplidas
 
   return (
-    <main className="min-h-screen bg-[#020617] pt-16 md:pt-20 lg:pt-24 pb-10 md:pb-20 font-sans italic">
+    <main className="min-h-screen bg-[#141c28] pt-16 md:pt-20 lg:pt-24 pb-10 md:pb-20 font-sans italic">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 space-y-8">
 
         {/* ═══ HEADER ═══ */}
@@ -200,7 +201,7 @@ export default function TareasPage() {
         </div>
 
         {/* ═══ TABS ═══ */}
-        <div className="flex bg-slate-900 p-1.5 rounded-3xl border border-white/5 w-fit">
+        <div className="flex bg-[#1a2537] p-1.5 rounded-3xl border border-white/5 w-fit">
           {tabs.map(t => (
             <button
               key={t.value}

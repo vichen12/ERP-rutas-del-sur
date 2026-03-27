@@ -1,21 +1,22 @@
 @import "tailwindcss";
-/* 1. Quitamos los colores fijos para que el tema sea fluido */
+/* 1. Variables globales de paleta */
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --bg-base: #141c28;
+  --bg-card: #1a2537;
+  --bg-elevated: #1e2d40;
+  --border-subtle: rgba(255,255,255,0.08);
+  --foreground: #e2e8f0;
+  --background: #141c28;
 }
 
-/* 2. Definimos qué pasa cuando la clase .dark está activa */
-.dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-}
-
-/* 3. Aplicamos los colores al body de forma global */
+/* 2. Aplicamos los colores al body de forma global */
 body {
   color: var(--foreground);
   background: var(--background);
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Configuración de la Scrollbar Pro para Rutas del Sur */
@@ -41,4 +42,79 @@ body {
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(14, 165, 233, 0.2) transparent;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LIGHT THEME OVERRIDES
+   Se activan cuando <html> tiene la clase "light"
+══════════════════════════════════════════════════════════ */
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #c8cfd8;
+  color: #1a2535;
+}
+
+/* ── Fondos principales ── */
+html.light .bg-\[\#141c28\]    { background-color: #c8cfd8 !important; }
+html.light .bg-\[\#141c28\]\/20 { background-color: rgb(200 207 216/.20) !important; }
+html.light .bg-\[\#141c28\]\/30 { background-color: rgb(200 207 216/.30) !important; }
+html.light .bg-\[\#141c28\]\/40 { background-color: rgb(200 207 216/.40) !important; }
+html.light .bg-\[\#141c28\]\/50 { background-color: rgb(200 207 216/.50) !important; }
+html.light .bg-\[\#141c28\]\/60 { background-color: rgb(200 207 216/.60) !important; }
+html.light .bg-\[\#141c28\]\/70 { background-color: rgb(200 207 216/.70) !important; }
+html.light .bg-\[\#141c28\]\/75 { background-color: rgb(200 207 216/.75) !important; }
+html.light .bg-\[\#141c28\]\/80 { background-color: rgb(200 207 216/.80) !important; }
+html.light .bg-\[\#141c28\]\/90 { background-color: rgb(200 207 216/.90) !important; }
+html.light .bg-\[\#141c28\]\/95 { background-color: rgb(200 207 216/.95) !important; }
+html.light .bg-\[\#141c28\]\/98 { background-color: rgb(200 207 216/.98) !important; }
+
+/* ── Fondos de tarjetas ── */
+html.light .bg-\[\#1a2537\]    { background-color: #d8dfe8 !important; box-shadow: 0 1px 4px 0 rgb(0 0 0/.10); }
+html.light .bg-\[\#1a2537\]\/10 { background-color: rgb(216 223 232/.10) !important; }
+html.light .bg-\[\#1a2537\]\/20 { background-color: rgb(216 223 232/.20) !important; }
+html.light .bg-\[\#1a2537\]\/30 { background-color: rgb(216 223 232/.30) !important; }
+html.light .bg-\[\#1a2537\]\/40 { background-color: rgb(216 223 232/.40) !important; }
+html.light .bg-\[\#1a2537\]\/50 { background-color: rgb(216 223 232/.50) !important; }
+html.light .bg-\[\#1a2537\]\/60 { background-color: rgb(216 223 232/.60) !important; }
+html.light .bg-\[\#1a2537\]\/80 { background-color: rgb(216 223 232/.80) !important; }
+html.light .bg-\[\#1a2537\]\/95 { background-color: rgb(216 223 232/.95) !important; }
+
+/* ── Fondos elevados ── */
+html.light .bg-\[\#243248\]    { background-color: #bcc4ce !important; }
+html.light .bg-\[\#243248\]\/40 { background-color: rgb(188 196 206/.40) !important; }
+
+/* ── Textos oscuros (blancos en dark → legibles en light) ── */
+html.light .text-slate-100 { color: #1e293b !important; }
+html.light .text-slate-200 { color: #334155 !important; }
+html.light .text-white     { color: #1e293b !important; }
+html.light .text-slate-300 { color: #475569 !important; }
+
+/* ── Bordes ── */
+html.light .border-slate-700\/50 { border-color: rgb(0 0 0/.12) !important; }
+html.light .border-slate-700\/40 { border-color: rgb(0 0 0/.10) !important; }
+html.light .border-slate-700\/30 { border-color: rgb(0 0 0/.08) !important; }
+html.light .border-slate-700\/25 { border-color: rgb(0 0 0/.07) !important; }
+html.light .border-white\/5  { border-color: rgb(0 0 0/.07) !important; }
+html.light .border-white\/10 { border-color: rgb(0 0 0/.10) !important; }
+
+/* ── Navbar en light ── */
+html.light nav {
+  background-color: rgb(255 255 255/.92) !important;
+  border-bottom-color: rgb(0 0 0/.08) !important;
+}
+html.light nav .text-slate-500 { color: #64748b !important; }
+
+/* ── Hover de nav items ── */
+html.light .hover\:text-white:hover { color: #0f172a !important; }
+html.light .hover\:bg-white\/5:hover { background-color: rgb(0 0 0/.05) !important; }
+html.light .hover\:bg-white\/10:hover { background-color: rgb(0 0 0/.07) !important; }
+
+/* ── Transición suave al cambiar tema ── */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
 }

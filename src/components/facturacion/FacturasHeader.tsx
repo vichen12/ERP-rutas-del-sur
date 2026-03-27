@@ -45,7 +45,7 @@ export function FacturasHeader({ arcaConfigurado, entorno, dateStart, setDateSta
           </div>
         </div>
 
-        <div className="flex items-center gap-4 bg-slate-950/40 px-6 py-3 rounded-[2rem] border border-white/5 w-fit">
+        <div className="flex items-center gap-4 bg-[#141c28]/40 px-6 py-3 rounded-[2rem] border border-white/5 w-fit">
           <Calendar size={16} className="text-sky-500" />
           <div className="flex flex-col">
             <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Desde</span>

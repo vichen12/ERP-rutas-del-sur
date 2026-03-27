@@ -32,7 +32,7 @@ export function TareasList({ tareas, tipo, onCompletar, onEdit, onDelete }: Prop
   }
 
   return (
-    <div className="bg-slate-900/30 rounded-[2rem] border border-white/5 overflow-hidden">
+    <div className="bg-[#1a2537]/30 rounded-[2rem] border border-white/5 overflow-hidden">
       <div className="divide-y divide-white/[0.04]">
         {tareas.map(tarea => {
           const diff = Math.ceil(

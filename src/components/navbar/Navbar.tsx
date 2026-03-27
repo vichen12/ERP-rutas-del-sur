@@ -2,18 +2,21 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  Truck, Users, LayoutDashboard, LogOut, 
-  Settings, Bell, UserCircle, MapPin, 
+import {
+  Truck, Users, LayoutDashboard, LogOut,
+  Settings, Bell, UserCircle, MapPin,
   AlertTriangle, CheckCircle2, X,
   FileText, Wrench, Menu, ShieldCheck,
-  Landmark,ClipboardList,DollarSign,Fuel  // ← NUEVO
+  Landmark, ClipboardList, DollarSign, Fuel,
+  Sun, Moon, Package
 } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
+import { useTheme } from '@/components/ThemeProvider'
 
 export function Navbar() {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const { theme, toggle } = useTheme()
   const [showNotifications, setShowNotifications] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [alerts, setAlerts] = useState<any[]>([])
@@ -109,14 +112,13 @@ export function Navbar() {
     { label: 'Flota',     href: '/camiones',   icon: Truck },
     { label: 'Choferes',  href: '/choferes',   icon: UserCircle },
     { label: 'Viajes',    href: '/viajes',     icon: MapPin },
-     { label: 'Caja',      href: '/banco', icon: Landmark },
+     { label: 'Banco',     href: '/banco', icon: Landmark },
      { label: 'Combustible', href: '/combustible', icon: Fuel },
      { label: 'Costos', href: '/costos-multas', icon: DollarSign }, 
      { label: 'Tareas', href: '/tareas', icon: ClipboardList },
     { label: 'Remitos',   href: '/remitos',    icon: FileText },
-    { label: 'Facturas', href: '/facturacion', icon: FileText }, 
-    
-    // ← NUEVO
+    { label: 'Facturas', href: '/facturacion', icon: FileText },
+    { label: 'Depósito', href: '/deposito', icon: Package },
   ]
 
   const handleLogout = async () => {
@@ -126,7 +128,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#020617]/90 backdrop-blur-xl h-16 md:h-20 font-sans italic">
+      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#141c28]/90 backdrop-blur-xl h-16 md:h-20 font-sans italic">
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
           
           {/* LOGO AREA */}
@@ -164,14 +166,14 @@ export function Navbar() {
               >
                 <Bell size={18} className={alerts.length > 0 ? 'animate-pulse' : ''} />
                 {alerts.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-rose-500 text-white text-[9px] md:text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#020617]">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-rose-500 text-white text-[9px] md:text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#0a0a0f]">
                     {alerts.length}
                   </span>
                 )}
               </button>
 
               {showNotifications && (
-                <div className="absolute right-[-60px] md:right-0 mt-4 w-[85vw] max-w-[320px] md:w-80 bg-[#020617] border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right z-50 font-sans italic">
+                <div className="absolute right-[-60px] md:right-0 mt-4 w-[85vw] max-w-[320px] md:w-80 bg-[#141c28] border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right z-50 font-sans italic">
                   <div className="p-5 border-b border-white/5 bg-white/5 flex justify-between items-center">
                     <h3 className="text-xs font-black uppercase tracking-widest text-white">Alertas Operativas</h3>
                     <button onClick={() => setShowNotifications(false)} className="p-1 rounded-full hover:bg-white/10 text-slate-500 transition-colors"><X size={16}/></button>
@@ -203,6 +205,15 @@ export function Navbar() {
               )}
             </div>
 
+            {/* THEME TOGGLE */}
+            <button
+              onClick={toggle}
+              className="p-2.5 md:p-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+              title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             {/* HAMBURGER (LG- only) */}
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2.5 md:p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all active:scale-95">
               <Menu size={20} />
@@ -218,11 +229,11 @@ export function Navbar() {
 
       {/* MOBILE MENU DRAWER */}
       <div className={`fixed inset-0 z-[200] lg:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="absolute inset-0 bg-[#141c28]/80 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsMobileMenuOpen(false)} />
         
-        <div className={`absolute right-0 top-0 bottom-0 w-[85vw] max-w-[300px] bg-[#020617] border-l border-white/10 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`absolute right-0 top-0 bottom-0 w-[85vw] max-w-[300px] bg-[#141c28] border-l border-white/10 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           
-          <div className="p-6 md:p-8 flex justify-between items-center border-b border-white/5 bg-slate-900/50">
+          <div className="p-6 md:p-8 flex justify-between items-center border-b border-white/5 bg-[#1a2537]/50">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
                <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"/> Menú Táctico
             </span>
@@ -248,7 +259,7 @@ export function Navbar() {
             })}
           </div>
 
-          <div className="p-6 md:p-8 border-t border-white/5 space-y-4 font-sans italic bg-slate-900/30 text-center">
+          <div className="p-6 md:p-8 border-t border-white/5 space-y-4 font-sans italic bg-[#1a2537]/30 text-center">
             <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[10px] tracking-widest active:scale-95">
               <LogOut size={16} /> Salir del Sistema
             </button>

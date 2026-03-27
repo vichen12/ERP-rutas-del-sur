@@ -18,8 +18,8 @@ export function GastoModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 backdrop-blur-md bg-black/80 animate-in fade-in duration-300 font-sans italic">
-      <div className="bg-[#020617] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative overflow-hidden">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 backdrop-blur-md bg-[#141c28]/80 animate-in fade-in duration-300 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative overflow-hidden">
         {/* Glow Decorativo de fondo */}
         <div className="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
@@ -52,13 +52,13 @@ export function GastoModal({
               Detalle de la reparación / compra
             </label>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-slate-900 rounded-lg text-slate-500 group-focus-within:text-emerald-500 transition-colors">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-[#1a2537] rounded-lg text-slate-500 group-focus-within:text-emerald-500 transition-colors">
                 <FileText size={16} />
               </div>
               <input
                 required
                 placeholder="EJ: CAMBIO DE ACEITE Y FILTROS"
-                className="w-full bg-slate-950 border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-xs text-white font-black outline-none focus:border-emerald-500/50 transition-all uppercase placeholder:text-slate-800"
+                className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-xs text-white font-black outline-none focus:border-emerald-500/50 transition-all uppercase placeholder:text-slate-800"
                 value={formData.descripcion || ""}
                 onChange={(e) =>
                   setFormData({
@@ -77,14 +77,14 @@ export function GastoModal({
                 Importe ($)
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-slate-900 rounded-lg text-emerald-500">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-[#1a2537] rounded-lg text-emerald-500">
                   <DollarSign size={16} />
                 </div>
                 <input
                   required
                   type="number"
                   placeholder="0.00"
-                  className="w-full bg-slate-950 border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-sm text-white font-black outline-none focus:border-emerald-500/50 transition-all tabular-nums"
+                  className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-sm text-white font-black outline-none focus:border-emerald-500/50 transition-all tabular-nums"
                   value={formData.monto || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, monto: e.target.value })
@@ -98,13 +98,13 @@ export function GastoModal({
                 Fecha
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-slate-900 rounded-lg text-white/50 group-focus-within:text-white transition-colors pointer-events-none">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 p-1.5 bg-[#1a2537] rounded-lg text-white/50 group-focus-within:text-white transition-colors pointer-events-none">
                   <Calendar size={16} />
                 </div>
                 <input
                   required
                   type="date"
-                  className="w-full bg-slate-950 border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-xs text-white font-black outline-none focus:border-emerald-500/50 transition-all [color-scheme:dark]"
+                  className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-5 pl-14 pr-4 text-xs text-white font-black outline-none focus:border-emerald-500/50 transition-all [color-scheme:dark]"
                   value={formData.fecha || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, fecha: e.target.value })

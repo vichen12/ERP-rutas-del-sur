@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
 // 🚀 Agregamos onDeleteMovimiento a los props
-export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasPendientes = [], onRefresh, onDeleteMovimiento }: any) {
+export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasPendientes = [], todoMovimientos = [], onRefresh, onDeleteMovimiento }: any) {
   if (!isOpen || !chofer) return null
 
   // --- MOTORES DE FILTRO DE TIEMPO ---
@@ -18,6 +18,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
   // Estados para el pago
   const [isPaging, setIsPaging] = useState(false)
   const [montoPago, setMontoPago] = useState<string>('')
+  const [medioPago, setMedioPago] = useState<'caja' | 'banco'>('caja')
 
   const filterByDate = (fechaStr: string) => {
     if (!fechaStr) return false;
@@ -37,10 +38,11 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
     return viajes.filter((v: any) => v.chofer_id === chofer.id && filterByDate(v.fecha));
   }, [viajes, chofer, filterMode, dateStart, dateEnd]);
 
-  // 🚀 Filtramos también los movimientos de cuenta corriente por fecha para mostrarlos
+  // Filtramos el historial completo (pagado y no pagado) por fecha para el historial
   const movimientosFiltrados = useMemo(() => {
-    return deudasPendientes.filter((d: any) => filterByDate(d.fecha)).sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-  }, [deudasPendientes, filterMode, dateStart, dateEnd]);
+    const base = todoMovimientos.length > 0 ? todoMovimientos : deudasPendientes
+    return base.filter((d: any) => filterByDate(d.fecha)).sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+  }, [todoMovimientos, deudasPendientes, filterMode, dateStart, dateEnd]);
 
   const stats = useMemo(() => {
     let totalKm = 0; let totalLts = 0; let totalPlata = 0;
@@ -65,7 +67,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
     const monto = Number(montoPago);
     if (monto <= 0) return toast.error("Ingresá un monto válido mayor a 0");
     
-    if (!confirm(`¿Confirmás la entrega de $${monto.toLocaleString('es-AR')} a ${chofer.nombre}?\n\nEl dinero saldrá de la caja automáticamente.`)) return;
+    if (!confirm(`¿Confirmás la entrega de $${monto.toLocaleString('es-AR')} a ${chofer.nombre}?\n\nSaldrá de: ${medioPago === 'caja' ? 'Caja (efectivo)' : 'Banco (transferencia)'}`)) return;
 
     setIsPaging(true)
     try {
@@ -73,7 +75,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
       const { error: errCaja } = await supabase.from('movimientos_caja').insert([{
         fecha: new Date().toISOString().split('T')[0], 
         tipo: 'egreso', 
-        tipo_cuenta: 'caja', 
+        tipo_cuenta: medioPago,
         categoria: 'pago_chofer',
         monto: monto, 
         descripcion: monto === deudaTotal 
@@ -115,13 +117,13 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-6xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh]">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans overflow-hidden">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-6xl rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh]">
         
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
 
         {/* --- HEADER (FIJO ARRIBA) --- */}
-        <div className="shrink-0 p-6 md:p-8 border-b border-white/5 relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-slate-900/20">
+        <div className="shrink-0 p-6 md:p-8 border-b border-white/5 relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-[#1a2537]/20">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
@@ -137,7 +139,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
               <X size={20} />
             </button>
             
-            <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto bg-slate-950/50 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto bg-[#141c28]/50 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
               <div className="flex gap-2">
                 <FilterBtn active={filterMode === 'mes'} onClick={() => setFilterMode('mes')} label="Este Mes" />
                 <FilterBtn active={filterMode === 'año'} onClick={() => setFilterMode('año')} label="Este Año" />
@@ -146,9 +148,9 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
               </div>
               {filterMode === 'custom' && (
                 <div className="flex items-center gap-2 px-2 animate-in slide-in-from-left-4">
-                  <input type="date" value={dateStart} onChange={(e) => setDateStart(e.target.value)} className="bg-black/50 text-[10px] font-black text-indigo-400 uppercase outline-none px-4 py-2 rounded-xl border border-indigo-500/20 [color-scheme:dark]" />
+                  <input type="date" value={dateStart} onChange={(e) => setDateStart(e.target.value)} className="bg-[#141c28]/50 text-[10px] font-black text-indigo-400 uppercase outline-none px-4 py-2 rounded-xl border border-indigo-500/20 [color-scheme:dark]" />
                   <span className="text-slate-600 text-xs font-black">/</span>
-                  <input type="date" value={dateEnd} onChange={(e) => setDateEnd(e.target.value)} className="bg-black/50 text-[10px] font-black text-indigo-400 uppercase outline-none px-4 py-2 rounded-xl border border-indigo-500/20 [color-scheme:dark]" />
+                  <input type="date" value={dateEnd} onChange={(e) => setDateEnd(e.target.value)} className="bg-[#141c28]/50 text-[10px] font-black text-indigo-400 uppercase outline-none px-4 py-2 rounded-xl border border-indigo-500/20 [color-scheme:dark]" />
                 </div>
               )}
             </div>
@@ -159,7 +161,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
           
           {/* ZONA DE LIQUIDACIÓN */}
-          <div className="p-6 md:p-8 border-b border-white/5 bg-gradient-to-r from-indigo-900/10 via-slate-900/10 to-[#020617] flex flex-col lg:flex-row items-center gap-8 shrink-0">
+          <div className="p-6 md:p-8 border-b border-white/5 bg-gradient-to-r from-indigo-900/10 via-slate-900/10 to-[#0a0a0f] flex flex-col lg:flex-row items-center gap-8 shrink-0">
             <div className="flex-1 w-full space-y-2">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Estado de Cuenta Operativo</p>
               <div className="flex items-end gap-4">
@@ -173,17 +175,23 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
             </div>
 
             {/* Formulario de Transferencia / Pago */}
-            <div className="w-full lg:w-[480px] bg-slate-950/80 p-6 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden shrink-0">
+            <div className="w-full lg:w-[480px] bg-[#141c28]/80 p-6 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden shrink-0">
               <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${saldoEsNegativo ? 'from-emerald-500 to-teal-400' : 'from-indigo-500 to-rose-500'}`} />
               
               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">
                 {saldoEsNegativo ? 'Registrar Nuevo Adelanto' : 'Registrar Entrega / Pago'}
               </p>
               
-              <div className="flex items-center bg-black/50 rounded-[1.5rem] border border-white/5 p-2 focus-within:border-indigo-500/50 focus-within:bg-black/80 transition-all mb-4">
+              {/* Selector medio de pago */}
+              <div className="flex gap-2 mb-3">
+                <button onClick={() => setMedioPago('caja')} className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${medioPago === 'caja' ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400' : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'}`}>Caja (efectivo)</button>
+                <button onClick={() => setMedioPago('banco')} className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${medioPago === 'banco' ? 'bg-sky-500/20 border-sky-500/40 text-sky-400' : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'}`}>Banco (transferencia)</button>
+              </div>
+
+              <div className="flex items-center bg-[#141c28]/50 rounded-[1.5rem] border border-white/5 p-2 focus-within:border-indigo-500/50 focus-within:bg-[#141c28]/80 transition-all mb-4">
                 <span className="pl-4 text-3xl font-black text-slate-600">$</span>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={montoPago}
                   onChange={(e) => setMontoPago(e.target.value)}
                   placeholder="0"
@@ -237,7 +245,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
               <p className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">{viajesFiltrados.length}</p>
             </div>
 
-            <div className="bg-slate-900/40 border border-white/5 p-6 rounded-[2rem] flex flex-col justify-center">
+            <div className="bg-[#1a2537]/40 border border-white/5 p-6 rounded-[2rem] flex flex-col justify-center">
               <div className="flex justify-between items-start mb-2">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Distancia Generada</p>
                 <Milestone size={14} className="text-sky-500" />
@@ -245,7 +253,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
               <p className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">{stats.totalKm.toLocaleString()} <span className="text-xs text-slate-600 font-bold">KM</span></p>
             </div>
 
-            <div className="bg-slate-900/40 border border-white/5 p-6 rounded-[2rem] flex flex-col justify-center">
+            <div className="bg-[#1a2537]/40 border border-white/5 p-6 rounded-[2rem] flex flex-col justify-center">
               <div className="flex justify-between items-start mb-2">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Gasoil Utilizado</p>
                 <Droplets size={14} className="text-cyan-500" />
@@ -253,7 +261,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
               <p className="text-2xl md:text-3xl font-black text-white italic tracking-tighter">{stats.totalLts.toLocaleString()} <span className="text-xs text-slate-600 font-bold">LTS</span></p>
             </div>
 
-            <div className="bg-slate-900/40 border border-white/5 p-6 rounded-[2rem] flex flex-col justify-center shadow-inner">
+            <div className="bg-[#1a2537]/40 border border-white/5 p-6 rounded-[2rem] flex flex-col justify-center shadow-inner">
               <div className="flex justify-between items-start mb-2">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Rendimiento (Periodo)</p>
                 <Flame size={14} className={consumoColor} />
@@ -281,7 +289,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
               ) : (
                 <div className="space-y-3">
                   {viajesFiltrados.map((v: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center bg-slate-950/50 p-4 rounded-[1.5rem] border border-white/5 hover:border-indigo-500/30 transition-colors">
+                    <div key={i} className="flex justify-between items-center bg-[#141c28]/50 p-4 rounded-[1.5rem] border border-white/5 hover:border-indigo-500/30 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="bg-indigo-500/10 p-2.5 rounded-xl text-indigo-400">
                           <CalIcon size={14} />
@@ -317,7 +325,7 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
                   {movimientosFiltrados.map((m: any) => {
                     const isPago = m.tipo_movimiento === 'PAGO' || Number(m.monto) < 0;
                     return (
-                      <div key={m.id} className="group flex justify-between items-center bg-slate-950/50 p-4 rounded-[1.5rem] border border-white/5 hover:border-slate-500/30 transition-colors">
+                      <div key={m.id} className="group flex justify-between items-center bg-[#141c28]/50 p-4 rounded-[1.5rem] border border-white/5 hover:border-slate-500/30 transition-colors">
                         <div className="flex items-center gap-4">
                           <div className={`p-2.5 rounded-xl ${isPago ? 'bg-sky-500/10 text-sky-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
                             {isPago ? <ArrowRightLeft size={14} /> : <Route size={14} />}

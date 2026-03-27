@@ -72,9 +72,9 @@ export function CompletarRemitoModal({ isOpen, initialRemito, onClose, onSubmit,
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-[#141c28]/90 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto">
       
-      <div className="bg-[#020617] border border-orange-500/30 w-full max-w-md rounded-[3rem] p-8 md:p-10 shadow-[0_0_50px_rgba(249,115,22,0.15)] relative overflow-hidden my-auto">
+      <div className="bg-[#141c28] border border-orange-500/30 w-full max-w-md rounded-[3rem] p-8 md:p-10 shadow-[0_0_50px_rgba(249,115,22,0.15)] relative overflow-hidden my-auto">
         
         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-600 to-amber-500" />
@@ -106,7 +106,7 @@ export function CompletarRemitoModal({ isOpen, initialRemito, onClose, onSubmit,
                 autoFocus
                 type="text"
                 placeholder="EJ: 0001-00001234"
-                className="w-full bg-black/50 border border-white/10 rounded-[1.5rem] py-5 pl-14 pr-6 text-white text-lg font-black outline-none focus:border-orange-500 transition-all uppercase placeholder:text-slate-700"
+                className="w-full bg-[#141c28]/50 border border-white/10 rounded-[1.5rem] py-5 pl-14 pr-6 text-white text-lg font-black outline-none focus:border-orange-500 transition-all uppercase placeholder:text-slate-700"
                 value={numero}
                 onChange={(e) => setNumero(e.target.value)}
               />
@@ -133,7 +133,7 @@ export function CompletarRemitoModal({ isOpen, initialRemito, onClose, onSubmit,
               onDrop={handleDrop}
             >
               {fileData ? (
-                <div className="relative w-full h-40 rounded-[1.5rem] overflow-hidden border border-white/10 group bg-slate-900/50 flex flex-col items-center justify-center">
+                <div className="relative w-full h-40 rounded-[1.5rem] overflow-hidden border border-white/10 group bg-[#1a2537]/50 flex flex-col items-center justify-center">
                   {fileData.type.startsWith('image/') ? (
                     <Image src={fileData.base64} alt="Remito" fill className="object-cover" />
                   ) : (
@@ -144,7 +144,7 @@ export function CompletarRemitoModal({ isOpen, initialRemito, onClose, onSubmit,
                       </p>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-[#141c28]/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                      <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-3 bg-white/10 text-white rounded-xl text-[10px] font-black uppercase flex items-center gap-2 hover:bg-white/20 transition-all">
                        <Camera size={16} /> Cambiar Archivo
                      </button>
@@ -170,7 +170,7 @@ export function CompletarRemitoModal({ isOpen, initialRemito, onClose, onSubmit,
           <button 
             type="submit"
             disabled={isSaving || !numero.trim()}
-            className="w-full py-5 mt-4 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-[0_0_20px_rgba(234,88,12,0.3)] disabled:shadow-none"
+            className="w-full py-5 mt-4 bg-orange-600 hover:bg-orange-500 disabled:bg-[#243248] disabled:text-slate-500 text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all active:scale-95 shadow-[0_0_20px_rgba(234,88,12,0.3)] disabled:shadow-none"
           >
             {isSaving ? <Loader2 className="animate-spin" size={24} /> : <><CheckCircle2 size={20} /> {initialRemito ? 'Guardar Cambios' : 'Guardar Datos'}</>}
           </button>

@@ -39,7 +39,7 @@ export function PuntoEquilibrioSection({ costosFijosMes, viajes, multas, costos 
   }, [viajes, dateStart, dateEnd])
 
   const cantidadViajes = viajesPeriodo.length
-  const ingresosPeriodo = viajesPeriodo.reduce((acc, v) => acc + Number(v.precio || 0), 0)
+  const ingresosPeriodo = viajesPeriodo.reduce((acc, v) => acc + Number(v.tarifa_flete || 0), 0)
   const ticketPromedio  = cantidadViajes > 0 ? ingresosPeriodo / cantidadViajes : 0
 
   // PUNTO DE EQUILIBRIO
@@ -74,8 +74,8 @@ export function PuntoEquilibrioSection({ costosFijosMes, viajes, multas, costos 
     <div className="space-y-6 font-sans italic">
 
       {/* FILTRO DE PERÍODO */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-950/40 p-2 rounded-[2rem] border border-white/5">
-        <div className="flex bg-slate-900 p-1.5 rounded-2xl border border-white/5 shrink-0">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-[#141c28]/40 p-2 rounded-[2rem] border border-white/5">
+        <div className="flex bg-[#1a2537] p-1.5 rounded-2xl border border-white/5 shrink-0">
           <button onClick={setEsteMes} className="px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-white hover:bg-white/5 transition-all">
             Este Mes
           </button>
@@ -163,7 +163,7 @@ export function PuntoEquilibrioSection({ costosFijosMes, viajes, multas, costos 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {/* Costos fijos del período */}
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-7">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-7">
           <DollarSign size={16} className="text-orange-400 mb-3" />
           <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em]">Costos Fijos Período</p>
           <p className="text-3xl font-black text-orange-400 italic tabular-nums tracking-tighter mt-1">
@@ -175,7 +175,7 @@ export function PuntoEquilibrioSection({ costosFijosMes, viajes, multas, costos 
         </div>
 
         {/* Multas del período */}
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-7">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-7">
           <AlertTriangle size={16} className="text-rose-400 mb-3" />
           <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em]">Multas del Período</p>
           <p className="text-3xl font-black text-rose-400 italic tabular-nums tracking-tighter mt-1">
@@ -187,7 +187,7 @@ export function PuntoEquilibrioSection({ costosFijosMes, viajes, multas, costos 
         </div>
 
         {/* Viajes del período */}
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-7">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-7">
           <Truck size={16} className="text-sky-400 mb-3" />
           <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em]">Viajes Completados</p>
           <p className="text-3xl font-black text-sky-400 italic tabular-nums tracking-tighter mt-1">
@@ -218,7 +218,7 @@ export function PuntoEquilibrioSection({ costosFijosMes, viajes, multas, costos 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Por viaje */}
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-8 space-y-5">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-8 space-y-5">
           <div className="flex items-center gap-3">
             <Truck size={18} className="text-sky-400" />
             <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Análisis por Viaje</h3>
@@ -253,7 +253,7 @@ export function PuntoEquilibrioSection({ costosFijosMes, viajes, multas, costos 
         </div>
 
         {/* Por mes */}
-        <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-8 space-y-5">
+        <div className="bg-[#1a2537]/40 border border-white/5 rounded-[2.5rem] p-8 space-y-5">
           <div className="flex items-center gap-3">
             <Calendar size={18} className="text-violet-400" />
             <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Análisis Mensual</h3>

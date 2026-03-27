@@ -206,7 +206,7 @@ export default function CajaPage() {
   }
 
   if (loading) return (
-    <div className="h-screen bg-[#020617] flex flex-col items-center justify-center">
+    <div className="h-screen bg-[#141c28] flex flex-col items-center justify-center">
       <Loader2 className="animate-spin text-emerald-500 w-12 h-12 mb-4" />
       <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 animate-pulse">Cargando Tesorería...</p>
     </div>
@@ -216,7 +216,7 @@ export default function CajaPage() {
   const maxSaldoGrafico = Math.max(...datosGrafico.map(d => Math.abs(d.saldoFin)), 1)
 
   return (
-    <main className="min-h-screen bg-[#020617] pt-20 lg:pt-24 pb-20 font-sans italic">
+    <main className="min-h-screen bg-[#141c28] pt-20 lg:pt-24 pb-20 font-sans italic">
       <div className="max-w-[1600px] mx-auto px-4 md:px-8 space-y-8">
 
         <CajaHeader
@@ -256,7 +256,7 @@ export default function CajaPage() {
         <CajaResumenGeneral resumen={resumen} loading={loading} />
 
         {/* ── GRÁFICO HISTÓRICO ── */}
-        <div className="bg-[#020617] border border-white/5 rounded-[3rem] p-8 space-y-6 shadow-2xl">
+        <div className="bg-[#141c28] border border-white/5 rounded-[3rem] p-8 space-y-6 shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-500/10 rounded-xl">
@@ -422,7 +422,7 @@ function CajaMovimientosTablaConAuditoria({
         </p>
       </div>
 
-      <div className="bg-slate-900/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
+      <div className="bg-[#1a2537]/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead className="bg-white/[0.02] text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] border-b border-white/5">
@@ -598,8 +598,8 @@ function ModalAuditoria({ movimiento: m, onClose }: { movimiento: any; onClose: 
   const esIngreso = m.tipo   === 'ingreso'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm font-sans italic">
-      <div className="w-full max-w-md bg-[#020617] border border-white/10 rounded-[3rem] p-8 space-y-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141c28]/80 backdrop-blur-sm font-sans italic">
+      <div className="w-full max-w-md bg-[#141c28] border border-white/10 rounded-[3rem] p-8 space-y-6 shadow-2xl">
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

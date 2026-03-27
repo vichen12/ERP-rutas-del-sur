@@ -269,8 +269,8 @@ export function ClienteUbicacionModal({
   const tienePin = form.lat !== null && form.lng !== null
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto font-sans italic">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl relative my-auto overflow-hidden">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-[#141c28]/90 backdrop-blur-md overflow-y-auto font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl relative my-auto overflow-hidden">
 
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500 z-10" />
 
@@ -304,14 +304,14 @@ export function ClienteUbicacionModal({
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), buscarDireccion())}
-                className="w-full bg-slate-900 border border-white/5 rounded-2xl py-3.5 pl-11 pr-4 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
+                className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-3.5 pl-11 pr-4 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
               />
             </div>
             <button
               type="button"
               onClick={buscarDireccion}
               disabled={searching || !searchInput.trim()}
-              className="px-5 py-3.5 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl transition-all flex items-center gap-2 font-black text-[9px] uppercase tracking-widest shrink-0 active:scale-95"
+              className="px-5 py-3.5 bg-sky-600 hover:bg-sky-500 disabled:bg-[#243248] disabled:text-slate-600 text-white rounded-2xl transition-all flex items-center gap-2 font-black text-[9px] uppercase tracking-widest shrink-0 active:scale-95"
             >
               {searching
                 ? <Loader2 size={14} className="animate-spin" />
@@ -341,7 +341,7 @@ export function ClienteUbicacionModal({
           <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
           {!mapReady && (
-            <div className="absolute inset-0 bg-slate-900 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[#1a2537] flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <Loader2 size={28} className="animate-spin text-sky-500" />
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Cargando mapa...</p>
@@ -350,7 +350,7 @@ export function ClienteUbicacionModal({
           )}
 
           {mapReady && !tienePin && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/75 backdrop-blur-sm rounded-full pointer-events-none border border-white/10">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-[#141c28]/75 backdrop-blur-sm rounded-full pointer-events-none border border-white/10">
               <p className="text-[9px] font-black text-white uppercase tracking-widest whitespace-nowrap">
                 👆 Clickeá para marcar el punto
               </p>
@@ -358,7 +358,7 @@ export function ClienteUbicacionModal({
           )}
 
           {tienePin && (
-            <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/75 backdrop-blur-sm rounded-full pointer-events-none border border-emerald-500/30">
+            <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-[#141c28]/75 backdrop-blur-sm rounded-full pointer-events-none border border-emerald-500/30">
               <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">
                 ✓ Arrastrá el pin para ajustar
               </p>
@@ -381,7 +381,7 @@ export function ClienteUbicacionModal({
               placeholder="EJ: PLANTA LUJÁN, DEPÓSITO CENTRO, OFICINAS GODOY CRUZ"
               value={form.nombre}
               onChange={e => set('nombre', e.target.value.toUpperCase())}
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-5 text-white font-black text-xs uppercase outline-none focus:border-emerald-500 transition-all placeholder:text-slate-700"
+              className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-5 text-white font-black text-xs uppercase outline-none focus:border-emerald-500 transition-all placeholder:text-slate-700"
             />
           </div>
 
@@ -400,7 +400,7 @@ export function ClienteUbicacionModal({
                   placeholder="0.00"
                   value={form.tarifa_flete}
                   onChange={e => set('tarifa_flete', e.target.value)}
-                  className="w-full bg-slate-950 border border-white/5 rounded-xl py-3 px-4 text-emerald-400 font-black text-sm tabular-nums outline-none focus:border-emerald-500 placeholder:text-slate-800"
+                  className="w-full bg-[#141c28] border border-white/5 rounded-xl py-3 px-4 text-emerald-400 font-black text-sm tabular-nums outline-none focus:border-emerald-500 placeholder:text-slate-800"
                 />
                 <p className="text-[7px] text-slate-700 font-black uppercase ml-1">Vacío = tarifa del cliente</p>
               </div>
@@ -413,7 +413,7 @@ export function ClienteUbicacionModal({
                   placeholder="0"
                   value={form.km_desde_base}
                   onChange={e => set('km_desde_base', e.target.value)}
-                  className="w-full bg-slate-950 border border-white/5 rounded-xl py-3 px-4 text-violet-400 font-black text-sm tabular-nums outline-none focus:border-violet-500 placeholder:text-slate-800"
+                  className="w-full bg-[#141c28] border border-white/5 rounded-xl py-3 px-4 text-violet-400 font-black text-sm tabular-nums outline-none focus:border-violet-500 placeholder:text-slate-800"
                 />
               </div>
               <div className="space-y-1.5">
@@ -425,7 +425,7 @@ export function ClienteUbicacionModal({
                   placeholder="0"
                   value={form.lts_estimados}
                   onChange={e => set('lts_estimados', e.target.value)}
-                  className="w-full bg-slate-950 border border-white/5 rounded-xl py-3 px-4 text-amber-400 font-black text-sm tabular-nums outline-none focus:border-amber-500 placeholder:text-slate-800"
+                  className="w-full bg-[#141c28] border border-white/5 rounded-xl py-3 px-4 text-amber-400 font-black text-sm tabular-nums outline-none focus:border-amber-500 placeholder:text-slate-800"
                 />
               </div>
             </div>
@@ -455,7 +455,7 @@ export function ClienteUbicacionModal({
             placeholder="Notas: horario de descarga, contacto en planta, instrucciones de acceso..."
             value={form.notas}
             onChange={e => set('notas', e.target.value)}
-            className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-sm outline-none focus:border-white/20 resize-none placeholder:text-slate-700"
+            className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-sm outline-none focus:border-white/20 resize-none placeholder:text-slate-700"
           />
 
           <button

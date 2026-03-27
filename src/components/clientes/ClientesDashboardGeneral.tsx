@@ -7,7 +7,7 @@ export function ClientesDashboardGeneral({ clientes, onExportAll, onSelectClient
   const clientesConDeuda = clientes.filter((c: any) => (Number(c.saldo) || 0) > 0).length
 
   const StatCard = ({ title, value, subValue, icon: Icon, color, bg }: any) => (
-    <div className={`bg-[#020617] border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group italic font-sans`}>
+    <div className={`bg-[#141c28] border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group italic font-sans`}>
       <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity text-white">
         <Icon size={120} />
       </div>
@@ -68,7 +68,7 @@ export function ClientesDashboardGeneral({ clientes, onExportAll, onSelectClient
       </div>
 
       {/* GRILLA MAESTRA DE CLIENTES */}
-      <div className="bg-slate-900/20 border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl backdrop-blur-sm">
+      <div className="bg-[#1a2537]/20 border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl backdrop-blur-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

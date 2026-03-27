@@ -8,7 +8,7 @@ export function ClienteResumenGeneral({ selected, gestion, onExportPDF }: any) {
   // 🚀 CAMBIO V2.0: Ya no usamos 'config'. Los datos viven directo en 'selected'
   
   const StatCard = ({ title, value, icon: Icon, color }: any) => (
-    <div className="bg-[#020617] border border-white/5 p-6 rounded-[2rem] hover:bg-white/[0.04] transition-all group shadow-xl italic font-sans">
+    <div className="bg-[#141c28] border border-white/5 p-6 rounded-[2rem] hover:bg-white/[0.04] transition-all group shadow-xl italic font-sans">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-2xl ${color} bg-opacity-10 shadow-inner`}>
           <Icon size={22} className={color.replace('bg-', 'text-')} />
@@ -45,7 +45,7 @@ export function ClienteResumenGeneral({ selected, gestion, onExportPDF }: any) {
         />
         <StatCard 
           title="Viajes x Cobrar" 
-          value={gestion.porCobrar?.length || 0} 
+          value={gestion.deudaActiva?.length || 0}
           icon={Activity} color="bg-sky-500" 
         />
         <StatCard 
@@ -63,7 +63,7 @@ export function ClienteResumenGeneral({ selected, gestion, onExportPDF }: any) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* ADN DE RUTA */}
-        <div className="bg-[#020617] border border-white/5 rounded-[3rem] p-8 relative overflow-hidden group shadow-2xl">
+        <div className="bg-[#141c28] border border-white/5 rounded-[3rem] p-8 relative overflow-hidden group shadow-2xl">
           <Map className="absolute -right-10 -bottom-10 text-white/5 rotate-12 transition-transform group-hover:scale-110" size={180} />
           <h4 className="text-[10px] font-black text-sky-500 uppercase tracking-[0.4em] mb-6 italic">ADN de Ruta</h4>
           
@@ -92,7 +92,7 @@ export function ClienteResumenGeneral({ selected, gestion, onExportPDF }: any) {
         </div>
 
         {/* INFO DE CONTACTO */}
-        <div className="bg-[#020617] border border-white/5 rounded-[3rem] p-8 shadow-2xl">
+        <div className="bg-[#141c28] border border-white/5 rounded-[3rem] p-8 shadow-2xl">
           <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-6 italic">Terminal de Contacto</h4>
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-1">

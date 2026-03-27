@@ -58,9 +58,9 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
   }
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-md bg-black/80 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto font-sans italic">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-md bg-[#141c28]/80 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto font-sans italic">
       
-      <div className="bg-[#020617] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative overflow-hidden my-10">
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative overflow-hidden my-10">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 to-cyan-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]" />
         
         <div className="flex justify-between items-center mb-8">
@@ -94,8 +94,8 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
                 isDragging 
                 ? 'border-indigo-500 bg-indigo-500/10' 
                 : formData.foto_url 
-                  ? 'border-white/10 bg-slate-950 hover:border-indigo-500/50' 
-                  : 'border-white/10 bg-slate-950 hover:bg-slate-900 hover:border-white/20'
+                  ? 'border-white/10 bg-[#141c28] hover:border-indigo-500/50' 
+                  : 'border-white/10 bg-[#141c28] hover:bg-[#1a2537] hover:border-white/20'
               }`}
             >
               <input 
@@ -109,7 +109,7 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
               {formData.foto_url ? (
                 <>
                   <Image src={formData.foto_url} alt="Preview" fill className="object-cover" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-[#141c28]/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
                     <ImageIcon className="text-white" size={24} />
                     <span className="text-[10px] font-black text-white uppercase tracking-widest">Cambiar Foto</span>
                   </div>
@@ -145,7 +145,7 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
               <input 
                 required 
                 placeholder="EJ: JUAN PEREZ"
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 transition-colors uppercase placeholder:text-slate-800 text-sm" 
+                className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 transition-colors uppercase placeholder:text-slate-800 text-sm" 
                 value={formData.nombre || ''} 
                 onChange={e => setFormData({...formData, nombre: e.target.value})} 
               />
@@ -159,7 +159,7 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
                 <label className="text-[9px] font-black text-slate-500 uppercase pl-3 tracking-widest">D.N.I.</label>
                 <input 
                   placeholder="SIN PUNTOS"
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm tabular-nums" 
+                  className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm tabular-nums" 
                   value={formData.dni || ''} 
                   onChange={e => setFormData({...formData, dni: e.target.value})} 
                 />
@@ -171,7 +171,7 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
                   required 
                   type="tel"
                   placeholder="261..."
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm tabular-nums" 
+                  className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm tabular-nums" 
                   value={formData.telefono || ''} 
                   onChange={e => setFormData({...formData, telefono: e.target.value})} 
                 />
@@ -187,7 +187,7 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
                 <input 
                   required 
                   placeholder="XXX-XXX"
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm" 
+                  className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 px-6 text-white font-black outline-none focus:border-indigo-500 uppercase placeholder:text-slate-800 text-sm" 
                   value={formData.licencia || ''} 
                   onChange={e => setFormData({...formData, licencia: e.target.value})} 
                 />
@@ -200,7 +200,7 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
                   <input 
                     required 
                     type="date" 
-                    className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white font-black outline-none focus:border-indigo-500 [color-scheme:dark] uppercase text-xs" 
+                    className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 pl-14 pr-4 text-white font-black outline-none focus:border-indigo-500 [color-scheme:dark] uppercase text-xs" 
                     value={formData.vto_licencia || ''} 
                     onChange={e => setFormData({...formData, vto_licencia: e.target.value})} 
                   />
@@ -216,14 +216,14 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
               <div className="relative group">
                 <Activity className="absolute left-5 top-1/2 -translate-y-1/2 text-indigo-600 group-focus-within:text-indigo-400 transition-colors pointer-events-none" size={18} />
                 <select 
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-black outline-none appearance-none cursor-pointer uppercase focus:border-indigo-500 text-xs" 
+                  className="w-full bg-[#141c28] border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-white font-black outline-none appearance-none cursor-pointer uppercase focus:border-indigo-500 text-xs" 
                   value={formData.estado || 'Disponible'} 
                   onChange={e => setFormData({...formData, estado: e.target.value})}
                 >
-                  <option value="Disponible" className="bg-[#020617] text-white">Disponible</option>
-                  <option value="Franco" className="bg-[#020617] text-white">Franco / Licencia</option>
+                  <option value="Disponible" className="bg-[#141c28] text-white">Disponible</option>
+                  <option value="Franco" className="bg-[#141c28] text-white">Franco / Licencia</option>
                   {/* 🚀 Nueva opción */}
-                  <option value="Inactivo" className="bg-[#020617] text-white">Inactivo / Desvinculado</option>
+                  <option value="Inactivo" className="bg-[#141c28] text-white">Inactivo / Desvinculado</option>
                 </select>
                 <ChevronRight className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={16} />
               </div>

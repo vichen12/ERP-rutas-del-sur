@@ -106,7 +106,7 @@ export async function POST(req: Request) {
     if (errMatch) {
       // Guardar con estado error
       const { data: facturaError } = await supabase.from('facturas').insert([{
-        tipo_comprobante: tipoLetra(tipo_comprobante),
+        tipo_comprobante: Number(tipo_comprobante),
         punto_venta: pv,
         numero_comprobante: nroComprobante,
         fecha_comprobante,

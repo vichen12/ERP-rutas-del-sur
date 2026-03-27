@@ -16,11 +16,11 @@ export function ClienteSidebar({
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] lg:hidden animate-in fade-in duration-300" onClick={() => setIsOpen(false)} />
+        <div className="fixed inset-0 bg-[#141c28]/80 backdrop-blur-md z-[110] lg:hidden animate-in fade-in duration-300" onClick={() => setIsOpen(false)} />
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 z-[120] w-80 md:w-96 bg-[#020617] border-r border-white/5 flex flex-col transition-transform duration-500 ease-in-out font-sans italic
+        fixed inset-y-0 left-0 z-[120] w-80 md:w-96 bg-[#141c28] border-r border-white/5 flex flex-col transition-transform duration-500 ease-in-out font-sans italic
         lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         pt-10 lg:pt-20 
       `}>
@@ -42,7 +42,7 @@ export function ClienteSidebar({
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-sky-500 transition-colors" size={14} />
             <input 
               type="text" placeholder="BUSCAR POR NOMBRE O CUIT..." 
-              className="w-full pl-11 pr-4 py-4 bg-slate-900/30 border border-white/5 rounded-[1.5rem] outline-none text-[10px] text-white focus:border-sky-500/50 uppercase font-black italic tracking-widest placeholder:text-slate-800 transition-all shadow-inner"
+              className="w-full pl-11 pr-4 py-4 bg-[#1a2537]/30 border border-white/5 rounded-[1.5rem] outline-none text-[10px] text-white focus:border-sky-500/50 uppercase font-black italic tracking-widest placeholder:text-slate-800 transition-all shadow-inner"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -100,7 +100,7 @@ export function ClienteSidebar({
                     </div>
 
                     <div className={`p-3 rounded-2xl border flex items-center justify-between text-[9px] font-black uppercase tracking-tighter transition-all ${
-                        isSelected ? 'bg-sky-500/10 border-sky-500/20 text-sky-300' : 'bg-black/30 border-white/5 text-slate-500'
+                        isSelected ? 'bg-sky-500/10 border-sky-500/20 text-sky-300' : 'bg-[#141c28]/30 border-white/5 text-slate-500'
                     }`}>
                         <div className="flex items-center gap-2 truncate">
                           <MapPin size={12} className={isSelected ? 'text-sky-400' : 'text-slate-700'} />
@@ -135,7 +135,7 @@ export function ClienteSidebar({
           )}
         </div>
 
-        <div className="lg:hidden p-6 pb-12 border-t border-white/5 bg-slate-950/50">
+        <div className="lg:hidden p-6 pb-12 border-t border-white/5 bg-[#141c28]/50">
            <button onClick={() => setIsOpen(false)} className="w-full py-4 bg-white/5 text-slate-600 font-black rounded-3xl uppercase text-[9px] tracking-[0.4em] border border-white/5 active:bg-rose-500/10 active:text-rose-500 transition-all">
              Cerrar Terminal
            </button>

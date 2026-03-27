@@ -22,7 +22,7 @@ export function ClientesLibroMayor({
     <div className="space-y-12 pb-32 font-sans italic">
       
       {/* --- SECCIÓN 1: BANDEJA DE ENTRADA --- */}
-      <section className="relative p-8 md:p-12 rounded-[3.5rem] border bg-[#020617]/50 border-white/10 shadow-2xl backdrop-blur-md overflow-hidden">
+      <section className="relative p-8 md:p-12 rounded-[3.5rem] border bg-[#141c28]/50 border-white/10 shadow-2xl backdrop-blur-md overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 to-indigo-500 opacity-50" />
         
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10 relative z-10">
@@ -37,7 +37,7 @@ export function ClientesLibroMayor({
           </div>
           
           {/* BANNER DE SALDOS */}
-          <div className="flex gap-4 p-4 bg-black/40 rounded-3xl border border-white/5 w-full md:w-auto">
+          <div className="flex gap-4 p-4 bg-[#141c28]/40 rounded-3xl border border-white/5 w-full md:w-auto">
             <div className="px-4 border-r border-white/10">
                <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">El Cliente Debe</p>
                <p className="text-2xl font-black italic tabular-nums text-emerald-500 leading-none">${gestion.saldoPendiente.toLocaleString()}</p>
@@ -61,7 +61,7 @@ export function ClientesLibroMayor({
                     faltaRemito ? 'bg-gradient-to-b from-orange-500/40 to-transparent' : 'bg-gradient-to-b from-sky-500/30 to-transparent'
                   }`}
                 >
-                  <div className="bg-[#020617] rounded-[2.4rem] p-7 flex flex-col md:flex-row justify-between items-center gap-6 h-full relative overflow-hidden">
+                  <div className="bg-[#141c28] rounded-[2.4rem] p-7 flex flex-col md:flex-row justify-between items-center gap-6 h-full relative overflow-hidden">
                     {faltaRemito && <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[60px] rounded-full pointer-events-none" />}
 
                     <div className="flex items-center gap-6 w-full relative z-10">
@@ -172,7 +172,7 @@ export function ClientesLibroMayor({
                 const fechaViaje = m.fecha ? new Date(m.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : null;
 
                 return (
-                  <div key={m.id} className="bg-[#020617] p-6 rounded-3xl border border-white/5 relative overflow-hidden shadow-lg group">
+                  <div key={m.id} className="bg-[#141c28] p-6 rounded-3xl border border-white/5 relative overflow-hidden shadow-lg group">
                     <div className="flex justify-between items-start relative z-10">
                       <div>
                         <div className="flex gap-2 items-center flex-wrap">
@@ -183,8 +183,8 @@ export function ClientesLibroMayor({
                         
                         {(patente || chofer) && (
                            <div className="flex items-center gap-1 mt-2">
-                             {patente && <span className="flex items-center gap-1 text-[8px] bg-slate-900 border border-white/10 px-1.5 py-0.5 rounded text-slate-500 font-black uppercase"><Truck size={8}/> {patente}</span>}
-                             {chofer && <span className="flex items-center gap-1 text-[8px] bg-slate-900 border border-white/10 px-1.5 py-0.5 rounded text-slate-500 font-black uppercase truncate max-w-[100px]"><User size={8}/> {chofer}</span>}
+                             {patente && <span className="flex items-center gap-1 text-[8px] bg-[#1a2537] border border-white/10 px-1.5 py-0.5 rounded text-slate-500 font-black uppercase"><Truck size={8}/> {patente}</span>}
+                             {chofer && <span className="flex items-center gap-1 text-[8px] bg-[#1a2537] border border-white/10 px-1.5 py-0.5 rounded text-slate-500 font-black uppercase truncate max-w-[100px]"><User size={8}/> {chofer}</span>}
                            </div>
                         )}
                       </div>
@@ -212,7 +212,7 @@ export function ClientesLibroMayor({
                       
                       {m.pagado > 0 && (
                          <>
-                            <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-white/5 mt-3 mb-1.5">
+                            <div className="w-full bg-[#1a2537] h-1.5 rounded-full overflow-hidden border border-white/5 mt-3 mb-1.5">
                               <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${porcentajePagado}%` }} />
                             </div>
                             <div className="flex justify-between text-[8px] font-black uppercase">
@@ -230,7 +230,7 @@ export function ClientesLibroMayor({
         </div>
 
         {/* COLUMNA 3: HISTORIAL LIQUIDADOS */}
-        <div className="p-6 rounded-[3rem] border bg-slate-900/20 border-white/5 flex flex-col h-[600px]">
+        <div className="p-6 rounded-[3rem] border bg-[#1a2537]/20 border-white/5 flex flex-col h-[600px]">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
             <h3 className="text-slate-400 font-black uppercase text-sm italic flex items-center gap-2">
               <CheckCircle2 size={18} /> Historial

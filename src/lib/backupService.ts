@@ -300,7 +300,7 @@ export const backupService = {
               ? [34, 197, 94]
               : diff < 0
               ? [239, 68, 68]
-              : diff <= t.dias_anticipacion
+              : diff <= (t.dias_anticipacion ?? 3)
               ? [245, 158, 11]
               : [148, 163, 184],
           },
@@ -365,23 +365,23 @@ export const backupService = {
       v.origen || '—',
       v.destino || '—',
       {
-        content: (v.estado || 'pendiente').toUpperCase(),
+        content: v.estado || 'Finalizado',
         styles: {
           fontStyle: 'bold',
-          textColor: estadoColor[v.estado] || [148, 163, 184],
+          textColor: [34, 197, 94],
         },
       },
       {
-        content: v.precio ? `$ ${Number(v.precio).toLocaleString('es-AR')}` : '—',
+        content: v.tarifa_flete ? `$ ${Number(v.tarifa_flete).toLocaleString('es-AR')}` : '—',
         styles: { halign: 'right', fontStyle: 'bold' },
       },
     ])
 
-    const totalFacturado = viajes.reduce((acc, v) => acc + (v.precio || 0), 0)
+    const totalFacturado = viajes.reduce((acc, v) => acc + (Number(v.tarifa_flete) || 0), 0)
 
     autoTable(doc, {
       startY: 42,
-      head: [['Fecha', 'Cliente', 'Unidad', 'Chofer', 'Origen', 'Destino', 'Estado', 'Precio']],
+      head: [['Fecha', 'Cliente', 'Unidad', 'Chofer', 'Origen', 'Destino', 'Estado', 'Tarifa']],
       body,
       foot: [['', '', '', '', '', '', 'TOTAL FACTURADO:', `$ ${totalFacturado.toLocaleString('es-AR')}`]],
       theme: 'grid',
@@ -426,7 +426,7 @@ export const backupService = {
 
       return [
         c.patente,
-        c.marca || '—',
+        '—',
         c.modelo || '—',
         (c.km_actual || 0).toLocaleString('es-AR'),
         {
@@ -457,7 +457,7 @@ export const backupService = {
 
     autoTable(doc, {
       startY: 42,
-      head: [['Patente', 'Marca', 'Modelo', 'KM Actual', 'Service', 'Vto. RTO', 'RTO', 'Vto. SENASA', 'SENASA']],
+      head: [['Patente', '—', 'Modelo', 'KM Actual', 'Service', 'Vto. RTO', 'RTO', 'Vto. SENASA', 'SENASA']],
       body,
       theme: 'grid',
       headStyles: { fillColor: [15, 23, 42], textColor: [148, 163, 184], fontSize: 7 },

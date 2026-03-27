@@ -154,8 +154,8 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
   const pasos = proveedor === 'pressa' ? PASOS_PRESSA : PASOS_TRACCAR_DEMO
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#020617] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-8 animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-8 animate-in fade-in zoom-in-95 duration-300">
 
         {/* Barra top */}
         <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-full bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500" />
@@ -293,7 +293,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
                         </a>
                       )}
                       {(paso as any).code && (
-                        <div className="flex items-center gap-2 bg-slate-950 border border-white/10 rounded-xl p-3 overflow-x-auto">
+                        <div className="flex items-center gap-2 bg-[#141c28] border border-white/10 rounded-xl p-3 overflow-x-auto">
                           <code className="text-[10px] font-mono text-emerald-400 flex-1 whitespace-nowrap">
                             {(paso as any).code}
                           </code>
@@ -322,7 +322,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
                           <span className="text-[7px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded uppercase">Popular</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 bg-slate-950 rounded-lg p-2 overflow-x-auto">
+                      <div className="flex items-center gap-2 bg-[#141c28] rounded-lg p-2 overflow-x-auto">
                         <code className="text-[9px] font-mono text-sky-400 flex-1 whitespace-nowrap">
                           {d.cmd.replace('{HOST}', form.traccar_url || 'TU-SERVIDOR.COM')}
                         </code>
@@ -345,7 +345,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
                     placeholder="https://demo.traccar.org  ó  https://mi-servidor.com:8082"
                     value={form.traccar_url}
                     onChange={e => set('traccar_url', e.target.value)}
-                    className="w-full bg-slate-900 border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
+                    className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-4 px-5 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
                   />
                 </div>
 
@@ -356,7 +356,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
                       type="email" placeholder="admin@empresa.com"
                       value={form.traccar_email}
                       onChange={e => set('traccar_email', e.target.value)}
-                      className="w-full bg-slate-900 border border-white/5 rounded-2xl py-3.5 px-5 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
+                      className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-3.5 px-5 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -365,7 +365,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
                       type="password" placeholder="••••••••"
                       value={form.traccar_password}
                       onChange={e => set('traccar_password', e.target.value)}
-                      className="w-full bg-slate-900 border border-white/5 rounded-2xl py-3.5 px-5 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
+                      className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-3.5 px-5 text-white font-bold text-sm outline-none focus:border-sky-500 placeholder:text-slate-700 transition-all"
                     />
                   </div>
                 </div>
@@ -417,7 +417,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
                     type="button"
                     onClick={testConnection}
                     disabled={testing || !form.traccar_url || !form.traccar_email}
-                    className="flex-1 py-4 rounded-2xl bg-slate-900 border border-white/10 text-slate-400 hover:text-white font-black uppercase text-[9px] tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                    className="flex-1 py-4 rounded-2xl bg-[#1a2537] border border-white/10 text-slate-400 hover:text-white font-black uppercase text-[9px] tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-40"
                   >
                     {testing ? <Loader2 className="animate-spin" size={16} /> : <Zap size={16} />}
                     Probar conexión
@@ -438,7 +438,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
             {/* Modo manual si eligió Pressa */}
             {proveedor === 'pressa' && (
               <div className="space-y-4 border-t border-white/10 pt-6">
-                <div className="p-5 bg-slate-900/50 border border-white/10 rounded-2xl space-y-3">
+                <div className="p-5 bg-[#1a2537]/50 border border-white/10 rounded-2xl space-y-3">
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mientras tanto: Modo Manual</p>
                   <p className="text-[10px] font-bold text-slate-300 uppercase leading-relaxed">
                     Podés usar el ERP normalmente. En cada viaje vas a ingresar los KM reales a mano.
@@ -447,7 +447,7 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
                   <button
                     type="button"
                     onClick={onClose}
-                    className="w-full py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-black uppercase text-[9px] tracking-widest transition-all"
+                    className="w-full py-4 rounded-2xl bg-[#243248] hover:bg-slate-700 text-white font-black uppercase text-[9px] tracking-widest transition-all"
                   >
                     Entendido — Usar modo manual
                   </button>

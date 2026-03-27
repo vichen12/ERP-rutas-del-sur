@@ -45,7 +45,7 @@ export function CajaDolarPanel({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 font-sans italic">
 
       {/* TIPO DE CAMBIO */}
-      <div className="bg-[#020617] border border-yellow-500/20 rounded-[2.5rem] p-7 relative overflow-hidden group shadow-2xl">
+      <div className="bg-[#141c28] border border-yellow-500/20 rounded-[2.5rem] p-7 relative overflow-hidden group shadow-2xl">
         <div className="absolute -right-6 -bottom-6 text-yellow-500/5 pointer-events-none">
           <DollarSign size={120} />
         </div>
@@ -80,7 +80,7 @@ export function CajaDolarPanel({
       </div>
 
       {/* TOTAL CORRIENTE EN DÓLAR */}
-      <div className="bg-[#020617] border border-white/5 rounded-[2.5rem] p-7 relative overflow-hidden group hover:border-yellow-500/20 transition-all shadow-2xl">
+      <div className="bg-[#141c28] border border-white/5 rounded-[2.5rem] p-7 relative overflow-hidden group hover:border-yellow-500/20 transition-all shadow-2xl">
         <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
           <TrendingUp size={80} className="text-yellow-500" />
         </div>

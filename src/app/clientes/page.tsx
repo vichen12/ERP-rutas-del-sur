@@ -290,7 +290,7 @@ export default function ClientesPage() {
   const totalAlertas = clientes.filter(c => c.alertaRemito).length;
 
   return (
-    <div className="flex h-screen bg-[#020617] text-slate-100 overflow-hidden font-sans italic selection:bg-sky-500/30">
+    <div className="flex h-screen bg-[#141c28] text-slate-100 overflow-hidden font-sans italic selection:bg-sky-500/30">
       <ClienteSidebar
         clientes={clientes.filter((c) => c.razon_social.toLowerCase().includes(searchTerm.toLowerCase()))}
         selectedId={selected?.id}
@@ -301,12 +301,13 @@ export default function ClientesPage() {
       />
 
       <main className="flex-1 overflow-y-auto relative custom-scrollbar">
-        <div className="pt-24 pb-4 text-slate-100">
-          <ClienteViewSelector 
-            viewMode={viewMode} 
-            setViewMode={setViewMode} 
+        <div className="pt-16 md:pt-20 pb-4 text-slate-100">
+          <ClienteViewSelector
+            viewMode={viewMode}
+            setViewMode={setViewMode}
             hasSelected={!!selected}
             totalAlertas={totalAlertas}
+            selectedClienteId={selected?.id}
           />
         </div>
 
@@ -342,7 +343,7 @@ export default function ClientesPage() {
           )}
 
           {viewMode === "ubicaciones" && selected && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 pt-6">
               <ClienteUbicaciones
                 clienteId={selected.id}
                 clienteNombre={selected.razon_social}
@@ -379,11 +380,6 @@ export default function ClientesPage() {
           try {
             const operacion = selected?.historial.find((h: any) => h.id === remitoModalConfig.opId);
             await supabase.from("cuenta_corriente").update({ remito: num.toUpperCase() }).eq("id", remitoModalConfig.opId);
-            if (operacion && operacion.viaje_id) {
-              const payloadRemito: any = { numero_remito: num.toUpperCase() };
-              if (fotoBase64) payloadRemito.foto_url = fotoBase64;
-              await supabase.from("remitos").update(payloadRemito).eq("viaje_id", operacion.viaje_id);
-            }
             setRemitoModalConfig({ isOpen: false, opId: null, remitoActual: '' }); 
             fetchClientes();
           } catch(err) { alert("Error al guardar remito"); } finally { setIsSaving(false); }

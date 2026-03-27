@@ -72,8 +72,8 @@ export function TutorialArcaModal({ isOpen, onClose }: { isOpen: boolean; onClos
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[998] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#020617] w-full max-w-xl rounded-[2.5rem] border border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[998] flex items-center justify-center bg-[#141c28]/95 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-xl rounded-[2.5rem] border border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-gradient-to-r from-sky-500 via-violet-500 to-emerald-500" />
 
         <div className="flex justify-between items-start p-7 pb-0">
@@ -104,7 +104,7 @@ export function TutorialArcaModal({ isOpen, onClose }: { isOpen: boolean; onClos
             const done = hechos.includes(paso.n)
             const PIcon = paso.Icon
             return (
-              <div key={paso.n} className={'rounded-[1.5rem] border transition-all overflow-hidden ' + (done ? 'border-emerald-500/20 bg-emerald-500/5' : c.border + ' bg-slate-900/40') + (open ? ' ring-2 '+c.ring : '')}>
+              <div key={paso.n} className={'rounded-[1.5rem] border transition-all overflow-hidden ' + (done ? 'border-emerald-500/20 bg-emerald-500/5' : c.border + ' bg-[#1a2537]/40') + (open ? ' ring-2 '+c.ring : '')}>
                 <button onClick={() => setAbierto(open ? null : paso.n)} className="w-full flex items-center gap-3 p-4 text-left">
                   <div className={'shrink-0 w-9 h-9 rounded-xl flex items-center justify-center border ' + (done ? 'bg-emerald-500/20 border-emerald-500/30' : c.bg+' '+c.border)}>
                     {done ? <CheckCircle2 size={16} className="text-emerald-500" /> : <span className={'text-sm font-black '+c.text}>{paso.n}</span>}
@@ -130,7 +130,7 @@ export function TutorialArcaModal({ isOpen, onClose }: { isOpen: boolean; onClos
                               <div className="flex gap-1"><span className="w-2 h-2 rounded-full bg-rose-500/60" /><span className="w-2 h-2 rounded-full bg-amber-500/60" /><span className="w-2 h-2 rounded-full bg-emerald-500/60" /></div>
                               <CopyBtn text={item.v as string} />
                             </div>
-                            <pre className="p-3 text-emerald-400 text-xs font-mono bg-slate-950 overflow-x-auto leading-relaxed">{item.v as string}</pre>
+                            <pre className="p-3 text-emerald-400 text-xs font-mono bg-[#141c28] overflow-x-auto leading-relaxed">{item.v as string}</pre>
                           </div>
                         )
                         if (item.t === 'alerta') return (
@@ -177,7 +177,7 @@ export function TutorialArcaModal({ isOpen, onClose }: { isOpen: boolean; onClos
           })}
 
           {/* FAQ simplificado */}
-          <div className="bg-slate-900/40 border border-white/5 rounded-[1.5rem] p-5 space-y-2.5">
+          <div className="bg-[#1a2537]/40 border border-white/5 rounded-[1.5rem] p-5 space-y-2.5">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2"><HelpCircle size={12} /> Preguntas</p>
             {[
               { q: 'Cada cuanto vence el certificado?', a: 'Cada 2 anos. Cuando venza repetis el proceso.' },

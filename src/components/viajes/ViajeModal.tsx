@@ -196,8 +196,8 @@ export function ViajeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto bg-black/90 backdrop-blur-xl pt-10 md:pt-20 p-4 font-sans italic">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-12 shadow-[0_0_80px_rgba(0,0,0,0.8)] relative mb-20 animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto bg-[#141c28]/90 backdrop-blur-xl pt-10 md:pt-20 p-4 font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-12 shadow-[0_0_80px_rgba(0,0,0,0.8)] relative mb-20 animate-in fade-in zoom-in-95 duration-300">
         
         <div className={`absolute top-0 left-0 w-full h-2 rounded-t-full transition-all duration-500 ${
           step === 1 ? 'bg-cyan-500' : step === 2 ? 'bg-emerald-500' : 'bg-sky-500'
@@ -255,13 +255,13 @@ export function ViajeModal({
                     <p className="text-[8px] text-indigo-500/50 font-bold">{finanzas.ltsVuelta} lts</p>
                   </div>
                 ) : (
-                  <div className="bg-slate-900/40 border border-white/5 p-6 rounded-3xl flex flex-col items-center opacity-25">
+                  <div className="bg-[#1a2537]/40 border border-white/5 p-6 rounded-3xl flex flex-col items-center opacity-25">
                     <ArrowDownCircle className="text-slate-600 mb-1" size={22} />
                     <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Sin Vuelta</p>
                     <p className="text-2xl font-black text-slate-600 tabular-nums">— KM</p>
                   </div>
                 )}
-                <div className="bg-slate-900/60 p-6 rounded-3xl border border-white/10 flex flex-col items-center gap-1">
+                <div className="bg-[#1a2537]/60 p-6 rounded-3xl border border-white/10 flex flex-col items-center gap-1">
                   <Gauge className="text-cyan-400 mb-1" size={22} />
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Circuito</p>
                   <p className="text-2xl font-black text-white tabular-nums">{finanzas.kmTotal} KM</p>
@@ -313,7 +313,7 @@ export function ViajeModal({
                     {formData.repartos_ida.map((r: any, i: number) => {
                       const cl = clientes.find((c:any)=>c.id===r.cliente_id);
                       return (
-                        <div key={i} className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-400 bg-black/20 p-2.5 rounded-xl border border-white/5">
+                        <div key={i} className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-400 bg-[#141c28]/20 p-2.5 rounded-xl border border-white/5">
                           <span className="truncate pr-4">• {cl?.razon_social}</span>
                           <span className="text-emerald-400 tabular-nums">${Number(r.monto_flete).toLocaleString()}</span>
                         </div>
@@ -332,7 +332,7 @@ export function ViajeModal({
                       {formData.repartos_vuelta.map((r: any, i: number) => {
                         const cl = clientes.find((c:any)=>c.id===r.cliente_id);
                         return (
-                          <div key={i} className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-400 bg-black/20 p-2.5 rounded-xl border border-white/5">
+                          <div key={i} className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-400 bg-[#141c28]/20 p-2.5 rounded-xl border border-white/5">
                             <span className="truncate pr-4">• {cl?.razon_social}</span>
                             <span className="text-indigo-400 tabular-nums">${Number(r.monto_flete).toLocaleString()}</span>
                           </div>
@@ -361,7 +361,7 @@ export function ViajeModal({
           <div className="pt-8 border-t border-white/5 mt-8 flex gap-4">
             {step > 1 && (
               <button type="button" onClick={() => setStep(s => (s - 1) as 1 | 2 | 3)} 
-                className="px-10 py-5 bg-slate-800 text-white rounded-2xl font-black uppercase text-xs tracking-widest transition-all hover:bg-slate-700 active:scale-95 border border-white/5">
+                className="px-10 py-5 bg-[#243248] text-white rounded-2xl font-black uppercase text-xs tracking-widest transition-all hover:bg-slate-700 active:scale-95 border border-white/5">
                 Volver
               </button>
             )}

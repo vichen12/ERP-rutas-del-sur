@@ -259,10 +259,10 @@ export default function CombustiblePage() {
     return Array.from(map, ([nombre, datos]) => ({ nombre, ...datos })).sort((a, b) => b.lts - a.lts);
   }, [cargasFiltradas])
 
-  if (!mounted || loading) return <div className="h-screen bg-[#020617] flex items-center justify-center"><Loader2 className="animate-spin text-amber-500 w-12 h-12" /></div>
+  if (!mounted || loading) return <div className="h-screen bg-[#141c28] flex items-center justify-center"><Loader2 className="animate-spin text-amber-500 w-12 h-12" /></div>
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-32 pt-24 md:pt-32 font-sans italic selection:bg-amber-500/30">
+    <div className="min-h-screen bg-[#141c28] text-slate-200 pb-32 pt-24 md:pt-32 font-sans italic selection:bg-amber-500/30">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 space-y-8">
 
         <div className="flex flex-col xl:flex-row justify-between items-start gap-8">
@@ -275,13 +275,13 @@ export default function CombustiblePage() {
 
           <div className="flex flex-col items-end gap-4 w-full xl:w-auto">
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className={`flex items-center gap-3 bg-slate-900/50 p-2 rounded-2xl border border-white/5 transition-all ${showAllTime ? 'opacity-20 grayscale pointer-events-none' : ''}`}>
+              <div className={`flex items-center gap-3 bg-[#1a2537]/50 p-2 rounded-2xl border border-white/5 transition-all ${showAllTime ? 'opacity-20 grayscale pointer-events-none' : ''}`}>
                 <Calendar className="text-amber-500 ml-2" size={16} />
                 <div className="flex flex-col"><span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Inicio Ciclo</span><input type="date" value={dateStart} onChange={e => setDateStart(e.target.value)} className="bg-transparent text-white font-black text-xs outline-none [color-scheme:dark]" /></div>
                 <div className="w-px h-8 bg-white/10 mx-2"></div>
                 <div className="flex flex-col pr-2"><span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Fin Ciclo</span><input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} className="bg-transparent text-white font-black text-xs outline-none [color-scheme:dark]" /></div>
               </div>
-              <button onClick={() => setShowAllTime(!showAllTime)} className={`px-6 py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border ${showAllTime ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-slate-900 border-white/10 text-slate-500 hover:text-white'}`}>
+              <button onClick={() => setShowAllTime(!showAllTime)} className={`px-6 py-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border ${showAllTime ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-[#1a2537] border-white/10 text-slate-500 hover:text-white'}`}>
                 <Globe size={14} className={showAllTime ? 'animate-spin-slow' : ''} /> {showAllTime ? 'Viendo Todo' : 'Ver Todo'}
               </button>
             </div>
@@ -317,8 +317,8 @@ export default function CombustiblePage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-900/30 p-2 rounded-3xl border border-white/5 mt-8">
-          <div className="flex bg-slate-950 rounded-2xl p-1 overflow-x-auto w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#1a2537]/30 p-2 rounded-3xl border border-white/5 mt-8">
+          <div className="flex bg-[#141c28] rounded-2xl p-1 overflow-x-auto w-full sm:w-auto">
             <button onClick={() => { setViewMode('impagos'); setSelectedIds([]) }} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${viewMode === 'impagos' ? 'bg-amber-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}>
               <AlertCircle size={14} /> Pendientes
             </button>
@@ -346,13 +346,13 @@ export default function CombustiblePage() {
 
         {viewMode === 'resumen' ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-500">
-            <div className="bg-slate-900/40 border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
+            <div className="bg-[#1a2537]/40 border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
               <h3 className="text-xl font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
                 <Truck className="text-cyan-500" /> Consumo por Unidad
               </h3>
               <div className="space-y-3">
                 {resumenPorCamion.map((c, i) => (
-                  <div key={i} className="flex justify-between items-center bg-black/30 p-4 rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-all">
+                  <div key={i} className="flex justify-between items-center bg-[#141c28]/30 p-4 rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-all">
                     <span className="text-sm font-black text-cyan-400 uppercase">{c.nombre}</span>
                     <div className="text-right">
                       <p className="text-sm font-black text-white tabular-nums">{c.lts.toLocaleString('es-AR')} Lts</p>
@@ -363,13 +363,13 @@ export default function CombustiblePage() {
               </div>
             </div>
 
-            <div className="bg-slate-900/40 border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
+            <div className="bg-[#1a2537]/40 border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
               <h3 className="text-xl font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
                 <Users className="text-indigo-400" /> Responsable de Carga
               </h3>
               <div className="space-y-3">
                 {resumenPorChofer.map((c, i) => (
-                  <div key={i} className="flex justify-between items-center bg-black/30 p-4 rounded-2xl border border-white/5 hover:border-indigo-500/30 transition-all">
+                  <div key={i} className="flex justify-between items-center bg-[#141c28]/30 p-4 rounded-2xl border border-white/5 hover:border-indigo-500/30 transition-all">
                     <span className="text-sm font-black text-indigo-300 uppercase">{c.nombre}</span>
                     <div className="text-right">
                       <p className="text-sm font-black text-white tabular-nums">{c.lts.toLocaleString('es-AR')} Lts</p>
@@ -381,7 +381,7 @@ export default function CombustiblePage() {
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[3rem] border border-white/10 bg-slate-900/20 backdrop-blur-xl shadow-2xl">
+          <div className="overflow-hidden rounded-[3rem] border border-white/10 bg-[#1a2537]/20 backdrop-blur-xl shadow-2xl">
             <table className="w-full text-left">
               <thead className="bg-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-white/5">
                 <tr>
@@ -404,7 +404,7 @@ export default function CombustiblePage() {
                     <tr key={c.id} className={`transition-all group ${isSelected ? 'bg-amber-500/5' : 'hover:bg-white/[0.02]'}`}>
                       {viewMode === 'impagos' && (
                         <td className="p-6 text-center border-r border-white/5">
-                          <input type="checkbox" checked={isSelected} onChange={() => handleToggleSeleccion(c.id)} className="w-4 h-4 accent-amber-500 rounded bg-slate-900 border-white/20 cursor-pointer" />
+                          <input type="checkbox" checked={isSelected} onChange={() => handleToggleSeleccion(c.id)} className="w-4 h-4 accent-amber-500 rounded bg-[#1a2537] border-white/20 cursor-pointer" />
                         </td>
                       )}
                       <td className="p-6">

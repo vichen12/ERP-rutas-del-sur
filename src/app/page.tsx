@@ -3,7 +3,7 @@ import { Truck, ArrowRight, ShieldCheck, Activity } from 'lucide-react'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#141c28] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
       
       {/* Background Glows (Identidad Rutas del Sur) */}
       <div className="absolute inset-0 pointer-events-none">
@@ -14,7 +14,7 @@ export default function LandingPage() {
       <div className="max-w-4xl relative z-10 space-y-10">
         
         {/* Badge de Seguridad */}
-        <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-slate-900/50 border border-white/10 text-cyan-500 text-[10px] font-black uppercase tracking-[0.4em] backdrop-blur-md">
+        <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-[#1a2537]/50 border border-white/10 text-cyan-500 text-[10px] font-black uppercase tracking-[0.4em] backdrop-blur-md">
           <Activity size={14} className="animate-pulse" /> Operaciones Activas
         </div>
         

@@ -73,7 +73,7 @@ export function ViajeModalOperativo({
             <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500/50" />
             <input
               required type="date"
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black outline-none focus:border-cyan-500 text-sm uppercase [color-scheme:dark] shadow-inner transition-all hover:bg-slate-900/80"
+              className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black outline-none focus:border-cyan-500 text-sm uppercase [color-scheme:dark] shadow-inner transition-all hover:bg-[#1a2537]/80"
               value={formData.fecha || ""}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, fecha: e.target.value }))}
             />
@@ -86,7 +86,7 @@ export function ViajeModalOperativo({
             <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500/50" />
             <input
               required placeholder="MENDOZA"
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black uppercase outline-none focus:border-emerald-500/50 text-sm shadow-inner transition-all hover:bg-slate-900/80"
+              className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black uppercase outline-none focus:border-emerald-500/50 text-sm shadow-inner transition-all hover:bg-[#1a2537]/80"
               value={formData.origen || ""}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, origen: e.target.value.toUpperCase() }))}
             />
@@ -99,7 +99,7 @@ export function ViajeModalOperativo({
             <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500/50" />
             <input
               required placeholder="EJ: BS AS"
-              className="w-full bg-slate-900 border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black uppercase outline-none focus:border-rose-500/50 text-sm shadow-inner transition-all hover:bg-slate-900/80"
+              className="w-full bg-[#1a2537] border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-white font-black uppercase outline-none focus:border-rose-500/50 text-sm shadow-inner transition-all hover:bg-[#1a2537]/80"
               value={formData.destino || ""}
               onChange={(e) => setFormData((prev: any) => ({ ...prev, destino: e.target.value.toUpperCase() }))}
             />
@@ -122,7 +122,7 @@ export function ViajeModalOperativo({
             <input
               required type="number"
               placeholder="Km Totales"
-              className={`w-full bg-slate-900 rounded-2xl py-5 pl-12 pr-4 text-white font-black outline-none text-sm tabular-nums shadow-inner transition-all hover:bg-slate-900/80 ${
+              className={`w-full bg-[#1a2537] rounded-2xl py-5 pl-12 pr-4 text-white font-black outline-none text-sm tabular-nums shadow-inner transition-all hover:bg-[#1a2537]/80 ${
                 tieneVuelta ? "border border-indigo-500/50 focus:border-indigo-400" : "border border-indigo-500/20 focus:border-indigo-500"
               }`}
               value={formData.km_recorridos || ""}
@@ -134,7 +134,7 @@ export function ViajeModalOperativo({
 
       {/* FILA LITROS */}
       <div className={`rounded-2xl px-6 py-4 flex items-center gap-4 border transition-all ${
-        tieneVuelta ? "bg-amber-500/5 border-amber-500/20" : "bg-slate-900/20 border-white/5"
+        tieneVuelta ? "bg-amber-500/5 border-amber-500/20" : "bg-[#1a2537]/20 border-white/5"
       }`}>
         <Fuel size={16} className={tieneVuelta ? "text-amber-500 shrink-0" : "text-slate-600 shrink-0"} />
         <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
@@ -184,7 +184,7 @@ export function ViajeModalOperativo({
 
         <div className="space-y-3 pt-6">
           {formData.repartos_ida.length === 0 ? (
-            <div className="py-8 text-center bg-black/20 rounded-2xl border border-dashed border-emerald-500/10">
+            <div className="py-8 text-center bg-[#141c28]/20 rounded-2xl border border-dashed border-emerald-500/10">
               <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Sin asignación de salida</p>
             </div>
           ) : (
@@ -250,7 +250,7 @@ export function ViajeModalOperativo({
 
         <div className="space-y-3 pt-6">
           {formData.repartos_vuelta.length === 0 ? (
-            <div className="py-8 text-center bg-black/20 rounded-2xl border border-dashed border-indigo-500/10">
+            <div className="py-8 text-center bg-[#141c28]/20 rounded-2xl border border-dashed border-indigo-500/10">
               <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic opacity-50">Regreso en vacío</p>
             </div>
           ) : (
@@ -292,7 +292,7 @@ export function ViajeModalOperativo({
       </div>
 
       {/* 4. RECURSOS */}
-      <div className="bg-slate-900/30 border border-white/5 p-6 sm:p-8 rounded-[2.5rem] space-y-6 shadow-inner">
+      <div className="bg-[#1a2537]/30 border border-white/5 p-6 sm:p-8 rounded-[2.5rem] space-y-6 shadow-inner">
         <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5 pb-4">Recursos de Flota</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
@@ -301,7 +301,7 @@ export function ViajeModalOperativo({
               <Truck size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-sky-500/50 z-10 transition-colors group-focus-within/unidad:text-sky-400" />
               <select
                 required
-                className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 pl-14 pr-12 text-sm text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer relative z-0 transition-colors hover:bg-slate-900"
+                className="w-full bg-[#141c28]/40 border border-white/10 rounded-2xl py-5 pl-14 pr-12 text-sm text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer relative z-0 transition-colors hover:bg-[#1a2537]"
                 value={formData.camion_id || ""}
                 onChange={onCamionChange}
               >
@@ -317,7 +317,7 @@ export function ViajeModalOperativo({
               <User size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-sky-500/50 z-10 transition-colors group-focus-within/chofer:text-sky-400" />
               <select
                 required
-                className="w-full bg-black/40 border border-white/10 rounded-2xl py-5 pl-14 pr-12 text-sm text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer relative z-0 transition-colors hover:bg-slate-900"
+                className="w-full bg-[#141c28]/40 border border-white/10 rounded-2xl py-5 pl-14 pr-12 text-sm text-white font-black outline-none focus:border-sky-500 appearance-none cursor-pointer relative z-0 transition-colors hover:bg-[#1a2537]"
                 value={formData.chofer_id || ""}
                 onChange={(e) => setFormData((prev: any) => ({ ...prev, chofer_id: e.target.value }))}
               >
@@ -333,10 +333,10 @@ export function ViajeModalOperativo({
       {/* 5. ENGRASE */}
       <div
         onClick={() => setFormData((prev: any) => ({ ...prev, engrase: !prev.engrase }))}
-        className={`flex items-center justify-between cursor-pointer select-none p-6 rounded-[2rem] border transition-all duration-300 shadow-sm ${!!formData.engrase ? "bg-amber-500/10 border-amber-500/40" : "bg-slate-900/30 border-white/5 hover:bg-white/[0.05]"}`}
+        className={`flex items-center justify-between cursor-pointer select-none p-6 rounded-[2rem] border transition-all duration-300 shadow-sm ${!!formData.engrase ? "bg-amber-500/10 border-amber-500/40" : "bg-[#1a2537]/30 border-white/5 hover:bg-white/[0.05]"}`}
       >
         <div className="flex items-center gap-5">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${!!formData.engrase ? "bg-amber-500 text-black rotate-12 scale-110 shadow-lg shadow-amber-500/20" : "bg-black/50 border border-white/10 text-transparent"}`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${!!formData.engrase ? "bg-amber-500 text-black rotate-12 scale-110 shadow-lg shadow-amber-500/20" : "bg-[#141c28]/50 border border-white/10 text-transparent"}`}>
             <CheckCircle2 size={24} />
           </div>
           <div className="flex flex-col">
@@ -356,7 +356,7 @@ function RepartoRow({
   const color = tipo === 'ida' ? 'emerald' : 'indigo'
   const borderClass = isFirst
     ? `bg-${color}-500/10 border-${color}-500/30`
-    : 'bg-slate-900/50 border-white/5'
+    : 'bg-[#1a2537]/50 border-white/5'
 
   return (
     <div className={`flex flex-col gap-2 p-3 border rounded-2xl animate-in fade-in slide-in-from-left-4 ${borderClass}`}>
@@ -364,7 +364,7 @@ function RepartoRow({
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm font-black ${
           isFirst
             ? `bg-${color}-600 text-white shadow-md`
-            : 'bg-black/50 text-slate-500 border border-white/5'
+            : 'bg-[#141c28]/50 text-slate-500 border border-white/5'
         }`}>
           {isFirst ? <Star size={16} fill="currentColor" /> : idx + 1}
         </div>
@@ -373,7 +373,7 @@ function RepartoRow({
           <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" />
           <select
             required
-            className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 pl-8 text-[11px] text-white font-black outline-none focus:border-emerald-500 appearance-none cursor-pointer uppercase transition-colors"
+            className="w-full bg-[#141c28]/40 border border-white/5 rounded-xl py-3 px-4 pl-8 text-[11px] text-white font-black outline-none focus:border-emerald-500 appearance-none cursor-pointer uppercase transition-colors"
             value={rep.cliente_id || ""}
             onChange={(e) => onClienteChange(e.target.value)}
           >
@@ -401,7 +401,7 @@ function RepartoRow({
               <>
                 <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 rotate-90 pointer-events-none" size={13} />
                 <select
-                  className={`w-full bg-black/30 border rounded-xl py-2.5 px-3 pr-8 text-[10px] font-black text-white outline-none appearance-none cursor-pointer uppercase transition-all ${
+                  className={`w-full bg-[#141c28]/30 border rounded-xl py-2.5 px-3 pr-8 text-[10px] font-black text-white outline-none appearance-none cursor-pointer uppercase transition-all ${
                     rep.destino_id
                       ? `border-${color}-500/30 focus:border-${color}-500`
                       : 'border-white/5 focus:border-sky-500'
@@ -433,7 +433,7 @@ function RepartoRow({
               type="number"
               step="0.01"
               placeholder="0.00"
-              className="w-full bg-black/40 border border-white/5 rounded-xl py-2.5 pl-7 pr-3 text-white font-black text-sm tabular-nums outline-none focus:border-emerald-500 placeholder:text-slate-700"
+              className="w-full bg-[#141c28]/40 border border-white/5 rounded-xl py-2.5 pl-7 pr-3 text-white font-black text-sm tabular-nums outline-none focus:border-emerald-500 placeholder:text-slate-700"
               value={rep.monto_flete || ""}
               onChange={(e) => onMontoChange(e.target.value)}
             />

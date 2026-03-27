@@ -68,8 +68,8 @@ export function ArcaConfigModal({ isOpen, onClose, onSave, initialConfig }: any)
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#020617] w-full max-w-xl rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-xl rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-gradient-to-r from-sky-500 to-emerald-500" />
 
         <div className="flex justify-between items-start mb-6">
@@ -81,7 +81,7 @@ export function ArcaConfigModal({ isOpen, onClose, onSave, initialConfig }: any)
         </div>
 
         {/* Entorno */}
-        <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-white/5 mb-6">
+        <div className="flex bg-[#141c28] p-1.5 rounded-2xl border border-white/5 mb-6">
           <button type="button" onClick={() => setForm(p => ({...p, arca_entorno: 'homologacion'}))}
             className={'flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ' + (form.arca_entorno === 'homologacion' ? 'bg-amber-600 text-white' : 'text-slate-600 hover:text-white')}>
             Modo Prueba
@@ -99,13 +99,13 @@ export function ArcaConfigModal({ isOpen, onClose, onSave, initialConfig }: any)
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Tu CUIT</label>
               <input placeholder="20-12345678-9" value={form.arca_cuit}
                 onChange={e => setForm(p => ({...p, arca_cuit: e.target.value}))}
-                className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm tabular-nums outline-none focus:border-sky-500 placeholder:text-slate-700" />
+                className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm tabular-nums outline-none focus:border-sky-500 placeholder:text-slate-700" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Punto de Venta</label>
               <input type="number" min="1" value={form.arca_punto_venta}
                 onChange={e => setForm(p => ({...p, arca_punto_venta: Number(e.target.value)}))}
-                className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-lg tabular-nums outline-none focus:border-sky-500" />
+                className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-lg tabular-nums outline-none focus:border-sky-500" />
             </div>
           </div>
 
@@ -114,7 +114,7 @@ export function ArcaConfigModal({ isOpen, onClose, onSave, initialConfig }: any)
             <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Razon Social</label>
             <input placeholder="TU EMPRESA S.A." value={form.arca_razon_social}
               onChange={e => setForm(p => ({...p, arca_razon_social: e.target.value.toUpperCase()}))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm uppercase outline-none focus:border-sky-500 placeholder:text-slate-700" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm uppercase outline-none focus:border-sky-500 placeholder:text-slate-700" />
           </div>
 
           {/* Condicion IVA */}
@@ -193,7 +193,7 @@ export function ArcaConfigModal({ isOpen, onClose, onSave, initialConfig }: any)
             </button>
           </div>
 
-          <div className="flex gap-3 p-3 bg-slate-900/50 border border-white/5 rounded-xl">
+          <div className="flex gap-3 p-3 bg-[#1a2537]/50 border border-white/5 rounded-xl">
             <HelpCircle size={14} className="text-slate-500 shrink-0 mt-0.5" />
             <p className="text-[8px] font-bold text-slate-500 uppercase leading-relaxed">
               Primero guarda los datos. Despues usa Probar Conexion para verificar que todo funcione. Si no sabes como obtener el certificado, usa el boton de Ayuda en la pantalla principal.

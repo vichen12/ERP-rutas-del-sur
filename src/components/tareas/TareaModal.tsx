@@ -71,8 +71,8 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 font-sans italic">
-      <div className="bg-[#020617] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
+      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
 
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-violet-500" />
 
@@ -115,7 +115,7 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
             <label className="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Título</label>
             <input required placeholder="EJ: PASARLE PLATA A MI HIJO / PAGAR LUZ"
               value={form.titulo} onChange={e => setForm(p => ({ ...p, titulo: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-black text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
           </div>
 
           <div className="space-y-1.5">
@@ -124,7 +124,7 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
             </label>
             <input placeholder="DETALLES..."
               value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value.toUpperCase() }))}
-              className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-5 text-white font-bold text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
+              className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-5 text-white font-bold text-sm uppercase outline-none focus:border-violet-500 transition-all placeholder:text-slate-700" />
           </div>
 
           {/* FECHAS */}
@@ -135,7 +135,7 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
               </label>
               <input required type="date" value={form.fecha_inicio}
                 onChange={e => setForm(p => ({ ...p, fecha_inicio: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm outline-none focus:border-violet-500 [color-scheme:dark]" />
+                className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm outline-none focus:border-violet-500 [color-scheme:dark]" />
               <p className="text-[7px] font-bold text-slate-700 uppercase ml-1">Cuándo aparece</p>
             </div>
             <div className="space-y-1.5">
@@ -144,7 +144,7 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
               </label>
               <input required type="date" value={form.fecha_vencimiento}
                 onChange={e => setForm(p => ({ ...p, fecha_vencimiento: e.target.value }))}
-                className="w-full bg-slate-900 border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm outline-none focus:border-violet-500 [color-scheme:dark]" />
+                className="w-full bg-[#1a2537] border border-white/5 rounded-xl py-3.5 px-4 text-white font-black text-sm outline-none focus:border-violet-500 [color-scheme:dark]" />
               <p className="text-[7px] font-bold text-slate-700 uppercase ml-1">Fecha límite</p>
             </div>
           </div>
@@ -153,7 +153,7 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
             <button type="button" onClick={() => setForm(p => ({ ...p, es_recurrente: !p.es_recurrente }))}
               className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl border transition-all font-black text-[9px] uppercase tracking-widest ${form.es_recurrente
                   ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
-                  : 'bg-slate-900 border-white/5 text-slate-600 hover:text-slate-400'
+                  : 'bg-[#1a2537] border-white/5 text-slate-600 hover:text-slate-400'
                 }`}>
               <Repeat size={14} />
               {form.es_recurrente ? 'Recurrente ✓' : 'Hacer Recurrente'}
@@ -177,7 +177,7 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
             <button type="button" onClick={() => setForm(p => ({ ...p, afecta_caja: !p.afecta_caja }))}
               className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl border transition-all font-black text-[9px] uppercase tracking-widest ${form.afecta_caja
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                  : 'bg-slate-900 border-white/5 text-slate-600 hover:text-slate-400'
+                  : 'bg-[#1a2537] border-white/5 text-slate-600 hover:text-slate-400'
                 }`}>
               <DollarSign size={14} />
               {form.afecta_caja ? 'Afecta Caja ✓' : 'Afecta Caja'}
@@ -187,7 +187,7 @@ export function TareaModal({ isOpen, onClose, onSubmit, isSaving, editingData }:
                 <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={16} />
                 <input required={form.afecta_caja} type="number" step="0.01" min="0" placeholder="Monto a descontar"
                   value={form.monto} onChange={e => setForm(p => ({ ...p, monto: e.target.value }))}
-                  className="w-full bg-slate-900 border border-emerald-500/20 rounded-xl py-3.5 pl-12 pr-5 text-emerald-400 font-black text-xl tabular-nums outline-none focus:border-emerald-500 transition-all" />
+                  className="w-full bg-[#1a2537] border border-emerald-500/20 rounded-xl py-3.5 pl-12 pr-5 text-emerald-400 font-black text-xl tabular-nums outline-none focus:border-emerald-500 transition-all" />
               </div>
             )}
           </div>

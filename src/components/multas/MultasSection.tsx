@@ -87,7 +87,7 @@ export function MultasSection({ multas, loading, onNueva, onEdit, onDelete, onPa
           {multas.map(m => {
             const est = ESTADO_CONFIG[m.estado] || ESTADO_CONFIG.pendiente
             return (
-              <div key={m.id} className={`bg-slate-900/40 rounded-[2.5rem] border p-7 group hover:bg-slate-900/60 transition-all shadow-xl ${m.estado === 'pendiente' ? 'border-rose-500/20' : m.estado === 'pagada' ? 'border-emerald-500/10' : 'border-amber-500/20'}`}>
+              <div key={m.id} className={`bg-[#1a2537]/40 rounded-[2.5rem] border p-7 group hover:bg-[#1a2537]/60 transition-all shadow-xl ${m.estado === 'pendiente' ? 'border-rose-500/20' : m.estado === 'pagada' ? 'border-emerald-500/10' : 'border-amber-500/20'}`}>
 
                 {/* HEADER */}
                 <div className="flex justify-between items-start mb-5">

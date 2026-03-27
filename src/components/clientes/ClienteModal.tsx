@@ -6,8 +6,8 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-start md:items-center justify-center pt-20 p-4 bg-black/90 backdrop-blur-md overflow-y-auto font-sans italic">
-      <div className="bg-[#020617] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-10 shadow-2xl relative mb-10 selection:bg-emerald-500/30">
+    <div className="fixed inset-0 z-[300] flex items-start md:items-center justify-center pt-20 p-4 bg-[#141c28]/90 backdrop-blur-md overflow-y-auto font-sans italic">
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-10 shadow-2xl relative mb-10 selection:bg-emerald-500/30">
         
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500" />
 
@@ -35,7 +35,7 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
                 </label>
                 <input 
                   required placeholder="NOMBRE DE LA EMPRESA" 
-                  className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs uppercase outline-none focus:border-cyan-500 transition-all"
+                  className="w-full bg-[#1a2537] border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs uppercase outline-none focus:border-cyan-500 transition-all"
                   value={formData.razon_social || ''} 
                   onChange={e => setFormData({...formData, razon_social: e.target.value.toUpperCase()})}
                 />
@@ -46,7 +46,7 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
                 </label>
                 <input 
                   placeholder="00-00000000-0" 
-                  className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs outline-none focus:border-cyan-500 transition-all"
+                  className="w-full bg-[#1a2537] border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs outline-none focus:border-cyan-500 transition-all"
                   value={formData.cuit || ''} 
                   onChange={e => setFormData({...formData, cuit: e.target.value})}
                 />
@@ -60,7 +60,7 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
                 </label>
                 <input 
                   placeholder="NOMBRE DEL CONTACTO" 
-                  className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs uppercase outline-none focus:border-emerald-500 transition-all"
+                  className="w-full bg-[#1a2537] border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs uppercase outline-none focus:border-emerald-500 transition-all"
                   value={formData.nombre_contacto || ''} 
                   onChange={e => setFormData({...formData, nombre_contacto: e.target.value.toUpperCase()})}
                 />
@@ -71,7 +71,7 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
                 </label>
                 <input 
                   placeholder="+54 9 261 ..." 
-                  className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs outline-none focus:border-emerald-500 transition-all"
+                  className="w-full bg-[#1a2537] border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs outline-none focus:border-emerald-500 transition-all"
                   value={formData.telefono || ''} 
                   onChange={e => setFormData({...formData, telefono: e.target.value})}
                 />
@@ -84,7 +84,7 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
                 </label>
                 <input 
                   placeholder="CALLE, CIUDAD, PROVINCIA" 
-                  className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs uppercase outline-none focus:border-emerald-500 transition-all"
+                  className="w-full bg-[#1a2537] border border-white/10 rounded-2xl py-4 px-6 text-white font-bold text-xs uppercase outline-none focus:border-emerald-500 transition-all"
                   value={formData.direccion || ''} 
                   onChange={e => setFormData({...formData, direccion: e.target.value.toUpperCase()})}
                 />
@@ -102,28 +102,28 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input placeholder="ORIGEN DEFAULT" className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white text-xs uppercase outline-none focus:border-emerald-500" 
+              <input placeholder="ORIGEN DEFAULT" className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-white text-xs uppercase outline-none focus:border-emerald-500" 
                 value={formData.ruta_origen || ''} onChange={e => setFormData({...formData, ruta_origen: e.target.value.toUpperCase()})} />
-              <input placeholder="DESTINO DEFAULT" className="bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white text-xs uppercase w-full outline-none focus:border-emerald-500" 
+              <input placeholder="DESTINO DEFAULT" className="bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-white text-xs uppercase w-full outline-none focus:border-emerald-500" 
                 value={formData.ruta_destino || ''} onChange={e => setFormData({...formData, ruta_destino: e.target.value.toUpperCase()})} />
-              <input type="number" placeholder="KM ESTIMADOS" className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white font-black text-sm outline-none focus:border-emerald-500" 
+              <input type="number" placeholder="KM ESTIMADOS" className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-white font-black text-sm outline-none focus:border-emerald-500" 
                 value={formData.ruta_km_estimados || ''} onChange={e => setFormData({...formData, ruta_km_estimados: e.target.value})} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/5">
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-500 uppercase ml-2 flex items-center gap-1"><DollarSign size={10}/> Tarifa Flete ($)</label>
-                <input type="number" placeholder="0.00" className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-emerald-400 font-bold text-sm outline-none" 
+                <input type="number" placeholder="0.00" className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-emerald-400 font-bold text-sm outline-none" 
                   value={formData.tarifa_flete || ''} onChange={e => setFormData({...formData, tarifa_flete: e.target.value})} />
               </div>
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-500 uppercase ml-2 flex items-center gap-1"><User size={10}/> Pago Chofer ($)</label>
-                <input type="number" placeholder="0.00" className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-rose-400 font-bold text-sm outline-none" 
+                <input type="number" placeholder="0.00" className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-rose-400 font-bold text-sm outline-none" 
                   value={formData.pago_chofer || ''} onChange={e => setFormData({...formData, pago_chofer: e.target.value})} />
               </div>
               <div className="space-y-1">
                 <label className="text-[8px] font-black text-slate-500 uppercase ml-2 flex items-center gap-1"><Fuel size={10}/> Gasoil (Lts)</label>
-                <input type="number" placeholder="0" className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-amber-500 font-bold text-sm outline-none" 
+                <input type="number" placeholder="0" className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-amber-500 font-bold text-sm outline-none" 
                   value={formData.lts_gasoil_estimado || ''} onChange={e => setFormData({...formData, lts_gasoil_estimado: e.target.value})} />
               </div>
             </div>
@@ -131,12 +131,12 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                  <label className="text-[8px] font-black text-slate-500 uppercase ml-2 flex items-center gap-1"><DollarSign size={10}/> Gasto Descarga ($)</label>
-                 <input type="number" placeholder="0.00" className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none" 
+                 <input type="number" placeholder="0.00" className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none" 
                    value={formData.costo_descarga || ''} onChange={e => setFormData({...formData, costo_descarga: e.target.value})} />
               </div>
               <div className="space-y-1">
                  <label className="text-[8px] font-black text-slate-500 uppercase ml-2 flex items-center gap-1"><Wrench size={10}/> Desgaste ($/KM)</label>
-                 <input type="number" step="0.01" placeholder="Ej: 150.00" className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-cyan-400 font-bold text-sm outline-none" 
+                 <input type="number" step="0.01" placeholder="Ej: 150.00" className="w-full bg-[#141c28] border border-white/10 rounded-xl py-3 px-4 text-cyan-400 font-bold text-sm outline-none" 
                    value={formData.desgaste_por_km || ''} onChange={e => setFormData({...formData, desgaste_por_km: e.target.value})} />
               </div>
             </div>

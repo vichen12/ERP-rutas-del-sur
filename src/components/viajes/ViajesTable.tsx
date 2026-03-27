@@ -14,7 +14,7 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
   
   if (viajes.length === 0) {
     return (
-      <div className="bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-md relative z-20">
+      <div className="bg-[#1a2537]/40 rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-md relative z-20">
          <div className="p-20 md:p-32 text-center flex flex-col items-center justify-center">
             <div className="p-8 bg-white/5 rounded-[3rem] mb-6 text-slate-700">
                <Truck size={48} strokeWidth={1} />
@@ -26,7 +26,7 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
   }
 
   return (
-    <div className="bg-slate-900/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-md relative z-20 font-sans italic">
+    <div className="bg-[#1a2537]/40 rounded-[2rem] md:rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-md relative z-20 font-sans italic">
       
       {/* ===== VISTA MÓVIL ===== */}
       <div className="md:hidden divide-y divide-white/[0.05]">
@@ -35,7 +35,7 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
              const themeColor = isRetorno ? 'text-indigo-400' : 'text-emerald-400';
              
              // ✅ FIX #1: Usar tarifa_flete_calculada en vez de tarifa_flete
-             const bruta = Number(v.tarifa_flete_calculada) || 0;
+             const bruta = Number(v.tarifa_flete_calculada) || Number(v.tarifa_flete) || 0;
              const costoGasoil = (Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoilActual);
              const costoDesgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
              const totalCostos = (Number(v.pago_chofer) || 0) + (Number(v.costo_descarga) || 0) + costoGasoil + costoDesgaste;
@@ -113,7 +113,7 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
               const isRetorno = v.es_retorno;
               
               // ✅ FIX #1: Usar tarifa_flete_calculada en vez de tarifa_flete
-              const bruta = Number(v.tarifa_flete_calculada) || 0;
+              const bruta = Number(v.tarifa_flete_calculada) || Number(v.tarifa_flete) || 0;
               const costoGasoil = (Number(v.lts_gasoil) || 0) * (Number(v.precio_gasoil) || precioGasoilActual);
               const costoDesgaste = (Number(v.km_recorridos) || 0) * (Number(v.desgaste_por_km) || 0);
               const totalCostos = (Number(v.pago_chofer) || 0) + (Number(v.costo_descarga) || 0) + costoGasoil + costoDesgaste;
@@ -153,7 +153,7 @@ export function ViajesTable({ viajes, precioGasoilActual, onDelete }: ViajesTabl
                   {/* OPERATIVO */}
                   <td className="p-8">
                     <div className="flex flex-col items-center gap-2">
-                      <div className="px-5 py-2 bg-slate-950 border border-white/5 rounded-2xl shadow-inner">
+                      <div className="px-5 py-2 bg-[#141c28] border border-white/5 rounded-2xl shadow-inner">
                          <span className="text-white font-black text-xl tabular-nums">{Number(v.km_recorridos).toLocaleString()}</span>
                          {/* ✅ FIX #11: Label correcto */}
                          <span className="text-[10px] text-slate-600 font-black ml-1 uppercase">KM Tramo</span>
