@@ -172,13 +172,13 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* DESKTOP MENU */}
-          <div className="hidden xl:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/5">
+          {/* DESKTOP MENU — solo en pantallas muy grandes (≥1536px) */}
+          <div className="hidden 2xl:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/5 overflow-x-auto max-w-[900px]">
             {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href)
               return (
-                <Link key={item.href} href={item.href} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black tracking-widest uppercase transition-all ${isActive ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
-                  <item.icon size={14} strokeWidth={isActive ? 2.5 : 2} />
+                <Link key={item.href} href={item.href} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[8px] font-black tracking-widest uppercase transition-all shrink-0 ${isActive ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+                  <item.icon size={13} strokeWidth={isActive ? 2.5 : 2} />
                   {item.label}
                 </Link>
               )
@@ -186,7 +186,7 @@ export function Navbar() {
           </div>
 
           {/* RIGHT ACTIONS */}
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             
             {/* NOTIFICATIONS DROPDOWN */}
             <div className="relative" ref={dropdownRef}>
@@ -244,13 +244,13 @@ export function Navbar() {
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            {/* HAMBURGER (XL- only) */}
-            <button onClick={() => setIsMobileMenuOpen(true)} className="xl:hidden p-2.5 md:p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all active:scale-95">
+            {/* HAMBURGER — visible en todo excepto 2xl+ */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className="2xl:hidden p-2.5 md:p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all active:scale-95">
               <Menu size={20} />
             </button>
 
-            {/* LOGOUT (Desktop) */}
-            <button onClick={handleLogout} className="hidden xl:flex p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-95" title="Cerrar Sesión">
+            {/* LOGOUT (solo desktop 2xl+) */}
+            <button onClick={handleLogout} className="hidden 2xl:flex p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-95" title="Cerrar Sesión">
               <LogOut size={20} />
             </button>
           </div>
@@ -258,7 +258,7 @@ export function Navbar() {
       </nav>
 
       {/* MOBILE MENU DRAWER */}
-      <div className={`fixed inset-0 z-[200] xl:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-[200] 2xl:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-[#141c28]/80 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsMobileMenuOpen(false)} />
         
         <div className={`absolute right-0 top-0 bottom-0 w-[85vw] max-w-[300px] bg-[#141c28] border-l border-white/10 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
