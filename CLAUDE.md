@@ -4195,54 +4195,59 @@ UUIDs usados en seed:
 
 
 ---
-  Lo que tenés que hacer vos en Supabase (no se puede desde código)    
 
-  🔴 CRÍTICO — Row Level Security (RLS)
+## ⚠️ PENDIENTE — Acciones manuales en Supabase (NO se pueden hacer desde código)
 
-  En Supabase → Authentication → Policies, activá RLS en TODAS las     
-  tablas. Mientras el sistema sea de un solo usuario, la política más  
-  simple es:
-  -- Ejecutar para cada tabla importante
-  ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "Solo usuarios autenticados" ON clientes
-    FOR ALL USING (auth.role() = 'authenticated');
-  -- Repetir para: viajes, cuenta_corriente, camiones, choferes, etc.  
+### 🔴 1. Row Level Security (RLS)
+Ejecutar `scripts/4_rls_security.sql` en **Supabase → SQL Editor**.
+Esto habilita RLS en las 40+ tablas y crea la política `"Solo usuarios autenticados"` de forma idempotente.
 
-  🔴 CRÍTICO — Variable de entorno faltante
+### 🔴 2. Variables de entorno
+Agregar en `.env.local` (y en Vercel → Settings → Environment Variables):
+```
+NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+```
+La `SERVICE_ROLE_KEY` se encuentra en **Supabase → Settings → API → service_role**.
 
-  En tu .env.local agregá:
-  NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app
-  SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
-  La SERVICE_ROLE_KEY la encontrás en Supabase → Settings → API →      
-  service_role.
+### 🟡 3. Cheques — datos de prueba + fix constraints
+Ejecutar `scripts/3_cheques_setup.sql` en **Supabase → SQL Editor**.
+Hace dos cosas: arregla el constraint `cheques_diferidos_estado_check` (agrega estados faltantes) y carga 10 cheques de prueba.
 
-  🟡 MEDIO — Claves AFIP en la DB
+### 🟡 4. Claves AFIP en DB
+`arca_clave_privada` y `arca_certificado` están en texto plano en `configuracion`. Aceptable para sistema interno, pero en producción deberían ir como variables de entorno.
 
-  Las claves privadas de AFIP (arca_clave_privada, arca_certificado)   
-  están guardadas en texto plano en la tabla configuracion. Por ahora  
-  es aceptable para un sistema interno, pero idealmente deberían estar 
-  en variables de entorno en producción.
+---
 
-✻ Baked for 4m 59s
+## Mejoras aplicadas por Claude (2026-03-27)
 
-───────────────────────────────────────────────────────────────────────
-❯  
-───────────────────────────────────────────────────────────────────────
-  ⏵⏵ accept edits on (meta+m to cycle)
+### Seguridad
+- **`src/lib/apiAuth.ts`** — helper `requireAuth()` que valida sesión Supabase SSR en todos los API routes
+- **`src/lib/safeMath.ts`** — parser matemático seguro (recursive descent) que reemplaza `eval()` y `Function()` en costos-multas y PagoCostoModal
+- **`next.config.ts`** — headers de seguridad: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
+- **`/api/arca/*`** — todos los routes protegidos con `requireAuth()`, validación de input en `facturar`, logs sanitizados
+- **`scripts/4_rls_security.sql`** — script RLS completo listo para ejecutar
 
-  Lo que vos tenés que hacer (5 minutos)
+### Performance
+- **`src/app/camiones/page.tsx`** — Maps pre-computados reemplazan O(n²) `.find()` dentro de `.map()`
+- **`src/app/choferes/page.tsx`** — fetch duplicado de `cuenta_corriente_choferes` eliminado; Maps para choferByOperador, deudaByChofer, kmsByChofer
+- **`src/app/tareas/page.tsx`** — `Promise.all` en `ejecutarCompletar`; single-pass filter reemplaza 3 useMemos
+- **`src/app/dashboard/page.tsx`** — selects explícitos de columnas en los 7 fetches paralelos
+- **`src/app/caja/page.tsx`**, **`costos-multas/page.tsx`** — agregado `export const dynamic = 'force-dynamic'`
 
-  1. Supabase → SQL Editor → ejecutar scripts/4_rls_security.sql       
-  Esto protege todas las tablas con RLS de un saque.
+### Responsive (todas las páginas — notebooks y mobile)
+Patrón aplicado en todas las páginas:
+- Headings: escalado gradual `text-4xl sm:text-6xl md:text-8xl`
+- Padding: `px-4 sm:px-6 md:px-8`
+- Grids: breakpoints intermedios `sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4`
+- Tablas: `overflow-x-auto` + card view en mobile con `hidden md:grid` / `md:hidden`
+- Botones y filtros: `flex-col sm:flex-row` + `flex-wrap`
+- Modales: `overflow-y-auto items-start sm:items-center` para scroll en mobile
 
-  2. Agregar a .env.local:
-  NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app
-  SUPABASE_SERVICE_ROLE_KEY=eyJ...  (Settings → API → service_role en  
-  Supabase)
-
-  ---
-  Ahora voy a revisar el responsive para notebooks.
-
-✻ Brewed for 4m 1s
+### Archivos nuevos creados
+- `src/lib/apiAuth.ts`
+- `src/lib/safeMath.ts`
+- `scripts/3_cheques_setup.sql`
+- `scripts/4_rls_security.sql`
 
 ❯ dale hacelo pq realmente esta mal                                                        
