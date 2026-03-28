@@ -173,7 +173,7 @@ export function Navbar() {
           </Link>
 
           {/* DESKTOP MENU */}
-          <div className="hidden lg:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/5">
+          <div className="hidden xl:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/5">
             {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href)
               return (
@@ -244,13 +244,13 @@ export function Navbar() {
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            {/* HAMBURGER (LG- only) */}
-            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2.5 md:p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all active:scale-95">
+            {/* HAMBURGER (XL- only) */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className="xl:hidden p-2.5 md:p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all active:scale-95">
               <Menu size={20} />
             </button>
 
             {/* LOGOUT (Desktop) */}
-            <button onClick={handleLogout} className="hidden lg:flex p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-95" title="Cerrar Sesión">
+            <button onClick={handleLogout} className="hidden xl:flex p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-95" title="Cerrar Sesión">
               <LogOut size={20} />
             </button>
           </div>
@@ -258,7 +258,7 @@ export function Navbar() {
       </nav>
 
       {/* MOBILE MENU DRAWER */}
-      <div className={`fixed inset-0 z-[200] lg:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-[200] xl:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-[#141c28]/80 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsMobileMenuOpen(false)} />
         
         <div className={`absolute right-0 top-0 bottom-0 w-[85vw] max-w-[300px] bg-[#141c28] border-l border-white/10 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -289,7 +289,13 @@ export function Navbar() {
             })}
           </div>
 
-          <div className="p-6 md:p-8 border-t border-white/5 space-y-4 font-sans italic bg-[#1a2537]/30 text-center">
+          <div className="p-6 md:p-8 border-t border-white/5 space-y-3 font-sans italic bg-[#1a2537]/30 text-center">
+            <button
+              onClick={toggle}
+              className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all font-black uppercase text-[10px] tracking-widest active:scale-95"
+            >
+              {theme === 'dark' ? <><Sun size={16} /> Modo Claro</> : <><Moon size={16} /> Modo Oscuro</>}
+            </button>
             <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[10px] tracking-widest active:scale-95">
               <LogOut size={16} /> Salir del Sistema
             </button>
