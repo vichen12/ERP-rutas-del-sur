@@ -158,62 +158,71 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#141c28]/90 backdrop-blur-xl h-16 md:h-20 font-sans italic">
-        <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-          
+      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#141c28]/90 backdrop-blur-xl h-16 font-sans italic">
+        <div className="w-full px-4 h-full flex items-center gap-3">
+
           {/* LOGO AREA */}
-          <Link href="/dashboard" className="flex items-center gap-3 group shrink-0">
-       
-            <div className="hidden xs:block">
-              <span className="text-lg md:text-xl font-black tracking-tighter italic text-white block leading-none uppercase">
-                Rutas <span className="text-sky-500 font-light">del Sur</span>
+          <Link href="/dashboard" className="flex items-center gap-2 group shrink-0">
+            <div>
+              <span className="text-lg font-black tracking-tighter italic text-white block leading-none uppercase">
+                Dallape <span className="text-sky-500 font-light">Systems</span>
               </span>
-              <span className="text-[8px] font-black tracking-[0.3em] text-slate-500 uppercase italic">Control de Operaciones</span>
+              <span className="hidden 2xl:block text-[7px] font-black tracking-[0.3em] text-slate-500 uppercase italic">Control de Operaciones</span>
             </div>
           </Link>
 
-          {/* DESKTOP MENU — solo en pantallas muy grandes (≥1536px) */}
-          <div className="hidden 2xl:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/5 overflow-x-auto max-w-[900px]">
+          {/* DESKTOP MENU
+              lg  (1024px+): íconos solos → notebooks chicos
+              2xl (1536px+): íconos + texto → pantallas grandes
+          */}
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-0.5 bg-white/5 p-1 rounded-2xl border border-white/5 mx-2">
             {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href)
               return (
-                <Link key={item.href} href={item.href} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[8px] font-black tracking-widest uppercase transition-all shrink-0 ${isActive ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
-                  <item.icon size={13} strokeWidth={isActive ? 2.5 : 2} />
-                  {item.label}
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  title={item.label}
+                  className={`flex items-center gap-1.5 px-2.5 2xl:px-3 py-2 rounded-xl transition-all shrink-0 ${isActive ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+                >
+                  <item.icon size={15} strokeWidth={isActive ? 2.5 : 2} />
+                  <span className="hidden 2xl:inline text-[8px] font-black tracking-widest uppercase whitespace-nowrap">
+                    {item.label}
+                  </span>
                 </Link>
               )
             })}
           </div>
 
           {/* RIGHT ACTIONS */}
-          <div className="flex items-center gap-2 shrink-0">
-            
+          <div className="flex items-center gap-2 shrink-0 ml-auto lg:ml-0">
+
             {/* NOTIFICATIONS DROPDOWN */}
             <div className="relative" ref={dropdownRef}>
-              <button 
-                onClick={() => setShowNotifications(!showNotifications)} 
-                className={`p-2.5 md:p-3 rounded-xl border transition-all relative active:scale-95 ${alerts.length > 0 ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : 'bg-white/5 border-white/10 text-slate-500'}`}
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`p-2.5 rounded-xl border transition-all relative active:scale-95 ${alerts.length > 0 ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : 'bg-white/5 border-white/10 text-slate-500'}`}
               >
                 <Bell size={18} className={alerts.length > 0 ? 'animate-pulse' : ''} />
                 {alerts.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-rose-500 text-white text-[9px] md:text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#0a0a0f]">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-[#0a0a0f]">
                     {alerts.length}
                   </span>
                 )}
               </button>
 
               {showNotifications && (
-                <div className="absolute right-[-60px] md:right-0 mt-4 w-[85vw] max-w-[320px] md:w-80 bg-[#141c28] border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right z-50 font-sans italic">
+                <div className="absolute right-[-60px] lg:right-0 mt-4 w-[85vw] max-w-[320px] lg:w-80 bg-[#141c28] border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right z-50 font-sans italic">
                   <div className="p-5 border-b border-white/5 bg-white/5 flex justify-between items-center">
                     <h3 className="text-xs font-black uppercase tracking-widest text-white">Alertas Operativas</h3>
                     <button onClick={() => setShowNotifications(false)} className="p-1 rounded-full hover:bg-white/10 text-slate-500 transition-colors"><X size={16}/></button>
                   </div>
                   <div className="max-h-[60vh] overflow-y-auto">
                     {alerts.length > 0 ? alerts.map((alert, i) => (
-                      <Link 
-                        key={i} 
-                        href={alert.href} 
-                        onClick={() => setShowNotifications(false)} 
+                      <Link
+                        key={i}
+                        href={alert.href}
+                        onClick={() => setShowNotifications(false)}
                         className="p-5 border-b border-white/5 flex gap-4 hover:bg-white/[0.05] transition-colors group"
                       >
                         <div className={`p-2 rounded-lg h-fit ${alert.type === 'error' ? 'bg-rose-500/10 text-rose-500' : alert.type === 'maintenance' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
@@ -238,30 +247,30 @@ export function Navbar() {
             {/* THEME TOGGLE */}
             <button
               onClick={toggle}
-              className="p-2.5 md:p-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-95"
               title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            {/* HAMBURGER — visible en todo excepto 2xl+ */}
-            <button onClick={() => setIsMobileMenuOpen(true)} className="2xl:hidden p-2.5 md:p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all active:scale-95">
-              <Menu size={20} />
+            {/* HAMBURGER — solo en pantallas < lg */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all active:scale-95">
+              <Menu size={18} />
             </button>
 
-            {/* LOGOUT (solo desktop 2xl+) */}
-            <button onClick={handleLogout} className="hidden 2xl:flex p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-95" title="Cerrar Sesión">
-              <LogOut size={20} />
+            {/* LOGOUT (solo desktop lg+) */}
+            <button onClick={handleLogout} className="hidden lg:flex p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-95" title="Cerrar Sesión">
+              <LogOut size={18} />
             </button>
           </div>
         </div>
       </nav>
 
       {/* MOBILE MENU DRAWER */}
-      <div className={`fixed inset-0 z-[200] 2xl:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-[200] lg:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-[#141c28]/80 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsMobileMenuOpen(false)} />
         
-        <div className={`absolute right-0 top-0 bottom-0 w-[85vw] max-w-[300px] bg-[#141c28] border-l border-white/10 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`absolute right-0 top-0 bottom-0 w-72 bg-[#141c28] border-l border-white/10 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           
           <div className="p-6 md:p-8 flex justify-between items-center border-b border-white/5 bg-[#1a2537]/50">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">

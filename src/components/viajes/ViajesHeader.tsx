@@ -7,6 +7,7 @@ import {
   Navigation // ← Agregado
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 interface ViajesHeaderProps {
   search: string;
@@ -70,7 +71,7 @@ export function ViajesHeader({
       setNuevoRecordatorio('')
       fetchRecordatorios()
     } catch (error: any) {
-      alert("No se pudo crear: " + error.message)
+      toast.error("No se pudo crear: " + error.message)
     }
   }
 
@@ -80,7 +81,7 @@ export function ViajesHeader({
       if (error) throw error;
       fetchRecordatorios()
     } catch (error: any) {
-      alert("Error al eliminar: " + error.message)
+      toast.error("Error al eliminar: " + error.message)
     }
   }
 

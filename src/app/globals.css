@@ -19,6 +19,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Cursor pointer global en todos los elementos interactivos */
+button, [role="button"], a, select, label[for],
+[onClick], summary { cursor: pointer; }
+input[type="checkbox"], input[type="radio"] { cursor: pointer; }
+
 /* Configuración de la Scrollbar Pro para Rutas del Sur */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px; /* Bien finita, estilo minimalista */

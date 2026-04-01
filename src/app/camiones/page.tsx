@@ -1,6 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
+import { toast } from 'sonner';
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -176,7 +177,7 @@ export default function FlotaPage() {
       setIsModalOpen(false);
       fetchData();
     } catch (error: any) {
-      alert("ERROR: " + error.message);
+      toast.error("ERROR: " + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -212,7 +213,7 @@ export default function FlotaPage() {
       setIsChoferModalOpen(false);
       fetchData();
     } catch (err: any) {
-      alert("Error al guardar chofer: " + err.message);
+      toast.error("Error al guardar chofer: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -234,50 +235,50 @@ export default function FlotaPage() {
       setIsGastoModalOpen(false);
       fetchData();
     } catch (err: any) {
-      alert("Error al cargar gasto: " + err.message);
+      toast.error("Error al cargar gasto: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string, patente: string) => {
-    if (!confirm(`¿Eliminar la unidad ${patente}?`)) return;
-    setIsSubmitting(true);
-
-    const { error } = await supabase.from("camiones").delete().eq("id", id);
-
-    if (error) {
-      if (error.code === "23503") {
-        alert(
-          `⛔ NO SE PUEDE ELIMINAR:\n\nEl camión ${patente} tiene Viajes o Gastos asociados en el historial.\n\nSOLUCIÓN:\nSi ya no lo usás, dale a Editar y cambiá su estado a "Inactivo" o "Vendido" para sacarlo de circulación sin romper la contabilidad.`,
-        );
-      } else {
-        alert("Error al eliminar: " + error.message);
-      }
-    } else {
-      await fetchData();
-    }
-    setIsSubmitting(false);
+    toast(`¿Eliminar la unidad ${patente}?`, {
+      action: { label: 'Eliminar', onClick: async () => {
+        setIsSubmitting(true);
+        const { error } = await supabase.from("camiones").delete().eq("id", id);
+        if (error) {
+          if (error.code === "23503") {
+            toast.error(`El camión ${patente} tiene Viajes o Gastos asociados. Cambiá su estado a "Inactivo" o "Vendido" para sacarlo de circulación.`, { duration: 6000 });
+          } else {
+            toast.error("Error al eliminar: " + error.message);
+          }
+        } else {
+          await fetchData();
+        }
+        setIsSubmitting(false);
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    });
   };
 
   const handleDeleteChofer = async (id: string, nombre: string) => {
-    if (!confirm(`¿Eliminar el legajo de ${nombre}?`)) return;
-    setIsSubmitting(true);
-
-    const { error } = await supabase.from("choferes").delete().eq("id", id);
-
-    if (error) {
-      if (error.code === "23503") {
-        alert(
-          `⛔ NO SE PUEDE ELIMINAR:\n\nEl chofer ${nombre} tiene Viajes asignados en el historial.\n\nSOLUCIÓN:\nSi ya no trabaja en la empresa, dale a Editar y cambiá su estado a "Inactivo / Desvinculado".`,
-        );
-      } else {
-        alert("Error al eliminar: " + error.message);
-      }
-    } else {
-      await fetchData();
-    }
-    setIsSubmitting(false);
+    toast(`¿Eliminar el legajo de ${nombre}?`, {
+      action: { label: 'Eliminar', onClick: async () => {
+        setIsSubmitting(true);
+        const { error } = await supabase.from("choferes").delete().eq("id", id);
+        if (error) {
+          if (error.code === "23503") {
+            toast.error(`El chofer ${nombre} tiene Viajes asignados. Cambiá su estado a "Inactivo / Desvinculado".`, { duration: 6000 });
+          } else {
+            toast.error("Error al eliminar: " + error.message);
+          }
+        } else {
+          await fetchData();
+        }
+        setIsSubmitting(false);
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    });
   };
 
   // 🚀 LÓGICA DE FILTRADO COMBINADO (Búsqueda + Estado para ambos)

@@ -104,6 +104,18 @@ export default function ChequesPage() {
 
   // ── GUARDAR ────────────────────────────────────────────────────────────────
   async function handleSave(data: any) {
+    if (!data.numero_cheque?.trim()) {
+      toast.error('El número de cheque es obligatorio')
+      return
+    }
+    if (!data.banco?.trim()) {
+      toast.error('El banco es obligatorio')
+      return
+    }
+    if (!data.fecha_vencimiento) {
+      toast.error('La fecha de vencimiento es obligatoria')
+      return
+    }
     setIsSaving(true)
     try {
       const payload: any = {
@@ -119,7 +131,8 @@ export default function ChequesPage() {
       }
 
       if (editingCheque) {
-        await supabase.from('cheques_diferidos').update(payload).eq('id', editingCheque.id)
+        const { error: updateError } = await supabase.from('cheques_diferidos').update(payload).eq('id', editingCheque.id)
+        if (updateError) throw updateError
         toast.success('Cheque actualizado')
       } else {
         payload.estado = 'pendiente'
@@ -148,9 +161,9 @@ export default function ChequesPage() {
       setIsModalOpen(false)
       setEditingCheque(null)
       fetchAll()
-    } catch (e) {
-      console.error(e)
-      toast.error('Error al guardar')
+    } catch (e: any) {
+      console.error('Error cheques:', e?.message || e?.details || JSON.stringify(e))
+      toast.error(e?.message || 'Error al guardar')
     } finally {
       setIsSaving(false)
     }
@@ -209,18 +222,26 @@ export default function ChequesPage() {
 
   // ── RECHAZAR ───────────────────────────────────────────────────────────────
   async function handleRechazar(id: string) {
-    if (!confirm('¿Marcar este cheque como rechazado?')) return
-    await supabase.from('cheques_diferidos').update({ estado: 'rechazado' }).eq('id', id)
-    toast.success('Cheque marcado como rechazado')
-    fetchAll()
+    toast('¿Marcar este cheque como rechazado?', {
+      action: { label: 'Confirmar', onClick: async () => {
+        await supabase.from('cheques_diferidos').update({ estado: 'rechazado' }).eq('id', id)
+        toast.success('Cheque marcado como rechazado')
+        fetchAll()
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   // ── ELIMINAR ───────────────────────────────────────────────────────────────
   async function handleDelete(id: string) {
-    if (!confirm('¿Eliminar este cheque?')) return
-    await supabase.from('cheques_diferidos').delete().eq('id', id)
-    toast.success('Cheque eliminado')
-    fetchAll()
+    toast('¿Eliminar este cheque?', {
+      action: { label: 'Eliminar', onClick: async () => {
+        await supabase.from('cheques_diferidos').delete().eq('id', id)
+        toast.success('Cheque eliminado')
+        fetchAll()
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   // ── HELPERS ────────────────────────────────────────────────────────────────

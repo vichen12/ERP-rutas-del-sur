@@ -47,10 +47,10 @@ export function ChoferCard({
   
   if (esDeuda) {
     balanceLabel = "Sueldo Pendiente";
-    balanceColor = "text-rose-400";
-    balanceBg = "bg-rose-950/30 border-rose-500/20";
-    balanceIconColor = "text-rose-500";
-    balanceGlow = "bg-rose-500/20 blur-[80px]";
+    balanceColor = "text-sky-400";
+    balanceBg = "bg-sky-950/30 border-sky-500/20";
+    balanceIconColor = "text-sky-500";
+    balanceGlow = "bg-sky-500/20 blur-[80px]";
   } else if (esAFavor) {
     balanceLabel = "Adelantos a Favor";
     balanceColor = "text-emerald-400";
@@ -219,8 +219,8 @@ export function ChoferCard({
           <button 
             onClick={() => onViewStats(chofer)}
             className={`group/btn w-full mt-auto py-4 sm:py-5 px-2 rounded-xl font-black uppercase text-[8px] sm:text-[9px] tracking-[0.15em] sm:tracking-[0.2em] flex justify-center items-center gap-2 transition-all duration-300 active:scale-[0.98] truncate ${
-              esDeuda 
-              ? 'bg-gradient-to-r from-rose-600 to-rose-500 text-white shadow-[0_5px_20px_rgba(225,29,72,0.2)] hover:shadow-[0_5px_30px_rgba(225,29,72,0.4)] border border-rose-400/30' 
+              esDeuda
+              ? 'bg-gradient-to-r from-sky-600 to-sky-500 text-white shadow-[0_5px_20px_rgba(14,165,233,0.2)] hover:shadow-[0_5px_30px_rgba(14,165,233,0.4)] border border-sky-400/30'
               : esAFavor 
                 ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-[0_5px_20px_rgba(16,185,129,0.2)] hover:shadow-[0_5px_30px_rgba(16,185,129,0.4)] border border-emerald-400/30'
                 : 'bg-white text-black hover:bg-slate-200 shadow-[0_5px_20px_rgba(255,255,255,0.15)] hover:shadow-[0_5px_30px_rgba(255,255,255,0.25)]'

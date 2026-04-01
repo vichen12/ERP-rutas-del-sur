@@ -6,6 +6,7 @@ import {
   MapPin, Plus, Pencil, Trash2, Navigation, DollarSign,
   Ruler, Fuel, AlertCircle, Loader2, Map
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { ClienteUbicacionModal } from './ClienteUbicacionModal'
 
 interface Props {
@@ -58,23 +59,27 @@ export function ClienteUbicaciones({
       onRefresh()
     } catch (e: any) {
       console.error('Error guardando ubicación:', e)
-      alert('Error al guardar: ' + (e.message || 'Revisá la consola'))
+      toast.error('Error al guardar: ' + (e.message || 'Revisá la consola'))
     } finally {
       setIsSaving(false)
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('¿Eliminar esta ubicación?')) return
-    setDeletingId(id)
-    const { error } = await supabase.from('destinos_cliente').delete().eq('id', id)
-    if (error) {
-      console.error('Error eliminando:', error)
-      alert('Error al eliminar: ' + error.message)
-    } else {
-      onRefresh()
-    }
-    setDeletingId(null)
+    toast('¿Eliminar esta ubicación?', {
+      action: { label: 'Eliminar', onClick: async () => {
+        setDeletingId(id)
+        const { error } = await supabase.from('destinos_cliente').delete().eq('id', id)
+        if (error) {
+          console.error('Error eliminando:', error)
+          toast.error('Error al eliminar: ' + error.message)
+        } else {
+          onRefresh()
+        }
+        setDeletingId(null)
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   function openNew() {

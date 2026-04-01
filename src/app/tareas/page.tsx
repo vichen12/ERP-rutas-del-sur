@@ -1,6 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
+import { toast } from 'sonner'
 import { useState, useEffect, useMemo } from 'react'
 import * as supabaseLib from '@/lib/supabase'
 import { Plus, Loader2, Clock, AlertTriangle, CheckSquare } from 'lucide-react'
@@ -151,7 +152,7 @@ export default function TareasPage() {
       }
 
       if (result.error) {
-        alert('Error: ' + (result.error.message || JSON.stringify(result.error)))
+        toast.error('Error: ' + (result.error.message || JSON.stringify(result.error)))
         return
       }
 
@@ -159,16 +160,20 @@ export default function TareasPage() {
       setEditingTarea(null)
       fetchTareas()
     } catch (e: any) {
-      alert('Error: ' + (e?.message || JSON.stringify(e)))
+      toast.error('Error: ' + (e?.message || JSON.stringify(e)))
     } finally {
       setIsSaving(false)
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('¿Eliminar esta tarea?')) return
-    await supabase.from('tareas').delete().eq('id', id)
-    fetchTareas()
+    toast('¿Eliminar esta tarea?', {
+      action: { label: 'Eliminar', onClick: async () => {
+        await supabase.from('tareas').delete().eq('id', id)
+        fetchTareas()
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   const tabs: { value: Tab; label: string; icon: any; count: number; color: string }[] = [

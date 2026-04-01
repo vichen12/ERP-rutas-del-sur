@@ -352,7 +352,7 @@
   <p>Guia completa: como opera cada modulo, que impacta cada accion y como fluye el dinero en todo el sistema.</p>
   <div class="hero-meta">
     <span>Actualizado: Marzo 2026</span>
-    <span>12 modulos documentados</span>
+    <span>13 modulos documentados</span>
     <span>Flujos de datos e impactos cruzados</span>
     <span>Gateway financiero central</span>
   </div>
@@ -374,9 +374,11 @@
     <a href="#combustible">Combustible</a>
     <a href="#costos">Costos y Multas</a>
     <a href="#facturacion">Facturacion ARCA</a>
+    <a href="#cheques">Cheques Diferidos</a>
     <a href="#remitos">Remitos</a>
     <a href="#tareas">Tareas</a>
     <a href="#impactos">Mapa de Impactos</a>
+    <a href="#changelog">Historial de Cambios</a>
   </div>
 </div>
 
@@ -950,6 +952,111 @@ saldo_total = saldo_caja + saldo_banco</div>
 saldo_banco_usd = saldo_banco_ars / tipo_cambio_dolar</div>
       <div class="alert alert-amber">
         El tipo de cambio se actualiza manualmente desde la configuracion del sistema. No hay cotizacion automatica.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- CHEQUES -->
+<div class="section" id="cheques">
+  <div class="section-header">
+    <div class="section-icon icon-indigo">&#9989;</div>
+    <div class="section-title">
+      <h2>Cheques Diferidos</h2>
+      <p>Gestion de cheques recibidos de clientes y emitidos a proveedores</p>
+    </div>
+  </div>
+
+  <div class="alert alert-amber">
+    <strong>Requiere migracion:</strong> Ejecutar <code>scripts/3_cheques_setup.sql</code> en Supabase &rarr; SQL Editor antes de usar este modulo. Agrega columnas tipo, destinatario, notas, movimiento_caja_id, fecha_cobro y arregla el constraint de estado.
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Tipos de Cheque</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Tipo</th><th>Significado</th><th>Usa cliente_id</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-emerald">recibido</span></td><td>Un cliente nos entrega un cheque</td><td>Si (opcional)</td></tr>
+            <tr><td><span class="badge badge-rose">emitido</span></td><td>Nosotros damos un cheque a un proveedor</td><td>No (destinatario texto libre)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Estados del Cheque</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-amber">pendiente</span></td><td>Cheque registrado, no cobrado/pagado aun</td></tr>
+            <tr><td><span class="badge badge-emerald">cobrado</span></td><td>Cheque recibido y acreditado en banco</td></tr>
+            <tr><td><span class="badge badge-sky">pagado</span></td><td>Cheque emitido y debitado del banco</td></tr>
+            <tr><td><span class="badge badge-rose">rechazado</span></td><td>Cheque rebotado / sin fondos</td></tr>
+            <tr><td><span class="badge badge-violet">vencido</span></td><td>Paso la fecha sin cobrar/pagar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Campos obligatorios al crear un cheque (NOT NULL en DB)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Campo</th><th>Restriccion</th><th>Validacion en UI</th></tr></thead>
+        <tbody>
+          <tr><td>numero_cheque</td><td>NOT NULL</td><td>Toast error si vacio antes del INSERT</td></tr>
+          <tr><td>banco</td><td>NOT NULL</td><td>Toast error si vacio antes del INSERT</td></tr>
+          <tr><td>fecha_vencimiento</td><td>NOT NULL</td><td>Toast error si vacio antes del INSERT</td></tr>
+          <tr><td>monto</td><td>NOT NULL, &gt; 0</td><td>Validado en handleSubmit del modal</td></tr>
+          <tr><td>estado</td><td>NOT NULL, default 'pendiente'</td><td>Asignado automaticamente al crear</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-rose">
+      <strong>Error comun:</strong> <code>null value in column "numero_cheque" violates not-null constraint</code> &mdash; ocurre cuando se intenta guardar sin completar los campos obligatorios. El sistema ahora valida antes del INSERT y muestra toast descriptivo.
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Flujo: Cobrar un cheque recibido</h3>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-content">
+            <h4>Clic en "Cobrar"</h4>
+            <p>Se abre ChequeAccionModal. Se ingresa la fecha de acreditacion y si registrar en banco.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-content">
+            <h4>UPDATE estado='cobrado'</h4>
+            <p>Se actualiza el registro en cheques_diferidos con estado y fecha_cobro.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-content">
+            <h4>Impacto en Banco (opcional)</h4>
+            <p>Si registrarEnBanco=true: INSERT en movimientos_caja tipo='ingreso', tipo_cuenta='banco', categoria='cobro_cheque'.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Alertas en Navbar</h3>
+      <p>La Navbar consulta cheques_diferidos donde estado='pendiente' y muestra alertas cuando:</p>
+      <div class="impact-list">
+        <div class="impact-item"><span class="badge badge-rose">VENCIDO</span><div style="margin-left:8px">fecha_vencimiento &lt; hoy</div></div>
+        <div class="impact-item"><span class="badge badge-amber">PROXIMO</span><div style="margin-left:8px">fecha_vencimiento &lt;= hoy + 5 dias</div></div>
+      </div>
+      <div class="alert alert-sky">
+        Los cheques a cobrar muestran "Vence en X dias". Los emitidos a pagar muestran "Pagar en X dias". Haciendo click navega directamente a /cheques.
       </div>
     </div>
   </div>
@@ -1534,6 +1641,9 @@ INSERT INTO facturas { importe_total=45000, cae='...' }</div>
           <tr><td>Combustible</td><td>Pagar resumen cargas</td><td>Combustible</td><td>UPDATE pagado=true en cargas_combustible</td></tr>
           <tr><td>Costos</td><td>Pagar costo fijo</td><td>Caja (Banco)</td><td>registrarPagoImpuesto/Seguro() → egreso banco</td></tr>
           <tr><td>Costos</td><td>Pagar multa</td><td>Caja</td><td>registrarPagoMulta() → egreso multa caja</td></tr>
+          <tr><td>Cheques</td><td>Registrar cheque recibido con cliente</td><td>Clientes (CC)</td><td>INSERT haber=monto, tipo_movimiento='Cheque Recibido'</td></tr>
+          <tr><td>Cheques</td><td>Cobrar cheque recibido</td><td>Banco</td><td>INSERT ingreso cobro_cheque si registrarEnBanco=true</td></tr>
+          <tr><td>Cheques</td><td>Pagar cheque emitido</td><td>Banco</td><td>INSERT egreso pago_cheque si registrarEnBanco=true</td></tr>
         </tbody>
       </table>
     </div>
@@ -1594,6 +1704,13 @@ INSERT INTO facturas { importe_total=45000, cae='...' }</div>
       <div class="impact-item">
         <strong>8.</strong>
         <div>
+          <strong>cheques_diferidos: numero_cheque, banco y fecha_vencimiento son NOT NULL.</strong>
+          <div style="color:var(--muted);font-size:13px;margin-top:2px">El formulario valida estos campos antes del INSERT y muestra toast descriptivo. Sin el script 3_cheques_setup.sql ejecutado, la tabla no tiene columnas tipo/destinatario/notas.</div>
+        </div>
+      </div>
+      <div class="impact-item">
+        <strong>9.</strong>
+        <div>
           <strong>Todos los movimientos de dinero DEBEN pasar por cajaService.</strong>
           <div style="color:var(--muted);font-size:13px;margin-top:2px">Nunca un INSERT directo en movimientos_caja desde componentes. Usar siempre las funciones del gateway.</div>
         </div>
@@ -1622,13 +1739,104 @@ Overrides con html.light .clase</div>
       El toggle dark/light esta en la Navbar (icono Sol/Luna). El ThemeProvider en layout.tsx previene el flash de tema incorrecto al cargar con un script inline en &lt;head&gt;.
     </div>
   </div>
+
+  <div class="card">
+    <h3>Navbar — Comportamiento Responsive</h3>
+    <p>La barra de navegacion adapta su layout segun el ancho de pantalla:</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Breakpoint</th><th>Pantalla</th><th>Comportamiento</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-rose">&lt; lg (1024px)</span></td><td>Mobile / Tablet</td><td>Hamburguesa → drawer lateral con todos los items</td></tr>
+          <tr><td><span class="badge badge-amber">lg → 2xl (1024–1535px)</span></td><td>Notebooks</td><td>Iconos solos centrados, sin texto. Tooltip al hover.</td></tr>
+          <tr><td><span class="badge badge-emerald">&ge; 2xl (1536px+)</span></td><td>Desktop grande</td><td>Iconos + texto completo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-sky">
+      Cada link de navegacion tiene <code>title={item.label}</code> — en notebooks se ve solo el icono pero al hover aparece el nombre. El logout button sigue visible en todos los modos desktop.
+    </div>
+  </div>
+</div>
+
+
+<!-- HISTORIAL DE CAMBIOS -->
+<div class="section" id="changelog">
+  <div class="section-header">
+    <div class="section-icon icon-teal">&#128196;</div>
+    <div class="section-title">
+      <h2>Historial de Cambios</h2>
+      <p>Registro de mejoras, fixes y nuevas funcionalidades aplicadas al sistema</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Marzo 2026 — Seguridad, Performance y Responsive</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Area</th><th>Cambio</th><th>Archivos</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-rose">Seguridad</span></td><td>Helper requireAuth() en todos los API routes de /api/arca/</td><td>src/lib/apiAuth.ts</td></tr>
+          <tr><td><span class="badge badge-rose">Seguridad</span></td><td>Parser matematico seguro reemplaza eval() en costos</td><td>src/lib/safeMath.ts</td></tr>
+          <tr><td><span class="badge badge-rose">Seguridad</span></td><td>Headers HTTP de seguridad en next.config.ts</td><td>next.config.ts</td></tr>
+          <tr><td><span class="badge badge-sky">Performance</span></td><td>Maps pre-computados reemplazan .find() anidados en camiones/choferes</td><td>app/camiones/page.tsx, app/choferes/page.tsx</td></tr>
+          <tr><td><span class="badge badge-sky">Performance</span></td><td>Promise.all en completar tareas, single-pass filters</td><td>app/tareas/page.tsx</td></tr>
+          <tr><td><span class="badge badge-sky">Performance</span></td><td>Selects de columnas explicitos en los 7 fetches del dashboard</td><td>app/dashboard/page.tsx</td></tr>
+          <tr><td><span class="badge badge-emerald">Responsive</span></td><td>Todas las paginas con card view mobile, overflow-x-auto en tablas</td><td>Todas las paginas</td></tr>
+          <tr><td><span class="badge badge-indigo">RLS</span></td><td>Script RLS completo para 40+ tablas</td><td>scripts/4_rls_security.sql</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Marzo 2026 — Navbar Responsive Fix</h3>
+    <div class="impact-list">
+      <div class="impact-item">
+        <strong>Problema:</strong>
+        <div style="margin-left:8px">El menu desktop solo aparecia en 2xl (1536px+). En notebooks de 1366px siempre mostraba hamburguesa.</div>
+      </div>
+      <div class="impact-item">
+        <strong>Solucion:</strong>
+        <div style="margin-left:8px">Breakpoint bajado a lg (1024px). En notebooks (lg→2xl): iconos solos centrados con justify-center. En desktop grande (2xl+): iconos + texto. Eliminado max-w-[1600px] para usar todo el ancho disponible.</div>
+      </div>
+    </div>
+    <div class="code">// Antes
+hidden 2xl:flex   → aparecia solo en 1536px+
+
+// Ahora
+hidden lg:flex    → aparece desde 1024px (notebooks)
+texto: hidden 2xl:inline  → solo en pantallas grandes</div>
+  </div>
+
+  <div class="card">
+    <h3>Marzo 2026 — Modulo Cheques</h3>
+    <div class="impact-list">
+      <div class="impact-item">
+        <strong>Nuevo modulo:</strong>
+        <div style="margin-left:8px">Gestion completa de cheques diferidos recibidos y emitidos. CRUD + acciones cobrar/pagar con impacto en banco.</div>
+      </div>
+      <div class="impact-item">
+        <strong>Validaciones agregadas:</strong>
+        <div style="margin-left:8px">Antes del INSERT se valida: numero_cheque, banco y fecha_vencimiento obligatorios (NOT NULL en DB). El error de Supabase se loguea correctamente con e?.message en lugar de console.error(e) que imprimia {}.</div>
+      </div>
+      <div class="impact-item">
+        <strong>Fix error silencioso:</strong>
+        <div style="margin-left:8px">El UPDATE en handleSave no verificaba errores. Corregido: const { error: updateError } = await supabase.update(...); if (updateError) throw updateError.</div>
+      </div>
+      <div class="impact-item">
+        <strong>Script requerido:</strong>
+        <div style="margin-left:8px">scripts/3_cheques_setup.sql debe ejecutarse en Supabase para agregar columnas tipo, destinatario, notas, movimiento_caja_id, fecha_cobro y arreglar el constraint de estado.</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
 <div style="text-align:center; padding: 40px 0 60px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--border); margin-top: 40px;">
   <div style="margin-bottom:8px; font-size:18px;">&#128666;</div>
   <strong style="color:var(--muted)">DallapeSystems ERP</strong>
-  <div style="margin-top:6px">Manual Operativo &mdash; Generado Marzo 2026</div>
+  <div style="margin-top:6px">Manual Operativo &mdash; Actualizado Marzo 2026</div>
   <div style="margin-top:4px">Next.js 16 &middot; Supabase &middot; AFIP ARCA &middot; TypeScript 5</div>
 </div>
 

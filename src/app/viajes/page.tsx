@@ -1,6 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
+import { toast } from 'sonner'
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -163,6 +164,72 @@ function ViajeDetalleModal({ isOpen, onClose, viaje, precioGasoilGlobal }: any) 
   )
 }
 
+// ════════════════════════════════════════════════════════
+// 🗑️ MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
+// ════════════════════════════════════════════════════════
+function ConfirmDeleteModal({ isOpen, onClose, onConfirm, viajeInfo }: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  viajeInfo: any;
+}) {
+  if (!isOpen || !viajeInfo) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150 font-sans italic"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#141c28] w-full max-w-md border border-rose-500/20 rounded-[2.5rem] shadow-2xl p-8 space-y-6 animate-in zoom-in-95 duration-150 relative overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Glow rojo */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-rose-600/10 blur-[80px] rounded-full pointer-events-none" />
+        
+        <div className="flex items-center gap-4">
+          <div className="p-4 bg-rose-500/10 rounded-2xl border border-rose-500/20 shrink-0">
+            <ShieldAlert size={24} className="text-rose-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-white uppercase tracking-tight">Eliminar Viaje</h3>
+            <p className="text-[10px] font-bold text-rose-400/80 uppercase tracking-widest">Esta acción no se puede deshacer</p>
+          </div>
+        </div>
+
+        <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5 space-y-2">
+          <div className="flex items-center gap-2 text-slate-300">
+            <MapPin size={14} className="text-slate-500 shrink-0" />
+            <span className="font-black text-sm uppercase">{viajeInfo.origen} → {viajeInfo.destino}</span>
+          </div>
+          <div className="flex items-center gap-2 text-slate-500">
+            <Calendar size={12} className="shrink-0" />
+            <span className="text-[11px] font-bold">{new Date(viajeInfo.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</span>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+          Se eliminarán todos los registros asociados: cuenta corriente de clientes, combustible, movimientos de caja, deudas de chofer y más.
+        </p>
+
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-4 rounded-2xl bg-rose-600 hover:bg-rose-500 border border-rose-400/30 text-white font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+          >
+            Sí, eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ViajesContent() {
   const searchParams = useSearchParams()
   const [mounted, setMounted] = useState(false)
@@ -174,9 +241,12 @@ function ViajesContent() {
   const [isTraccarModalOpen, setIsTraccarModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 🚀 NUEVOS ESTADOS PARA EL MODAL 360°
+  // 🚀 ESTADOS PARA EL MODAL 360°
   const [selectedViaje, setSelectedViaje] = useState<any>(null)
   const [isDetalleOpen, setIsDetalleOpen] = useState(false)
+
+  // 🗑️ ESTADO PARA MODAL CONFIRMACIÓN ELIMINAR
+  const [viajeToDelete, setViajeToDelete] = useState<any>(null)
 
   const [dateStart, setDateStart] = useState<string>(() => {
     const d = new Date(); d.setDate(1);
@@ -254,9 +324,9 @@ function ViajesContent() {
       if (error) throw error;
       setAppConfig({ ...appConfig, ...configData });
       setIsTraccarModalOpen(false);
-      alert("✅ Configuración de GPS guardada correctamente.");
+      toast.success("Configuración de GPS guardada correctamente.");
     } catch (err: any) {
-      alert("❌ Error al guardar Traccar: " + err.message);
+      toast.error("Error al guardar Traccar: " + err.message);
     }
   }
 
@@ -313,10 +383,14 @@ function ViajesContent() {
         kmTramo: string,
         ltsTramo: string
       ) => {
-        if (!repartos || repartos.length === 0) return 0;
+        // ✅ Filtrar repartos inválidos: cliente_id vacío o monto sin definir
+        const repartosValidos = (repartos || []).filter(
+          (r: any) => r.cliente_id && String(r.cliente_id).trim() !== '' && Number(r.monto_flete) > 0
+        );
+        if (repartosValidos.length === 0) return 0;
 
         // Suma real de todos los fletes del tramo (para que dashboard muestre ingresos correctos)
-        const tarifaRealTramo = repartos.reduce((acc: number, r: any) => acc + (Number(r.monto_flete) || 0), 0);
+        const tarifaRealTramo = repartosValidos.reduce((acc: number, r: any) => acc + (Number(r.monto_flete) || 0), 0);
 
         const viajeObj = {
           ...dataLimpia,
@@ -332,7 +406,7 @@ function ViajesContent() {
         if (eV) throw eV;
 
         // 1. REPARTOS
-        const insertsRep = repartos.map((r: any) => ({
+        const insertsRep = repartosValidos.map((r: any) => ({
           viaje_id: nV.id,
           cliente_id: r.cliente_id,
           monto_flete_parcial: Number(r.monto_flete),
@@ -341,7 +415,7 @@ function ViajesContent() {
         }));
 
         // 2. DEUDA DEL CLIENTE (Ingresa a su Cuenta Corriente, NO a la caja)
-        const insertsCta = repartos.map((r: any) => ({
+        const insertsCta = repartosValidos.map((r: any) => ({
           cliente_id: r.cliente_id,
           viaje_id: nV.id,
           fecha: dataLimpia.fecha,
@@ -350,14 +424,32 @@ function ViajesContent() {
           debe: Number(r.monto_flete)
         }));
 
-        await Promise.all([
-          supabase.from('reparto_viaje').insert(insertsRep),
-          supabase.from('cuenta_corriente').insert(insertsCta)
-        ]);
-
         const uuid = (v: any) => (v && String(v).trim() !== '' ? v : null)
         const camionId = uuid(dataLimpia.camion_id)
         const choferIdLimpio = uuid(dataLimpia.chofer_id)
+
+        // 3. REGISTRO EN COMBUSTIBLE (si el viaje consumió litros)
+        const ltsViaje = Number(ltsTramo || dataLimpia.lts_gasoil) || 0
+        const precioLitro = Number(dataLimpia.precio_gasoil) || 0
+        const promisesCombustible = ltsViaje > 0
+          ? [supabase.from('cargas_combustible').insert([{
+              fecha: dataLimpia.fecha,
+              camion_id: camionId,
+              chofer_id: choferIdLimpio,
+              litros: ltsViaje,
+              precio_litro: precioLitro,
+              total: ltsViaje * precioLitro,
+              monto: ltsViaje * precioLitro,
+              viaje_id: nV.id,
+              pagado: false,
+            }])]
+          : []
+
+        await Promise.all([
+          supabase.from('reparto_viaje').insert(insertsRep),
+          supabase.from('cuenta_corriente').insert(insertsCta),
+          ...promisesCombustible,
+        ]);
 
         // 🔥 4. DEUDA CON EL CHOFER (Sueldo + Viáticos/Descarga)
         const pagoChofer = Number(dataLimpia.pago_chofer || 0);
@@ -410,28 +502,40 @@ function ViajesContent() {
       setIsModalOpen(false);
       setFormData(INITIAL_FORM_STATE);
       fetchData();
-      alert("✅ Viaje registrado correctamente. Los saldos de clientes y choferes fueron actualizados.");
+      toast.success("Viaje registrado correctamente. Los saldos de clientes y choferes fueron actualizados.");
     } catch (err: any) {
-      alert("❌ Error: " + err.message);
+      toast.error("Error: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
   // ─── ELIMINACIÓN ─────────────────────────────────────────────────────────────
-  const handleDeleteViaje = async (e: React.MouseEvent, viaje: any) => {
-    e.stopPropagation(); // 🚀 Evita que al tocar borrar se abra el modal de detalles
-    if (!confirm(`⚠️ ¿Eliminar viaje? Se borrarán repartos, deudas de choferes y clientes, y movimientos asociados.`)) return;
+  const handleDeleteViaje = (e: React.MouseEvent, viaje: any) => {
+    e.stopPropagation();
+    setViajeToDelete(viaje);
+  }
+
+  const confirmarEliminarViaje = async () => {
+    const viaje = viajeToDelete;
+    if (!viaje) return;
+    setViajeToDelete(null);
     try {
       const kmRestar = Number(viaje.km_recorridos) || 0;
-      const cam = camiones.find(c => c.id === viaje.camion_id);
-      const cho = choferes.find(ch => ch.id === viaje.chofer_id);
+      const cam = camiones.find((c: any) => c.id === viaje.camion_id);
+      const cho = choferes.find((ch: any) => ch.id === viaje.chofer_id);
 
       await Promise.all([
         supabase.from('reparto_viaje').delete().eq('viaje_id', viaje.id),
         supabase.from('cuenta_corriente').delete().eq('viaje_id', viaje.id),
         supabase.from('movimientos_caja').delete().eq('referencia_origen_id', viaje.id),
-        supabase.from('cuenta_corriente_choferes').delete().eq('viaje_id', viaje.id)
+        supabase.from('cuenta_corriente_choferes').delete().eq('viaje_id', viaje.id),
+        supabase.from('cargas_combustible').delete().eq('viaje_id', viaje.id),
+        supabase.from('remitos').delete().eq('viaje_id', viaje.id),
+        supabase.from('sueldo_novedades').delete().eq('viaje_id', viaje.id),
+        supabase.from('deudas_chofer').delete().eq('viaje_id', viaje.id),
+        supabase.from('facturas').delete().eq('viaje_id', viaje.id),
+        supabase.from('viajes_auditoria').delete().eq('viaje_id', viaje.id),
       ]);
 
       const updates: any[] = [];
@@ -446,8 +550,9 @@ function ViajesContent() {
       const { error } = await supabase.from('viajes').delete().eq('id', viaje.id);
       if (error) throw error;
 
+      toast.success('Viaje eliminado correctamente');
       fetchData();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { toast.error(err.message); }
   }
 
   // 🚀 FUNCIÓN PARA ABRIR MODAL 360
@@ -643,6 +748,14 @@ function ViajesContent() {
         onClose={() => setIsDetalleOpen(false)}
         viaje={selectedViaje}
         precioGasoilGlobal={precioGasoilGlobal}
+      />
+
+      {/* 🗑️ MODAL CONFIRMACIÓN ELIMINAR */}
+      <ConfirmDeleteModal
+        isOpen={!!viajeToDelete}
+        onClose={() => setViajeToDelete(null)}
+        onConfirm={confirmarEliminarViaje}
+        viajeInfo={viajeToDelete}
       />
     </div>
   )

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { X, Calendar, Search, FileText, Trash2, FilterX, Calculator } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRefresh }: any) {
   const [fromDate, setFromDate] = useState('')
@@ -11,14 +12,18 @@ export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRe
   if (!isOpen) return null
 
   const handleDeleteGasto = async (id: string, desc: string) => {
-    if (!confirm(`⚠️ ¿Desea eliminar permanentemente el gasto: "${desc}"?`)) return
-    
-    const { error } = await supabase.from('gastos_camion').delete().eq('id', id)
-    if (error) {
-      alert("Error al intentar borrar el registro")
-    } else {
-      onRefresh() 
-    }
+    toast(`¿Eliminar el gasto "${desc}"? Esta acción no se puede deshacer.`, {
+      action: { label: 'Eliminar', onClick: async () => {
+        const { error } = await supabase.from('gastos_camion').delete().eq('id', id)
+        if (error) {
+          toast.error('Error al eliminar el gasto')
+        } else {
+          toast.success('Gasto eliminado')
+          onRefresh()
+        }
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   // Lógica de filtrado eficiente

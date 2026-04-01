@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 // 🚀 Agregamos onDeleteMovimiento a los props
 export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasPendientes = [], todoMovimientos = [], onRefresh, onDeleteMovimiento }: any) {
-  if (!isOpen || !chofer) return null
+  // ✅ TODOS los hooks DEBEN estar antes de cualquier early return
 
   // --- MOTORES DE FILTRO DE TIEMPO ---
   const [filterMode, setFilterMode] = useState<'mes' | 'año' | 'historico' | 'custom'>('mes')
@@ -18,7 +18,8 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
   // Estados para el pago
   const [isPaging, setIsPaging] = useState(false)
   const [montoPago, setMontoPago] = useState<string>('')
-  const [medioPago, setMedioPago] = useState<'caja' | 'banco'>('caja')
+  const [medioPago, setMedioPago] = useState<'caja' | 'banco'>('banco')
+  const [confirmandoPago, setConfirmandoPago] = useState(false)
 
   const filterByDate = (fechaStr: string) => {
     if (!fechaStr) return false;
@@ -66,31 +67,37 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
   const handleRealizarPago = async () => {
     const monto = Number(montoPago);
     if (monto <= 0) return toast.error("Ingresá un monto válido mayor a 0");
-    
-    if (!confirm(`¿Confirmás la entrega de $${monto.toLocaleString('es-AR')} a ${chofer.nombre}?\n\nSaldrá de: ${medioPago === 'caja' ? 'Caja (efectivo)' : 'Banco (transferencia)'}`)) return;
+    // Muestra el panel de confirmación inline
+    setConfirmandoPago(true);
+  }
 
+  const ejecutarPago = async () => {
+    const monto = Number(montoPago);
+    setConfirmandoPago(false);
     setIsPaging(true)
     try {
       // 1. Egreso de Caja
-      const { error: errCaja } = await supabase.from('movimientos_caja').insert([{
-        fecha: new Date().toISOString().split('T')[0], 
-        tipo: 'egreso', 
+      const { data: insertData, error: errCaja } = await supabase.from('movimientos_caja').insert([{
+        fecha: new Date().toISOString().split('T')[0],
+        tipo: 'egreso',
         tipo_cuenta: medioPago,
         categoria: 'pago_chofer',
-        monto: monto, 
-        descripcion: monto === deudaTotal 
-          ? `LIQUIDACIÓN TOTAL - ${chofer.nombre}` 
+        monto: monto,
+        descripcion: monto === deudaTotal
+          ? `LIQUIDACIÓN TOTAL - ${chofer.nombre}`
           : `ADELANTO / PAGO PARCIAL - ${chofer.nombre}`,
         chofer_id: chofer.id,
-        origen: 'automatico',
-        modulo_origen: 'choferes'
-      }])
-      if (errCaja) throw errCaja;
+      }]).select('id')
+      if (errCaja) {
+        console.error('[ChoferStatsModal] Error al insertar en movimientos_caja:', errCaja)
+        throw new Error(`DB Error [${errCaja.code}]: ${errCaja.message}${errCaja.details ? ' | ' + errCaja.details : ''}`)
+      }
+      console.log('[ChoferStatsModal] movimientos_caja insertado:', insertData)
 
       // 2. Lógica de Cuenta Corriente
       if (monto === deudaTotal && deudaTotal > 0) {
         const idsDeuda = deudasPendientes.map((d: any) => d.id)
-        const updates = idsDeuda.map((id: string) => 
+        const updates = idsDeuda.map((id: string) =>
           supabase.from('cuenta_corriente_choferes').update({ pagado: true }).eq('id', id)
         );
         await Promise.all(updates);
@@ -101,20 +108,23 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
           detalle: monto > deudaTotal ? 'Adelanto de Sueldo / Viáticos' : 'Pago Parcial',
           monto: -monto, // Negativo porque la empresa se lo da al chofer
           tipo_movimiento: 'PAGO',
-          pagado: false 
+          pagado: false
         }])
       }
 
       toast.success(`Entrega de $${monto.toLocaleString('es-AR')} registrada con éxito.`);
       setMontoPago('');
-      onRefresh(); 
+      onRefresh();
     } catch (error: any) {
-      toast.error('Error al procesar el pago: ' + error.message)
-      console.error(error)
+      toast.error('Error al registrar el pago: ' + (error.message || 'Error desconocido'), { duration: 8000 })
+      console.error('[ChoferStatsModal] ejecutarPago catch:', error)
     } finally {
       setIsPaging(false)
     }
   }
+
+  // ✅ Early return DESPUÉS de todos los hooks
+  if (!isOpen || !chofer) return null;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-start sm:items-center justify-center overflow-y-auto p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in duration-300 italic font-sans">
@@ -220,18 +230,47 @@ export function ChoferStatsModal({ isOpen, onClose, chofer, viajes = [], deudasP
                 </button>
               </div>
 
-              <button 
-                onClick={handleRealizarPago}
-                disabled={!montoPago || Number(montoPago) <= 0 || isPaging}
-                className={`w-full py-5 rounded-[1.5rem] font-black uppercase text-[11px] tracking-[0.2em] transition-all flex justify-center items-center gap-3 shadow-xl ${
-                  !montoPago || Number(montoPago) <= 0 
-                    ? 'bg-white/5 text-slate-600 cursor-not-allowed' 
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20 active:scale-95'
-                }`}
-              >
-                {isPaging ? <Loader2 size={18} className="animate-spin" /> : <ArrowRightLeft size={18} />}
-                Confirmar Operación
-              </button>
+              {confirmandoPago ? (
+                /* PANEL DE CONFIRMACIÓN INLINE */
+                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-2xl p-4 text-center">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Confirmá la entrega</p>
+                    <p className="text-2xl font-black text-white">${Number(montoPago).toLocaleString('es-AR')}</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">
+                      Desde: {medioPago === 'caja' ? '💵 Caja efectivo' : '🏦 Banco transferencia'}
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setConfirmandoPago(false)}
+                      className="flex-1 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-black uppercase text-[10px] tracking-widest transition-all"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={ejecutarPago}
+                      disabled={isPaging}
+                      className="flex-1 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      {isPaging ? <Loader2 size={16} className="animate-spin" /> : null}
+                      ✓ Sí, entregar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={handleRealizarPago}
+                  disabled={!montoPago || Number(montoPago) <= 0 || isPaging}
+                  className={`w-full py-5 rounded-[1.5rem] font-black uppercase text-[11px] tracking-[0.2em] transition-all flex justify-center items-center gap-3 shadow-xl ${
+                    !montoPago || Number(montoPago) <= 0 
+                      ? 'bg-white/5 text-slate-600 cursor-not-allowed' 
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20 active:scale-95'
+                  }`}
+                >
+                  {isPaging ? <Loader2 size={18} className="animate-spin" /> : <ArrowRightLeft size={18} />}
+                  Confirmar Operación
+                </button>
+              )}
             </div>
           </div>
 

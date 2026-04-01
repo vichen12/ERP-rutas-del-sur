@@ -286,7 +286,7 @@ export function FacturaWizard({ isOpen, onClose, onSubmit, isEmitting, clientes,
                         className={`px-3 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all ${
                           selectedRemito?.id === r.id ? 'bg-amber-600 border-amber-500 text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'
                         }`}>
-                        Rem. {r.numero || r.id.substring(0, 6)}
+                        {r.numero_remito || r.id.substring(0, 8)}
                       </button>
                     ))}
                   </div>

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Truck, Lock, Mail, Loader2, ArrowRight } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -14,7 +15,7 @@ export default function LoginPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      alert("Error de acceso: Credenciales no válidas")
+      toast.error("Credenciales no válidas. Revisá tu email y contraseña.")
       setLoading(false)
     } else {
       window.location.href = '/dashboard'

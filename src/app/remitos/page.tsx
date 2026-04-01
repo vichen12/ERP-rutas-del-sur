@@ -3,11 +3,12 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import {
   FileText, Search, Loader2, Building2,
   Image as ImageIcon, Camera, CheckCircle2,
   AlertTriangle, Filter, Truck, Calendar,
-  X, Download, Receipt, Zap
+  X, Download, Receipt, Zap, Edit2, Plus, Save
 } from 'lucide-react'
 import * as supabaseLib from '@/lib/supabase'
 
@@ -24,46 +25,66 @@ export default function RemitosPage() {
   const [viewImageUrl, setViewImageUrl] = useState('')
   const [isViewOpen, setIsViewOpen] = useState(false)
 
+  // Modal para asignar número de remito
+  const [editViaje, setEditViaje] = useState<any>(null)
+  const [editNro, setEditNro] = useState('')
+  const [editFoto, setEditFoto] = useState('')
+  const [saving, setSaving] = useState(false)
+
   useEffect(() => { fetchData() }, [])
 
   async function fetchData() {
     setLoading(true)
     try {
-      const { data: clientesData } = await supabase
-        .from('clientes').select('id, razon_social').order('razon_social')
-      if (clientesData) setClientes(clientesData)
+      const [
+        clientesRes,
+        viajesRes,
+        facturasRes,
+        ccRes,
+        remitosDbRes,
+      ] = await Promise.all([
+        supabase.from('clientes').select('id, razon_social').order('razon_social'),
+        supabase.from('viajes')
+          .select('*, clientes(id, razon_social), facturas(id, estado, numero_comprobante, tipo_comprobante, punto_venta, cae)')
+          .order('fecha', { ascending: false }),
+        supabase.from('facturas')
+          .select('id, estado, numero_comprobante, tipo_comprobante, punto_venta, cae, remito_id, viaje_id')
+          .not('remito_id', 'is', null)
+          .eq('estado', 'emitida'),
+        supabase.from('cuenta_corriente').select('viaje_id, cliente_id, fecha, debe, haber, estado_gestion, remito'),
+        supabase.from('remitos').select('id, viaje_id, numero_remito, foto_url, estado, estado_cobro'),
+      ])
 
-      const { data: viajesData, error: errViajes } = await supabase
-        .from('viajes')
-        .select('*, clientes(id, razon_social), facturas(id, estado, numero_comprobante, tipo_comprobante, punto_venta, cae)')
-        .order('fecha', { ascending: false })
-      if (errViajes) throw errViajes
+      if (viajesRes.error) throw viajesRes.error
+      if (ccRes.error) throw ccRes.error
 
-      const { data: facturasConRemito } = await supabase
-        .from('facturas')
-        .select('id, estado, numero_comprobante, tipo_comprobante, punto_venta, cae, remito_id, viaje_id')
-        .not('remito_id', 'is', null)
-        .eq('estado', 'emitida')
+      if (clientesRes.data) setClientes(clientesRes.data)
 
+      // Mapa de facturas por viaje_id
       const facturasPorViaje: Record<string, any> = {}
-      if (facturasConRemito) {
-        facturasConRemito.forEach((f: any) => {
+      if (facturasRes.data) {
+        facturasRes.data.forEach((f: any) => {
           if (f.viaje_id) facturasPorViaje[f.viaje_id] = f
         })
       }
 
-      const { data: ccData, error: errCc } = await supabase
-        .from('cuenta_corriente').select('*')
-      if (errCc) throw errCc
+      // Mapa de remitos DB por viaje_id
+      const remitosDbMap: Record<string, any> = {}
+      if (remitosDbRes.data) {
+        remitosDbRes.data.forEach((r: any) => {
+          if (r.viaje_id) remitosDbMap[r.viaje_id] = r
+        })
+      }
 
+      // Calcular estado de cobro por viaje
       const tripStatusMap: Record<string, string> = {}
       const tripDebeMap: Record<string, number> = {}
       const tripRemitoMap: Record<string, string> = {}
       const tripFaltaMap: Record<string, number> = {}
       const clientsMap: Record<string, any[]> = {}
 
-      if (ccData) {
-        ccData.forEach((m: any) => {
+      if (ccRes.data) {
+        ccRes.data.forEach((m: any) => {
           if (!m.cliente_id) return
           if (!clientsMap[m.cliente_id]) clientsMap[m.cliente_id] = []
           clientsMap[m.cliente_id].push(m)
@@ -101,9 +122,12 @@ export default function RemitosPage() {
         }
       }
 
-      const procesados = (viajesData || []).map((v: any) => {
+      const procesados = (viajesRes.data || []).map((v: any) => {
         let est = tripStatusMap[v.id] || 'sin_remito'
-        const nroRem = tripRemitoMap[v.id] || 'PENDIENTE'
+        // Prioridad: nro de cuenta_corriente, luego de tabla remitos
+        const nroCC = tripRemitoMap[v.id]
+        const remitoDB = remitosDbMap[v.id]
+        const nroRem = nroCC || remitoDB?.numero_remito || 'PENDIENTE'
         if (est === 'bandeja_entrada' && (!nroRem || nroRem === 'PENDIENTE')) est = 'sin_remito'
 
         const importeReal = tripDebeMap[v.id] || Number(v.tarifa_flete || 0)
@@ -121,7 +145,7 @@ export default function RemitosPage() {
           cliente_id: v.clientes?.id || '',
           cliente_nombre: v.clientes?.razon_social || 'S/D',
           nro_remito: nroRem,
-          foto_url: v.foto_url || null,
+          foto_url: remitoDB?.foto_url || null,
           importe: importeReal,
           tarifa_flete: Number(v.tarifa_flete || 0),
           falta: faltaReal,
@@ -132,10 +156,67 @@ export default function RemitosPage() {
       })
       setRemitos(procesados)
     } catch (err: any) {
-      console.error('Error:', err)
-      alert('Error: ' + (err.message || JSON.stringify(err)))
+      toast.error('Error al cargar remitos: ' + (err?.message || JSON.stringify(err)))
     } finally {
       setLoading(false)
+    }
+  }
+
+  function openEditModal(r: any) {
+    setEditViaje(r)
+    setEditNro(r.nro_remito === 'PENDIENTE' ? '' : r.nro_remito)
+    setEditFoto(r.foto_url || '')
+  }
+
+  async function handleSaveRemito() {
+    if (!editNro.trim()) { toast.error('Ingresá el número de remito'); return }
+    setSaving(true)
+    try {
+      // Actualizar cuenta_corriente.remito para el viaje
+      const { error: e1 } = await supabase
+        .from('cuenta_corriente')
+        .update({ remito: editNro.trim() })
+        .eq('viaje_id', editViaje.id)
+      if (e1) throw e1
+
+      // Upsert en tabla remitos
+      const { data: existente } = await supabase
+        .from('remitos')
+        .select('id')
+        .eq('viaje_id', editViaje.id)
+        .maybeSingle()
+
+      if (existente?.id) {
+        const { error: e2 } = await supabase
+          .from('remitos')
+          .update({
+            numero_remito: editNro.trim(),
+            foto_url: editFoto.trim() || null,
+            estado: 'generado',
+          })
+          .eq('id', existente.id)
+        if (e2) throw e2
+      } else {
+        const { error: e3 } = await supabase
+          .from('remitos')
+          .insert([{
+            viaje_id: editViaje.id,
+            cliente_id: editViaje.cliente_id,
+            numero_remito: editNro.trim(),
+            foto_url: editFoto.trim() || null,
+            estado: 'generado',
+            estado_cobro: 'Pendiente',
+          }])
+        if (e3) throw e3
+      }
+
+      toast.success('Remito ' + editNro.trim() + ' guardado')
+      setEditViaje(null)
+      fetchData()
+    } catch (e: any) {
+      toast.error('Error: ' + (e?.message || JSON.stringify(e)))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -154,6 +235,7 @@ export default function RemitosPage() {
 
   const countFact = remitos.filter(r => r.facturado).length
   const countSinFact = remitos.filter(r => !r.facturado).length
+  const countSinRemito = remitos.filter(r => r.estado === 'sin_remito').length
 
   const getBadge = (r: any) => {
     switch (r.estado) {
@@ -186,6 +268,12 @@ export default function RemitosPage() {
             <h1 className="text-3xl sm:text-5xl md:text-7xl font-black italic tracking-tighter text-white uppercase leading-none">REMITOS</h1>
           </div>
           <div className="flex flex-wrap items-end gap-6 sm:gap-8">
+            {countSinRemito > 0 && (
+              <div className="text-right">
+                <p className="text-[8px] font-black uppercase tracking-widest text-amber-500/60">Sin Número</p>
+                <p className="text-2xl font-black tabular-nums text-amber-400 italic animate-pulse">{countSinRemito}</p>
+              </div>
+            )}
             <div className="text-right">
               <p className="text-[8px] font-black uppercase tracking-widest text-emerald-500/60">Facturados</p>
               <p className="text-2xl font-black tabular-nums text-emerald-400 italic">{countFact}</p>
@@ -255,24 +343,38 @@ export default function RemitosPage() {
           {filtered.length > 0 ? filtered.map(r => (
             <div key={r.id} className="bg-[#141c28] border border-white/5 rounded-[2rem] p-4 pr-6 flex flex-col xl:flex-row items-center gap-6 hover:border-white/20 transition-all shadow-xl group">
 
-              <div onClick={() => { if (r.foto_url) { setViewImageUrl(r.foto_url); setIsViewOpen(true) } }}
-                className={'w-full xl:w-40 h-32 xl:h-28 rounded-2xl overflow-hidden border border-white/10 flex items-center justify-center relative shrink-0 ' + (r.foto_url ? 'cursor-pointer hover:border-amber-500' : 'bg-white/5')}>
+              {/* Foto del remito */}
+              <div
+                onClick={() => r.foto_url ? (setViewImageUrl(r.foto_url), setIsViewOpen(true)) : openEditModal(r)}
+                className={'w-full xl:w-40 h-32 xl:h-28 rounded-2xl overflow-hidden border flex items-center justify-center relative shrink-0 transition-all cursor-pointer ' + (r.foto_url ? 'border-white/10 hover:border-amber-500' : 'border-dashed border-amber-500/20 bg-amber-500/5 hover:border-amber-500/50 hover:bg-amber-500/10')}>
                 {r.foto_url ? (
                   <>
-                    <Image src={r.foto_url} alt="Remito" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" sizes="(max-width: 768px) 100vw, 160px" />
-                    <div className="absolute inset-0 bg-[#141c28]/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><Search size={20} className="text-white" /></div>
+                    <Image src={r.foto_url} alt="Remito" fill className="object-cover opacity-80 hover:opacity-100 transition-opacity" sizes="(max-width: 768px) 100vw, 160px" />
+                    <div className="absolute inset-0 bg-[#141c28]/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm"><Search size={20} className="text-white" /></div>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center text-slate-700"><ImageIcon size={24} strokeWidth={1.5} /><span className="text-[8px] font-black uppercase mt-1">Sin Foto</span></div>
+                  <div className="flex flex-col items-center text-amber-600">
+                    <Plus size={24} strokeWidth={1.5} />
+                    <span className="text-[8px] font-black uppercase mt-1">Agregar foto</span>
+                  </div>
                 )}
               </div>
 
               <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 items-center">
                 <div>
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{r.cliente_nombre}</p>
-                  <h3 className={'text-xl font-black italic tracking-tighter uppercase leading-none ' + (r.nro_remito === 'PENDIENTE' ? 'text-amber-500' : 'text-white')}>
-                    {r.nro_remito === 'PENDIENTE' ? 'S/N' : r.nro_remito}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className={'text-xl font-black italic tracking-tighter uppercase leading-none ' + (r.nro_remito === 'PENDIENTE' ? 'text-amber-500' : 'text-white')}>
+                      {r.nro_remito === 'PENDIENTE' ? 'S/N' : r.nro_remito}
+                    </h3>
+                    <button
+                      onClick={() => openEditModal(r)}
+                      className="p-1 rounded-lg bg-white/5 text-slate-600 hover:text-amber-400 hover:bg-amber-500/10 transition-all"
+                      title="Editar remito"
+                    >
+                      <Edit2 size={12} />
+                    </button>
+                  </div>
                   <p className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-1.5 mt-3">
                     <Calendar size={12} /> {r.fecha ? new Date(r.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : 'S/F'}
                   </p>
@@ -315,6 +417,72 @@ export default function RemitosPage() {
           )}
         </div>
 
+        {/* MODAL — Asignar número de remito */}
+        {editViaje && (
+          <div className="fixed inset-0 z-[900] bg-[#141c28]/90 backdrop-blur-xl flex items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) setEditViaje(null) }}>
+            <div className="bg-[#1a2537] border border-amber-500/20 rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black text-amber-500 uppercase tracking-[0.4em] mb-1">Remito Digital</p>
+                  <h2 className="text-2xl font-black italic tracking-tighter text-white uppercase">Asignar Remito</h2>
+                </div>
+                <button onClick={() => setEditViaje(null)} className="p-3 rounded-2xl bg-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-all">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-4 space-y-1 border border-white/5">
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{editViaje.cliente_nombre}</p>
+                <p className="text-sm font-bold text-slate-300 uppercase">{editViaje.origen} → {editViaje.destino}</p>
+                <p className="text-[10px] text-slate-600 font-bold">{editViaje.fecha ? new Date(editViaje.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : ''}</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">
+                    Número de Remito <span className="text-amber-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editNro}
+                    onChange={e => setEditNro(e.target.value.toUpperCase())}
+                    placeholder="Ej: 0001-00004521"
+                    className="w-full bg-[#141c28] border border-white/10 rounded-2xl px-5 py-4 text-white font-black text-sm uppercase tracking-widest outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-700"
+                    onKeyDown={e => { if (e.key === 'Enter') handleSaveRemito() }}
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">
+                    URL de la Foto <span className="text-slate-600">(opcional)</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={editFoto}
+                    onChange={e => setEditFoto(e.target.value)}
+                    placeholder="https://... (Google Drive, Dropbox, etc)"
+                    className="w-full bg-[#141c28] border border-white/10 rounded-2xl px-5 py-4 text-white font-bold text-xs outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-700"
+                  />
+                  {editFoto && (
+                    <p className="text-[9px] text-amber-500 mt-1 font-bold">Tip: Si es Google Drive, usá el link directo (no el link de "compartir")</p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={handleSaveRemito}
+                disabled={saving || !editNro.trim()}
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-[#141c28] font-black uppercase tracking-widest text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                {saving ? 'Guardando...' : 'Guardar Remito'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* VISOR DE IMAGEN */}
         {isViewOpen && (
           <div className="fixed inset-0 z-[999] bg-[#141c28]/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
             <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent z-[510]">

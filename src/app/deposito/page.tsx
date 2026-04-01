@@ -1,6 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
+import { toast } from 'sonner'
 import { useState, useEffect, useMemo } from 'react'
 import { getSupabase } from '@/lib/supabase'
 import { StockItemModal } from '@/components/stock/StockItemModal'
@@ -124,10 +125,14 @@ export default function DepositoPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('¿Eliminar este artículo permanentemente?')) return
-    await supabase.from('stock_movimientos').delete().eq('stock_item_id', id)
-    await supabase.from('stock_items').delete().eq('id', id)
-    await fetchAll()
+    toast('¿Eliminar este artículo permanentemente?', {
+      action: { label: 'Eliminar', onClick: async () => {
+        await supabase.from('stock_movimientos').delete().eq('stock_item_id', id)
+        await supabase.from('stock_items').delete().eq('id', id)
+        await fetchAll()
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   if (!mounted) return null

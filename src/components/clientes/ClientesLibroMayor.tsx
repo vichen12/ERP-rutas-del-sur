@@ -5,11 +5,8 @@ import {
   FileEdit, Truck, Receipt, User, DollarSign, Wallet
 } from 'lucide-react'
 
-export function ClientesLibroMayor({ 
-  gestion, aprobarViaje, eliminarOperacion, onCompletarRemito, onEditOperacion 
-}: any) {
-
-  const EmptyState = ({ message, icon: Icon }: { message: string, icon: any }) => (
+function EmptyState({ message, icon: Icon }: { message: string, icon: React.ElementType }) {
+  return (
     <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
       <div className="p-6 bg-white/5 rounded-full mb-4">
         <Icon size={32} className="text-slate-600" />
@@ -17,6 +14,11 @@ export function ClientesLibroMayor({
       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 text-center">{message}</p>
     </div>
   )
+}
+
+export function ClientesLibroMayor({ 
+  gestion, aprobarViaje, eliminarOperacion, onCompletarRemito, onEditOperacion 
+}: any) {
 
   return (
     <div className="space-y-12 pb-32 font-sans italic">
@@ -51,13 +53,13 @@ export function ClientesLibroMayor({
 
         <div className="grid grid-cols-1 gap-5 relative z-10">
           {gestion.maestro.length > 0 ? (
-            gestion.maestro.map((m: any) => {
+            gestion.maestro.map((m: any, index: number) => {
               const remitoActual = m.remito || '';
               const esViaje = Boolean(m.viaje_id) || String(m.detalle).includes('FLETE');
               const faltaRemito = esViaje && (remitoActual === '' || remitoActual === 'PENDIENTE');
 
               return (
-                <div key={m.id} className={`group relative p-[1px] rounded-[2.5rem] transition-all duration-300 shadow-xl ${
+                <div key={m.id ?? `maestro-${index}`} className={`group relative p-[1px] rounded-[2.5rem] transition-all duration-300 shadow-xl ${
                     faltaRemito ? 'bg-gradient-to-b from-orange-500/40 to-transparent' : 'bg-gradient-to-b from-sky-500/30 to-transparent'
                   }`}
                 >
@@ -134,8 +136,8 @@ export function ClientesLibroMayor({
           </div>
           <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {gestion.pagos.length > 0 ? (
-              gestion.pagos.map((m: any) => (
-                <div key={m.id} className="bg-emerald-900/10 p-5 rounded-3xl border border-emerald-500/10 flex justify-between items-center group relative overflow-hidden">
+              gestion.pagos.map((m: any, index: number) => (
+                <div key={m.id ?? `pago-${index}`} className="bg-emerald-900/10 p-5 rounded-3xl border border-emerald-500/10 flex justify-between items-center group relative overflow-hidden">
                   <div className="absolute left-0 top-0 w-1 h-full bg-emerald-500" />
                   <div className="pl-2">
                     <p className="text-[9px] text-emerald-500/70 font-black uppercase tracking-widest">{new Date(m.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}</p>
@@ -163,7 +165,7 @@ export function ClientesLibroMayor({
           </div>
           <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {gestion.deudaActiva.length > 0 ? (
-              gestion.deudaActiva.map((m: any) => {
+              gestion.deudaActiva.map((m: any, index: number) => {
                 const totalViaje = Number(m.debe);
                 const porcentajePagado = m.pagado > 0 ? (m.pagado / totalViaje) * 100 : 0;
                 
@@ -172,7 +174,7 @@ export function ClientesLibroMayor({
                 const fechaViaje = m.fecha ? new Date(m.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : null;
 
                 return (
-                  <div key={m.id} className="bg-[#141c28] p-6 rounded-3xl border border-white/5 relative overflow-hidden shadow-lg group">
+                  <div key={m.id ?? `deuda-${index}`} className="bg-[#141c28] p-6 rounded-3xl border border-white/5 relative overflow-hidden shadow-lg group">
                     <div className="flex justify-between items-start relative z-10">
                       <div>
                         <div className="flex gap-2 items-center flex-wrap">
@@ -239,13 +241,13 @@ export function ClientesLibroMayor({
           </div>
           <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {gestion.historial.length > 0 ? (
-              gestion.historial.map((m: any) => {
+              gestion.historial.map((m: any, index: number) => {
                 const patente = m.viajes?.camiones?.patente || null;
                 const chofer = m.viajes?.choferes?.nombre || null;
                 const fechaViaje = m.fecha ? new Date(m.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' }) : null;
 
                 return (
-                  <div key={m.id} className="bg-white/[0.02] p-5 rounded-3xl border border-white/5 flex flex-col gap-3 opacity-80 md:opacity-60 hover:opacity-100 transition-all group">
+                  <div key={m.id ?? `historial-${index}`} className="bg-white/[0.02] p-5 rounded-3xl border border-white/5 flex flex-col gap-3 opacity-80 md:opacity-60 hover:opacity-100 transition-all group">
                     <div className="flex justify-between items-start">
                        <div className="flex gap-2 items-center flex-wrap">
                           <p className="text-[9px] font-black text-slate-500 uppercase italic">REM: {m.remito || 'S/N'}</p>

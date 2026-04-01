@@ -1,4 +1,5 @@
 'use client'
+import { toast } from 'sonner'
 import { useState, useEffect, useMemo } from 'react'
 import { getSupabase } from '@/lib/supabase'
 import { CajaHeader } from '@/components/caja/CajaHeader'
@@ -20,7 +21,7 @@ export default function CajaBancoPage() {
   const [loading, setLoading] = useState(true)
 
   // --- FILTROS ---
-  const [tipoCuenta, setTipoCuenta] = useState<'todas' | 'caja' | 'banco'>('banco')
+  const [tipoCuenta, setTipoCuenta] = useState<'todas' | 'caja' | 'banco'>('todas')
   const [dateStart, setDateStart] = useState(() => {
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]
@@ -183,9 +184,13 @@ export default function CajaBancoPage() {
   }
 
   async function handleDeleteMovimiento(id: string) {
-    if (!confirm('¿Eliminar este movimiento?')) return
-    await supabase.from('movimientos_caja').delete().eq('id', id)
-    fetchAll()
+    toast('¿Eliminar este movimiento?', {
+      action: { label: 'Eliminar', onClick: async () => {
+        await supabase.from('movimientos_caja').delete().eq('id', id)
+        fetchAll()
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   async function handleSaveTipoCambio(valor: number) {
@@ -211,6 +216,21 @@ export default function CajaBancoPage() {
           totalIngresos={resumen.ingresosMes}
           totalEgresos={resumen.deudasMes}
         />
+
+        {/* BOTÓN ACTUALIZAR */}
+        <div className="flex justify-end">
+          <button
+            onClick={fetchAll}
+            disabled={loading}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={loading ? 'animate-spin' : ''}>
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+            </svg>
+            Actualizar
+          </button>
+        </div>
+
 
         {/* PANEL DÓLAR */}
         <CajaDolarPanel

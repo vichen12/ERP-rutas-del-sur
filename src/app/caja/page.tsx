@@ -196,14 +196,18 @@ export default function CajaPage() {
   }
 
   async function handleDeleteMovimiento(id: string) {
-    if (!confirm('¿Eliminar este movimiento? Esto afectará el saldo real.')) return
-    const { error } = await supabase.from('movimientos_caja').delete().eq('id', id)
-    if (error) { 
-      toast.error('Error al eliminar: ' + error.message)
-      return 
-    }
-    toast.success('Movimiento eliminado con éxito')
-    fetchAll()
+    toast('¿Eliminar este movimiento? Esto afectará el saldo real.', {
+      action: { label: 'Eliminar', onClick: async () => {
+        const { error } = await supabase.from('movimientos_caja').delete().eq('id', id)
+        if (error) {
+          toast.error('Error al eliminar: ' + error.message)
+          return
+        }
+        toast.success('Movimiento eliminado con éxito')
+        fetchAll()
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   if (loading) return (

@@ -152,45 +152,47 @@ export default function ChoferesPage() {
   };
 
   const handleDeleteChofer = async (id: string, nombre: string) => {
-    if (!confirm(`¿Eliminar el legajo de ${nombre}?`)) return;
-    setIsSubmitting(true);
-
-    const { error } = await supabase.from("choferes").delete().eq("id", id);
-
-    if (error) {
-      if (error.code === "23503") {
-        toast.error(`El chofer ${nombre} tiene historial de viajes. Cambiá su estado a "Inactivo" en lugar de eliminarlo.`, { duration: 6000 });
-      } else {
-        toast.error("Error al eliminar: " + error.message);
-      }
-    } else {
-      toast.success("Chofer eliminado");
-      await fetchData();
-    }
-    setIsSubmitting(false);
+    toast(`¿Eliminar el legajo de ${nombre}?`, {
+      action: { label: 'Eliminar', onClick: async () => {
+        setIsSubmitting(true);
+        const { error } = await supabase.from("choferes").delete().eq("id", id);
+        if (error) {
+          if (error.code === "23503") {
+            toast.error(`El chofer ${nombre} tiene historial de viajes. Cambiá su estado a "Inactivo" en lugar de eliminarlo.`, { duration: 6000 });
+          } else {
+            toast.error("Error al eliminar: " + error.message);
+          }
+        } else {
+          toast.success("Chofer eliminado");
+          await fetchData();
+        }
+        setIsSubmitting(false);
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    });
   };
 
   // 🚀 NUEVO: FUNCIÓN PARA ANULAR UN PAGO O ADELANTO EN LA CUENTA CORRIENTE
   const handleDeleteMovimientoChofer = async (idMovimiento: string) => {
-    if (!confirm("¿Seguro querés anular este pago/movimiento? El saldo del chofer se recalculará al instante.")) return;
-    setIsSubmitting(true);
-    
-    try {
-      // Borramos el movimiento de la cuenta corriente del chofer
-      const { error } = await supabase
-        .from("cuenta_corriente_choferes")
-        .delete()
-        .eq("id", idMovimiento);
-        
-      if (error) throw error;
-      
-      toast.success("Pago anulado exitosamente");
-      await fetchData(); // Recargamos para que el balance vuelva a la normalidad
-    } catch (error: any) {
-      toast.error("Error al anular el pago: " + error.message);
-    } finally {
-      setIsSubmitting(false);
-    }
+    toast('¿Seguro querés anular este pago/movimiento? El saldo del chofer se recalculará al instante.', {
+      action: { label: 'Anular', onClick: async () => {
+        setIsSubmitting(true);
+        try {
+          const { error } = await supabase
+            .from("cuenta_corriente_choferes")
+            .delete()
+            .eq("id", idMovimiento);
+          if (error) throw error;
+          toast.success("Pago anulado exitosamente");
+          await fetchData();
+        } catch (error: any) {
+          toast.error("Error al anular el pago: " + error.message);
+        } finally {
+          setIsSubmitting(false);
+        }
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    });
   };
 
   // --- PRE-COMPUTE maps O(n) para evitar O(n²) en render ---

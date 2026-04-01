@@ -1,6 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
+import { toast } from 'sonner'
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { safeMath } from '@/lib/safeMath'
@@ -165,7 +166,7 @@ export default function CostosMultasPage() {
       let res
       if (editingImpuesto) res = await supabase.from('costos_fijos').update(payload).eq('id', editingImpuesto.id)
       else res = await supabase.from('costos_fijos').insert([payload])
-      if (res.error) { alert('Error al guardar: ' + res.error.message); return }
+      if (res.error) { toast.error('Error al guardar: ' + res.error.message); return }
       setIsImpuestoModalOpen(false); setEditingImpuesto(null); fetchAll()
     } finally { setIsSaving(false) }
   }
@@ -178,14 +179,18 @@ export default function CostosMultasPage() {
       let res
       if (editingCosto) res = await supabase.from('costos_fijos').update(payload).eq('id', editingCosto.id)
       else res = await supabase.from('costos_fijos').insert([payload])
-      if (res.error) { alert('Error al guardar: ' + res.error.message); return }
+      if (res.error) { toast.error('Error al guardar: ' + res.error.message); return }
       setIsCostoModalOpen(false); setEditingCosto(null); fetchAll()
     } finally { setIsSaving(false) }
   }
 
   async function handleDeleteCosto(id: string) {
-    if (!confirm('¿Eliminar este registro?')) return
-    await supabase.from('costos_fijos').delete().eq('id', id); fetchAll()
+    toast('¿Eliminar este registro?', {
+      action: { label: 'Eliminar', onClick: async () => {
+        await supabase.from('costos_fijos').delete().eq('id', id); fetchAll()
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   async function handleToggleCosto(id: string, activo: boolean) {
@@ -206,7 +211,7 @@ export default function CostosMultasPage() {
         descripcion: `${item.tipo === 'impuesto' ? 'IMPUESTO' : 'COSTO'}: ${item.nombre}`,
         fecha: hoyStr,
       }])
-      if (movRes.error) { alert('Error al registrar pago: ' + movRes.error.message); return }
+      if (movRes.error) { toast.error('Error al registrar pago: ' + movRes.error.message); return }
       const updates: any = {}
       if (item.tipo === 'impuesto' || item.recurrente) {
         updates.proximo_pago = avanzarFecha(item.proximo_pago || hoyStr, item.frecuencia || 'mensual')
@@ -215,7 +220,7 @@ export default function CostosMultasPage() {
       }
       await supabase.from('costos_fijos').update(updates).eq('id', item.id)
       setIsPagarModalOpen(false); setPagandoItem(null); fetchAll()
-    } catch (e: any) { alert('Error: ' + (e?.message || e)) }
+    } catch (e: any) { toast.error('Error: ' + (e?.message || e)) }
     finally { setIsSaving(false) }
   }
 
@@ -233,14 +238,19 @@ export default function CostosMultasPage() {
       let res
       if (editingMulta) res = await supabase.from('multas').update(payload).eq('id', editingMulta.id)
       else res = await supabase.from('multas').insert([payload])
-      if (res.error) { alert('Error multa: ' + res.error.message); return }
+      if (res.error) { toast.error('Error multa: ' + res.error.message); return }
       setIsMultaModalOpen(false); setEditingMulta(null); fetchAll()
     } finally { setIsSaving(false) }
   }
-  async function handleDeleteMulta(id: string) { if (!confirm('¿Eliminar?')) return; await supabase.from('multas').delete().eq('id', id); fetchAll() }
+  async function handleDeleteMulta(id: string) {
+    toast('¿Eliminar esta multa?', {
+      action: { label: 'Eliminar', onClick: async () => { await supabase.from('multas').delete().eq('id', id); fetchAll() }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
+  }
   async function handlePagarMulta(multa: any) {
     const res = await supabase.from('multas').update({ estado: 'pagada', fecha_pago: new Date().toISOString() }).eq('id', multa.id)
-    if (res.error) { alert('Error al pagar multa: ' + res.error.message); return }
+    if (res.error) { toast.error('Error al pagar multa: ' + res.error.message); return }
     fetchAll()
   }
 

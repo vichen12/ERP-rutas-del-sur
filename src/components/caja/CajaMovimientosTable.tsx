@@ -384,19 +384,25 @@ export function CajaMovimientosTable({ movimientos, loading, onEdit, onDelete }:
                               {m.clientes.razon_social}
                             </div>
                           )}
-                          {m.choferes && (
+                          {m.choferes ? (
                             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase">
                               <User size={12} className="text-indigo-400" />
                               {m.choferes.nombre}
                             </div>
-                          )}
+                          ) : m.categoria === 'pago_chofer' && m.descripcion ? (
+                            // Fallback: extraer nombre del chofer de la descripción
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase">
+                              <User size={12} className="text-indigo-400/60" />
+                              {m.descripcion.replace(/^(LIQUIDACIÓN TOTAL|ADELANTO \/ PAGO PARCIAL) - /, '')}
+                            </div>
+                          ) : null}
                           {m.camiones && (
                             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase">
                               <Truck size={12} className="text-amber-400" />
                               {m.camiones.patente}
                             </div>
                           )}
-                          {!m.clientes && !m.choferes && !m.camiones && (
+                          {!m.clientes && !m.choferes && !(m.categoria === 'pago_chofer' && m.descripcion) && !m.camiones && (
                             <span className="text-[9px] text-slate-700 font-black uppercase">—</span>
                           )}
                         </div>

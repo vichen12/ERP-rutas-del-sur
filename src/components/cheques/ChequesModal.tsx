@@ -129,18 +129,18 @@ export function ChequesModal({ isOpen, onClose, onSubmit, isSaving, editingChequ
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
-                Nro. Cheque
+                Nro. Cheque *
               </label>
               <input type="text" value={form.numero_cheque} onChange={e => set('numero_cheque', e.target.value)}
-                placeholder="Ej: 00012345"
+                placeholder="Ej: 00012345" required
                 className="w-full bg-[#243248] border border-white/5 rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500/50 transition-colors" />
             </div>
             <div>
               <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
-                Banco
+                Banco *
               </label>
               <input type="text" value={form.banco} onChange={e => set('banco', e.target.value)}
-                placeholder="Ej: Galicia, BBVA..."
+                placeholder="Ej: Galicia, BBVA..." required
                 className="w-full bg-[#243248] border border-white/5 rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-500/50 transition-colors" />
             </div>
           </div>
@@ -169,9 +169,10 @@ export function ChequesModal({ isOpen, onClose, onSubmit, isSaving, editingChequ
             </div>
             <div>
               <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
-                Fecha Vencimiento / Cobro
+                Fecha Vencimiento / Cobro *
               </label>
               <input type="date" value={form.fecha_vencimiento} onChange={e => set('fecha_vencimiento', e.target.value)}
+                required
                 className="w-full bg-[#243248] border border-white/5 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-colors" />
             </div>
           </div>

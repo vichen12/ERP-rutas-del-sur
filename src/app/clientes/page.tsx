@@ -1,6 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
+import { toast } from 'sonner';
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { backupService } from "@/lib/backupService";
@@ -58,35 +59,51 @@ export default function ClientesPage() {
   async function fetchClientes() {
     setLoading(true);
     try {
-      const { data: clientesData, error: errClientes } = await supabase
-        .from("clientes")
-        .select(`*, cuenta_corriente (*, viajes (camiones (patente), choferes (nombre)))`)
-        .order('razon_social', { ascending: true });
+      const [clientesRes, ccRes, remitosRes] = await Promise.all([
+        supabase.from("clientes").select("*").order('razon_social', { ascending: true }),
+        supabase.from("cuenta_corriente").select("id, cliente_id, debe, haber, viaje_id, tipo_movimiento, fecha, detalle, estado_gestion, remito"),
+        supabase.from('remitos').select('cliente_id').or('numero_remito.is.null,numero_remito.eq.PENDIENTE'),
+      ]);
 
-      if (errClientes) throw errClientes;
+      if (clientesRes.error) throw clientesRes.error;
 
-      const { data: remitosData, error: errRemitos } = await supabase
-        .from('remitos')
-        .select('cliente_id, numero_remito')
-        .eq('numero_remito', 'PENDIENTE');
-
-      if (errRemitos) throw errRemitos;
-
-      if (clientesData) {
-        const procesados = clientesData.map((c: any) => {
-          const historial = c.cuenta_corriente || [];
-          const saldoTotal = historial.reduce((acc: number, m: any) => acc + (Number(m.debe || 0) - Number(m.haber || 0)), 0);
-          const tieneRemitosPendientes = remitosData?.some(r => r.cliente_id === c.id) || false;
-          return { ...c, historial, saldo: saldoTotal, alertaRemito: tieneRemitosPendientes };
+      // Agrupar cuenta_corriente por cliente
+      const ccPorCliente: Record<string, any[]> = {};
+      if (ccRes.data) {
+        ccRes.data.forEach((m: any) => {
+          if (!m.cliente_id) return;
+          if (!ccPorCliente[m.cliente_id]) ccPorCliente[m.cliente_id] = [];
+          ccPorCliente[m.cliente_id].push(m);
         });
-        
-        setClientes(procesados);
-        if (selected) {
-          const act = procesados.find((p: any) => p.id === selected.id);
-          if (act) setSelected(act);
-        }
+      }
+
+      // Set de clientes con remitos pendientes (sin número asignado)
+      const clientesConRemitoPendiente = new Set(
+        (remitosRes.data || []).map((r: any) => r.cliente_id)
+      );
+
+      const procesados = (clientesRes.data || []).map((c: any) => {
+        const historial = ccPorCliente[c.id] || [];
+        const saldoTotal = historial.reduce((acc: number, m: any) => acc + (Number(m.debe || 0) - Number(m.haber || 0)), 0);
+        const tieneRemitosPendientes = clientesConRemitoPendiente.has(c.id);
+        return { ...c, historial, saldo: saldoTotal, alertaRemito: tieneRemitosPendientes };
+      });
+
+      setClientes(procesados);
+      if (selected) {
+        const act = procesados.find((p: any) => p.id === selected.id);
+        if (act) setSelected(act);
       }
     } catch (error) { console.error("Error fetching:", error); } finally { setLoading(false); }
+  }
+
+  async function fetchHistorialCompleto(clienteId: string) {
+    const { data } = await supabase
+      .from("cuenta_corriente")
+      .select("*, viajes (camiones (patente), choferes (nombre))")
+      .eq("cliente_id", clienteId)
+      .order("fecha", { ascending: false });
+    return data || [];
   }
 
   async function fetchUbicaciones(clienteId: string) {
@@ -109,12 +126,17 @@ export default function ClientesPage() {
     setChequesCliente(data || []);
   }
 
-  function handleSelectCliente(cliente: any) {
+  async function handleSelectCliente(cliente: any) {
     setSelected(cliente);
     setViewMode("individual");
     setIsSidebarOpen(false);
-    fetchUbicaciones(cliente.id);
-    fetchChequesCliente(cliente.id);
+    // Cargar historial completo (con viajes) + ubicaciones + cheques en paralelo
+    const [historialFull, , ] = await Promise.all([
+      fetchHistorialCompleto(cliente.id),
+      fetchUbicaciones(cliente.id),
+      fetchChequesCliente(cliente.id),
+    ]);
+    setSelected((prev: any) => prev ? { ...prev, historial: historialFull } : prev);
   }
 
   const handleSaveCliente = async (e: React.FormEvent) => {
@@ -139,7 +161,7 @@ export default function ClientesPage() {
         if (error) throw error;
       }
       setIsClientModalOpen(false); setIsEditModalOpen(false); fetchClientes();
-    } catch (err: any) { alert("❌ Error: " + err.message); } finally { setIsSaving(false); }
+    } catch (err: any) { toast.error("Error: " + err.message); } finally { setIsSaving(false); }
   };
 
   const handlePrepareEdit = () => {
@@ -158,10 +180,14 @@ export default function ClientesPage() {
 
   const handleDeleteCliente = async () => {
     if (!selected) return;
-    if (!window.confirm(`⚠️ ¿Eliminar a ${selected.razon_social}? Esta acción no se puede deshacer.`)) return;
-    const { error } = await supabase.from("clientes").delete().eq("id", selected.id);
-    if (error) alert("No se puede eliminar el cliente porque tiene historial.");
-    else { setSelected(null); setViewMode("general"); fetchClientes(); }
+    toast(`¿Eliminar a ${selected.razon_social}? Esta acción no se puede deshacer.`, {
+      action: { label: 'Eliminar', onClick: async () => {
+        const { error } = await supabase.from("clientes").delete().eq("id", selected.id);
+        if (error) toast.error("No se puede eliminar el cliente porque tiene historial.");
+        else { setSelected(null); setViewMode("general"); fetchClientes(); }
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    });
   };
 
   // ─── GUARDAR MOVIMIENTO CON IMPACTO EN CAJA ──────────────────────────────────
@@ -236,24 +262,28 @@ export default function ClientesPage() {
       setIsMovimientoModalOpen(false); 
       setMovimientoAEditar(null);
       fetchClientes();
-    } catch (err: any) { alert("Error al registrar: " + err.message); } finally { setIsSaving(false); }
+    } catch (err: any) { toast.error("Error al registrar: " + err.message); } finally { setIsSaving(false); }
   };
 
   // ─── ELIMINAR MOVIMIENTO CON LIMPIEZA EN CAJA ─────────────────────────────
   const eliminarOperacion = async (id: string) => {
-    if (!confirm("¿Eliminar este movimiento permanentemente? Afectará los saldos.")) return;
-    try {
-      // Borramos primero el movimiento de caja vinculado (si existe)
-      await supabase
-        .from('movimientos_caja')
-        .delete()
-        .eq('referencia_origen_id', id)
-        .eq('modulo_origen', 'clientes');
+    toast('¿Eliminar este movimiento permanentemente? Afectará los saldos.', {
+      action: { label: 'Eliminar', onClick: async () => {
+        try {
+          // Borramos primero el movimiento de caja vinculado (si existe)
+          await supabase
+            .from('movimientos_caja')
+            .delete()
+            .eq('referencia_origen_id', id)
+            .eq('modulo_origen', 'clientes');
 
-      // Luego borramos de cuenta corriente
-      await supabase.from("cuenta_corriente").delete().eq("id", id);
-      fetchClientes();
-    } catch (err: any) { alert("Error al eliminar: " + err.message); }
+          // Luego borramos de cuenta corriente
+          await supabase.from("cuenta_corriente").delete().eq("id", id);
+          fetchClientes();
+        } catch (err: any) { toast.error("Error al eliminar: " + err.message); }
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    });
   };
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -297,7 +327,7 @@ export default function ClientesPage() {
 
   const aprobarViaje = async (id: string) => {
     const { error } = await supabase.from("cuenta_corriente").update({ estado_gestion: 'por_cobrar' }).eq("id", id);
-    if (error) alert(error.message); else fetchClientes();
+    if (error) toast.error(error.message); else fetchClientes();
   };
 
   const totalAlertas = clientes.filter(c => c.alertaRemito).length;
@@ -396,7 +426,7 @@ export default function ClientesPage() {
             await supabase.from("cuenta_corriente").update({ remito: num.toUpperCase() }).eq("id", remitoModalConfig.opId);
             setRemitoModalConfig({ isOpen: false, opId: null, remitoActual: '' }); 
             fetchClientes();
-          } catch(err) { alert("Error al guardar remito"); } finally { setIsSaving(false); }
+          } catch(err) { toast.error("Error al guardar remito"); } finally { setIsSaving(false); }
         }} 
         isSaving={isSaving} 
       />

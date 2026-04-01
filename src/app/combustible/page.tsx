@@ -157,25 +157,28 @@ export default function CombustiblePage() {
   const handleDeleteCarga = async (carga: any) => {
     if (carga.pagado) return toast.error("No podés eliminar un remito que ya fue pagado.");
     if (carga.viaje_id) return toast.error("Esta carga viene de un Viaje. Eliminala desde la sección de Viajes.");
-    if (!confirm(`¿Eliminar remito de ${carga.litros} lts?`)) return;
-
-    try {
-      const ltsRestar = Number(carga.litros);
-      const updates = [];
-      if (carga.camion_id) {
-        const cam = camiones.find(c => c.id === carga.camion_id);
-        if (cam) updates.push(supabase.from('camiones').update({ lts_consumidos: Math.max(0, (cam.lts_consumidos || 0) - ltsRestar) }).eq('id', cam.id));
-      }
-      if (carga.chofer_id) {
-        const cho = choferes.find(c => c.id === carga.chofer_id);
-        if (cho) updates.push(supabase.from('choferes').update({ lts_consumidos: Math.max(0, (cho.lts_consumidos || 0) - ltsRestar) }).eq('id', cho.id));
-      }
-      await Promise.all([...updates, supabase.from('cargas_combustible').delete().eq('id', carga.id)]);
-      fetchData();
-      toast.success('Remito eliminado correctamente');
-    } catch (e: any) {
-      toast.error("Error al eliminar: " + e.message);
-    }
+    toast(`¿Eliminar remito de ${carga.litros} lts?`, {
+      action: { label: 'Eliminar', onClick: async () => {
+        try {
+          const ltsRestar = Number(carga.litros);
+          const updates = [];
+          if (carga.camion_id) {
+            const cam = camiones.find(c => c.id === carga.camion_id);
+            if (cam) updates.push(supabase.from('camiones').update({ lts_consumidos: Math.max(0, (cam.lts_consumidos || 0) - ltsRestar) }).eq('id', cam.id));
+          }
+          if (carga.chofer_id) {
+            const cho = choferes.find(c => c.id === carga.chofer_id);
+            if (cho) updates.push(supabase.from('choferes').update({ lts_consumidos: Math.max(0, (cho.lts_consumidos || 0) - ltsRestar) }).eq('id', cho.id));
+          }
+          await Promise.all([...updates, supabase.from('cargas_combustible').delete().eq('id', carga.id)]);
+          fetchData();
+          toast.success('Remito eliminado correctamente');
+        } catch (e: any) {
+          toast.error("Error al eliminar: " + e.message);
+        }
+      }},
+      cancel: { label: 'Cancelar', onClick: () => {} }
+    })
   }
 
   // --- LIQUIDACIÓN Y PAGO A CAJA ---

@@ -88,9 +88,9 @@ export function CajaResumenGeneral({ resumen, loading }: { resumen: ResumenData,
               </div>
               <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">{b.label}</p>
               <p className={`text-2xl md:text-3xl font-black italic tabular-nums tracking-tighter leading-none ${
-                b.isNegative ? 'text-rose-400' : b.color
+                b.isNegative || b.value < 0 ? 'text-rose-400' : b.color
               }`}>
-                {b.isNegative ? '-' : ''}$ {Math.abs(b.value).toLocaleString('es-AR')}
+                {b.isNegative || b.value < 0 ? '-' : ''}$ {Math.abs(b.value).toLocaleString('es-AR')}
               </p>
               <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-2">{b.sublabel}</p>
             </div>

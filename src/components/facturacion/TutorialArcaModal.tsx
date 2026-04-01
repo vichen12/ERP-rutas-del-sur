@@ -24,7 +24,7 @@ const PASOS = [
     contenido: [
       { t: 'texto', v: 'Entra a ARCA con tu CUIT y clave fiscal:' },
       { t: 'link', v: 'https://arca.gob.ar', txt: 'Abrir ARCA / AFIP' },
-      { t: 'pasos', v: ['Entra con CUIT + Clave Fiscal', 'Busca "Administracion de Certificados Digitales"', 'Click en "Agregar Alias" y ponele: erp_rutas', 'Subi el archivo mi_empresa.csr del paso anterior', 'ARCA te devuelve un archivo .crt - descargalo'] },
+      { t: 'pasos', v: ['Entra con CUIT + Clave Fiscal', 'Busca "Administracion de Certificados Digitales"', 'Click en "Agregar Alias" y ponele: erp_dallape', 'Subi el archivo mi_empresa.csr del paso anterior', 'ARCA te devuelve un archivo .crt - descargalo'] },
       { t: 'alerta', v: 'Guarda el .crt y el .key en un lugar seguro de tu computadora.' },
     ]
   },
