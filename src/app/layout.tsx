@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DallapeSystems | ERP",
-  description: "Panel de Control Operativo y Logístico",
+  title: "FletX | Gestión Logística",
+  description: "Sistema de gestión para transporte y logística",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

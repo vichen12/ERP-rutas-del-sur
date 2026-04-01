@@ -264,13 +264,10 @@ export default function ChoferesPage() {
 
             <div className="flex flex-wrap gap-4 pt-4">
               
-              <div className={`bg-[#141c28]/60 border px-6 py-4 rounded-[2rem] backdrop-blur-md w-full sm:w-auto group hover:border-white/20 transition-all ${
-                globalStats.esAFavorEmpresa ? "border-emerald-500/40 bg-emerald-500/5" : 
-                globalStats.esDeudaEmpresa ? "border-rose-500/40 bg-rose-500/5" : "border-white/5"
-              }`}>
+              <div className="bg-[#141c28]/60 border border-white/5 px-6 py-4 rounded-[2rem] backdrop-blur-md w-full sm:w-auto group hover:border-white/20 transition-all">
                 <p className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-2 ${
-                  globalStats.esAFavorEmpresa ? 'text-emerald-400' : 
-                  globalStats.esDeudaEmpresa ? 'text-rose-400' : 'text-slate-400'
+                  globalStats.esAFavorEmpresa ? 'text-emerald-400' :
+                  globalStats.esDeudaEmpresa ? 'text-amber-400' : 'text-slate-400'
                 }`}>
                   {globalStats.esAFavorEmpresa ? <TrendingUp size={12} /> : globalStats.esDeudaEmpresa ? <TrendingDown size={12} /> : <CreditCard size={12} />} 
                   {globalStats.esAFavorEmpresa ? 'Adelantos a Favor' : globalStats.esDeudaEmpresa ? 'Sueldos Pendientes' : 'Cuentas Al Día'}
@@ -367,7 +364,7 @@ export default function ChoferesPage() {
 
 function HeaderStat({ label, val, color, icon: Icon, highlight }: any) {
   return (
-    <div className={`bg-[#141c28]/60 border ${highlight ? "border-amber-500/40 bg-amber-500/5" : "border-white/5"} px-6 py-4 rounded-[2rem] backdrop-blur-md w-full sm:w-auto group hover:border-white/20 transition-all`}>
+    <div className="bg-[#141c28]/60 border border-white/5 px-6 py-4 rounded-[2rem] backdrop-blur-md w-full sm:w-auto group hover:border-white/15 transition-all">
       <p className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-2 ${color}`}>
         <Icon size={12} /> {label}
       </p>

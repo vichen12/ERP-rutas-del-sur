@@ -18,7 +18,7 @@ export function FacturasHeader({ arcaConfigurado, entorno, dateStart, setDateSta
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
               ARCA<br /><span className="text-sky-500 font-thin">/ AFIP</span>
             </h1>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">Emision de comprobantes electronicos · DallapeSystems ERP</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">Emision de comprobantes electronicos · FletX</p>
           </div>
 
           <div className="flex gap-3 flex-wrap">

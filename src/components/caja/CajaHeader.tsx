@@ -47,13 +47,13 @@ export function CajaHeader({
         <div>
           <div className="flex items-center gap-3 mb-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Tesorería Central</p>
+            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Cuenta Bancaria</p>
           </div>
           <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter text-white uppercase leading-[0.85]">
             BANCO
           </h1>
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-3">
-            Control financiero integral · DallapeSystems ERP
+            Control financiero integral · FletX
           </p>
         </div>
 

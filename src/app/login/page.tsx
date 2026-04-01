@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Truck, Lock, Mail, Loader2, ArrowRight } from 'lucide-react'
+import { Lock, Mail, Loader2 } from 'lucide-react'
 import { getSupabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -15,7 +15,7 @@ export default function LoginPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      toast.error("Credenciales no válidas. Revisá tu email y contraseña.")
+      toast.error('Credenciales no válidas. Revisá tu email y contraseña.')
       setLoading(false)
     } else {
       window.location.href = '/dashboard'
@@ -23,79 +23,110 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#141c28] flex items-center justify-center p-6 relative overflow-hidden">
-      
-      {/* Background Decor (Cyber-Logistics style) */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-sky-500/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[100px] rounded-full" />
+    <div className="min-h-screen flex bg-[#0a0f1a] overflow-hidden">
+
+      {/* ═══ PANEL IZQUIERDO — IMAGEN ═══ */}
+      <div className="hidden lg:block w-[55%] relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=1400&q=85')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0a0f1a]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1a]/60 via-transparent to-[#0a0f1a]/30" />
+
+        {/* Logo sobre imagen */}
+        <div className="absolute top-10 left-10 z-10">
+          <span className="text-2xl font-black italic tracking-tighter text-white uppercase drop-shadow-2xl">
+            Flet<span className="text-sky-400">X</span>
+          </span>
+        </div>
+
+        {/* Texto inferior */}
+        <div className="absolute bottom-12 left-10 z-10 space-y-3 max-w-xs">
+          <h2 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-[0.9] drop-shadow-2xl">
+            Tu flota,<br />bajo <span className="text-sky-400">control</span>
+          </h2>
+          <p className="text-slate-300 text-sm leading-relaxed drop-shadow-lg">
+            Viajes, choferes, caja, banco y AFIP en un solo sistema.
+          </p>
+        </div>
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="bg-[#1a2537]/40 border border-white/10 p-10 rounded-[2.5rem] backdrop-blur-2xl shadow-2xl space-y-8">
-          
-          {/* LOGO TÁCTICO */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex p-4 bg-sky-500 rounded-3xl shadow-[0_0_30px_rgba(14,165,233,0.3)] mx-auto mb-2 group transition-transform hover:scale-110">
-              <Truck className="text-white" size={32} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase leading-none">
-                Dallape <span className="text-sky-500">Systems</span>
-              </h1>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-2">Acceso Restringido - ERP v1.0</p>
-            </div>
+      {/* ═══ PANEL DERECHO — FORM ═══ */}
+      <div className="flex-1 flex items-center justify-center px-8 py-12 relative">
+
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-sky-500/8 blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="w-full max-w-sm relative z-10">
+
+          {/* Logo mobile */}
+          <div className="lg:hidden mb-10">
+            <span className="text-3xl font-black italic tracking-tighter text-white uppercase">
+              Flet<span className="text-sky-400">X</span>
+            </span>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email Corporativo</label>
+          {/* Encabezado */}
+          <div className="mb-10">
+            <p className="text-sky-500 text-[10px] font-black uppercase tracking-[0.4em] mb-3">Bienvenido</p>
+            <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-[0.9]">
+              Ingresá<br />a tu cuenta
+            </h1>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Email</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-sky-500 transition-colors" size={18} />
-                <input 
-                  type="email" 
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-sky-500 transition-colors" size={16} />
+                <input
+                  type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@dallapesystems.com"
-                  className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-700"
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="w-full bg-white/5 border border-white/8 hover:border-white/15 focus:border-sky-500/50 rounded-xl py-4 pl-11 pr-4 text-sm text-white outline-none transition-all placeholder:text-slate-700"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Contraseña</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Contraseña</label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-sky-500 transition-colors" size={18} />
-                <input 
-                  type="password" 
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-sky-500 transition-colors" size={16} />
+                <input
+                  type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#141c28] border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-sky-500/50 transition-all placeholder:text-slate-700"
+                  className="w-full bg-white/5 border border-white/8 hover:border-white/15 focus:border-sky-500/50 rounded-xl py-4 pl-11 pr-4 text-sm text-white outline-none transition-all placeholder:text-slate-700"
                   required
                 />
               </div>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
-              className="w-full group bg-sky-500 hover:bg-sky-400 disabled:bg-[#243248] text-white py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] transition-all shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 active:scale-95"
+              className="w-full mt-2 group bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-white py-4 rounded-xl font-black uppercase text-sm tracking-[0.2em] transition-all shadow-[0_4px_40px_rgba(14,165,233,0.3)] hover:shadow-[0_4px_60px_rgba(14,165,233,0.5)] flex items-center justify-center gap-2 active:scale-[0.98]"
             >
-              {loading ? <Loader2 className="animate-spin" size={18} /> : (
+              {loading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
                 <>
-                  Ingresar al Sistema <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  Ingresar
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
                 </>
               )}
             </button>
           </form>
 
-          <footer className="pt-6 border-t border-white/5 text-center">
-            <p className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">
-              ERP de Gestión Interna • Mendoza, Argentina
-            </p>
-          </footer>
+          <p className="text-center text-[9px] text-slate-700 font-black uppercase tracking-[0.4em] mt-10">
+            FletX · Sistema de Gestión Logística
+          </p>
         </div>
       </div>
     </div>

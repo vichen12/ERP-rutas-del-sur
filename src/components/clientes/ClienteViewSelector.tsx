@@ -20,11 +20,7 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
             Consola de <span className="text-sky-500">Mando</span>
           </h2>
           <div className="flex items-center gap-2 mt-1">
-            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 rounded-md border border-emerald-500/20">
-               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-               <p className="text-[7px] font-black text-emerald-500 uppercase tracking-[0.2em]">Sincronizado V2.0</p>
-            </div>
-            <p className="text-[7px] font-black text-slate-600 uppercase tracking-[0.4em]">DallapeSystems ERP</p>
+            <p className="text-[7px] font-black text-slate-600 uppercase tracking-[0.4em]">FletX</p>
           </div>
         </div>
       </div>
@@ -103,10 +99,6 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
           {totalAlertas > 0 && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_8px_orange]" />
           )}
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
-          <ShieldCheck size={14} className="text-slate-600" />
-          <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Acceso Encriptado</span>
         </div>
       </div>
     </div>

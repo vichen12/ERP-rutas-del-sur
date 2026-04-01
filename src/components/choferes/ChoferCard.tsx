@@ -80,7 +80,7 @@ export function ChoferCard({
   else if (estado.includes('Franco') || estado.includes('Licencia')) { estadoColor = 'bg-amber-500/15 text-amber-400 border-amber-500/30'; dotColor = 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]'; }
   else if (isInactivo) { estadoColor = 'bg-[#243248] text-slate-400 border-white/10'; dotColor = 'bg-slate-600'; }
 
-  const statusBorder = estaVencido ? 'border-rose-500/50 shadow-[0_0_30px_rgba(225,29,72,0.1)]' : vencePronto ? 'border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.1)]' : 'border-white/10 group-hover:border-indigo-500/40 hover:shadow-[0_0_40px_rgba(79,70,229,0.1)]';
+  const statusBorder = 'border-white/5 group-hover:border-white/15';
 
   return (
     <div className={`group bg-[#141c28] rounded-[2rem] border ${statusBorder} transition-all duration-500 flex relative overflow-hidden h-full min-h-[380px] w-full min-w-0 ${isInactivo ? 'opacity-60 grayscale-[0.6]' : ''}`}>

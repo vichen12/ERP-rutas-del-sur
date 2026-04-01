@@ -5,14 +5,6 @@
 -- ══════════════════════════════════════════════════════════════════════
 
 -- ──────────────────────────────────────────────────────────────────────
--- FUNCIÓN HELPER: verificar si el usuario está autenticado
--- ──────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION auth.is_authenticated()
-RETURNS boolean AS $$
-  SELECT auth.role() = 'authenticated';
-$$ LANGUAGE sql STABLE;
-
--- ──────────────────────────────────────────────────────────────────────
 -- MACRO para aplicar RLS a una tabla (habilitar + policy ALL)
 -- Se aplica tabla por tabla abajo
 -- ──────────────────────────────────────────────────────────────────────

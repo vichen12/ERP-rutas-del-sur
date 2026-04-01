@@ -23,7 +23,7 @@ export function ClienteHeader({ selected, onBackup, onDelete, onEdit, onNuevaOp,
           <div>
             <div className="flex items-center gap-3 mb-1">
               <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-[0.3em] rounded-lg border border-emerald-500/20 flex items-center gap-1.5">
-                <ShieldCheck size={12} strokeWidth={3} /> Perfil Maestro V2.0
+                <ShieldCheck size={12} strokeWidth={3} /> Perfil Cliente
               </span>
             </div>
             <h2 className="text-4xl lg:text-7xl font-black text-white tracking-tighter uppercase leading-[0.85] py-2">

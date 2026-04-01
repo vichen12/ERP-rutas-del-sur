@@ -39,7 +39,7 @@ export function NuevoClienteModal({ isOpen, onClose, onSubmit, isSaving }: any) 
               <ShieldPlus size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">DallapeSystems</p>
+              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">FletX</p>
               <h3 className="text-4xl font-black uppercase tracking-tighter text-white leading-none">Alta de <span className="text-sky-500">Cliente</span></h3>
             </div>
           </div>

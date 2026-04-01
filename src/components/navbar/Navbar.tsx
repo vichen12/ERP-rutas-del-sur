@@ -165,7 +165,7 @@ export function Navbar() {
           <Link href="/dashboard" className="flex items-center gap-2 group shrink-0">
             <div>
               <span className="text-lg font-black tracking-tighter italic text-white block leading-none uppercase">
-                Dallape <span className="text-sky-500 font-light">Systems</span>
+                Flet<span className="text-sky-500">X</span>
               </span>
               <span className="hidden 2xl:block text-[7px] font-black tracking-[0.3em] text-slate-500 uppercase italic">Control de Operaciones</span>
             </div>
@@ -308,7 +308,7 @@ export function Navbar() {
             <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[10px] tracking-widest active:scale-95">
               <LogOut size={16} /> Salir del Sistema
             </button>
-            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em] pt-2">V2.0 • DallapeSystems ERP</p>
+            <p className="text-[8px] font-black text-slate-700 uppercase tracking-[0.5em] pt-2">FletX · Sistema de Gestión</p>
           </div>
         </div>
       </div>

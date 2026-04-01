@@ -14,7 +14,7 @@ function addHeader(doc: jsPDF, titulo: string, subtitulo?: string) {
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
-  doc.text('DALLAPESYSTEMS', 14, 13)
+  doc.text('FLETX', 14, 13)
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(148, 163, 184)
@@ -43,7 +43,7 @@ function addFooter(doc: jsPDF) {
     doc.rect(0, 287, 210, 10, 'F')
     doc.setFontSize(7)
     doc.setTextColor(71, 85, 105)
-    doc.text('DallapeSystems ERP — Documento confidencial', 14, 293)
+    doc.text('FletX — Documento confidencial', 14, 293)
     doc.text(`Pág. ${i} / ${pageCount}`, 210 - 14, 293, { align: 'right' })
   }
 }
@@ -119,7 +119,7 @@ export const backupService = {
     doc.text(`DEUDA TOTAL CARTERA: $ ${totalCartera.toLocaleString('es-AR')}`, 20, currentY + 9)
 
     addFooter(doc)
-    doc.save(`Auditoria_Deuda_DallapeSystems_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    doc.save(`Auditoria_Deuda_FletX_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
   },
 
   downloadPDF: async (cliente: any, gestion: any) => {
@@ -398,7 +398,7 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`Viajes_DallapeSystems_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    doc.save(`Viajes_FletX_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
   },
 
   // ════════════════════════════════════════
@@ -466,7 +466,7 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`Flota_DallapeSystems_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    doc.save(`Flota_FletX_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
   },
 
   // ════════════════════════════════════════
@@ -516,6 +516,6 @@ export const backupService = {
     })
 
     addFooter(doc)
-    doc.save(`Choferes_DallapeSystems_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
+    doc.save(`Choferes_FletX_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`)
   },
 }

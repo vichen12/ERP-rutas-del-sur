@@ -199,7 +199,7 @@ export function ClienteUbicacionModal({
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-        { headers: { 'Accept-Language': 'es', 'User-Agent': 'DallapeSystems-ERP/1.0' } }
+        { headers: { 'Accept-Language': 'es', 'User-Agent': 'FletX-ERP/1.0' } }
       )
       const data = await res.json()
       if (data?.display_name) {
@@ -220,7 +220,7 @@ export function ClienteUbicacionModal({
       const q   = encodeURIComponent(searchInput + ', Mendoza, Argentina')
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`,
-        { headers: { 'Accept-Language': 'es', 'User-Agent': 'DallapeSystems-ERP/1.0' } }
+        { headers: { 'Accept-Language': 'es', 'User-Agent': 'FletX-ERP/1.0' } }
       )
       const data = await res.json()
 

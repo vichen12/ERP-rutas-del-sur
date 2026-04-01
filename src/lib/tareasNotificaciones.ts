@@ -66,7 +66,7 @@ function buildMensaje(tareas: any[], hoy: Date): string {
     return `• ${t.titulo} → ${estado}${recurrente}`
   }).join('\n')
 
-  return `🚛 *DallapeSystems ERP - Tareas Pendientes*\n\nTenés ${tareas.length} tarea${tareas.length !== 1 ? 's' : ''} que requieren atención:\n\n${lineas}\n\n_Ingresá al ERP para gestionar estas tareas._`
+  return `🚛 *FletX - Tareas Pendientes*\n\nTenés ${tareas.length} tarea${tareas.length !== 1 ? 's' : ''} que requieren atención:\n\n${lineas}\n\n_Ingresá al ERP para gestionar estas tareas._`
 }
 
 // =============================================
@@ -83,7 +83,7 @@ async function sendEmail(to: string, mensaje: string, cantTareas: number) {
 
     const htmlBody = `
       <div style="font-family: monospace; background: #020617; color: #e2e8f0; padding: 32px; border-radius: 16px; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #8b5cf6; font-size: 20px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 2px;">🚛 DallapeSystems ERP</h1>
+        <h1 style="color: #8b5cf6; font-size: 20px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 2px;">🚛 FletX</h1>
         <p style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 24px;">Recordatorio de Tareas</p>
         <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #8b5cf6;">
           <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px;">Tenés <strong style="color: #c4b5fd;">${cantTareas} tarea${cantTareas !== 1 ? 's' : ''}</strong> que requieren atención:</p>
@@ -104,9 +104,9 @@ async function sendEmail(to: string, mensaje: string, cantTareas: number) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'DallapeSystems ERP <notificaciones@dallapesystems.com>',
+        from: 'FletX <notificaciones@fletx.com>',
         to: [to],
-        subject: `⚠️ ${cantTareas} tarea${cantTareas !== 1 ? 's' : ''} pendiente${cantTareas !== 1 ? 's' : ''} - DallapeSystems`,
+        subject: `⚠️ ${cantTareas} tarea${cantTareas !== 1 ? 's' : ''} pendiente${cantTareas !== 1 ? 's' : ''} - FletX`,
         html: htmlBody,
       }),
     })
