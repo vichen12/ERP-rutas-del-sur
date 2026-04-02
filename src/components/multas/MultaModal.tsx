@@ -51,8 +51,8 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
   ]
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-md rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] w-full max-w-md rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-full bg-rose-500" />
 
         <div className="flex justify-between items-start mb-8">
@@ -96,7 +96,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
           </div>
 
           {/* MONTO Y FECHA */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Monto ($)</label>
               <div className="relative">
@@ -154,7 +154,7 @@ export function MultaModal({ isOpen, onClose, onSubmit, isSaving, editingData, c
           </div>
 
           {/* CHOFER Y CAMIÓN */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-1.5">
                 <User size={10} /> Chofer

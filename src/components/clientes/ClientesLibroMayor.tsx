@@ -24,7 +24,7 @@ export function ClientesLibroMayor({
     <div className="space-y-12 pb-32 font-sans italic">
       
       {/* --- SECCIÓN 1: BANDEJA DE ENTRADA --- */}
-      <section className="relative p-8 md:p-12 rounded-[3.5rem] border bg-[#141c28]/50 border-white/10 shadow-2xl backdrop-blur-md overflow-hidden">
+      <section className="relative p-5 sm:p-8 md:p-12 rounded-[2rem] sm:rounded-[3.5rem] border bg-[#141c28]/50 border-white/10 shadow-2xl backdrop-blur-md overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 to-indigo-500 opacity-50" />
         
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10 relative z-10">
@@ -128,7 +128,7 @@ export function ClientesLibroMayor({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* COLUMNA 1: PAGOS DEL CLIENTE */}
-        <div className="p-6 rounded-[3rem] border bg-emerald-950/10 border-emerald-500/20 flex flex-col h-[600px]">
+        <div className="p-6 rounded-[3rem] border bg-emerald-950/10 border-emerald-500/20 flex flex-col min-h-[300px] lg:h-[600px]">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-emerald-500/10">
             <h3 className="text-emerald-400 font-black uppercase text-sm italic flex items-center gap-2">
               <DollarSign size={18} /> Pagos Recibidos
@@ -156,7 +156,7 @@ export function ClientesLibroMayor({
         </div>
 
         {/* COLUMNA 2: DEUDA ACTIVA */}
-        <div className="p-6 rounded-[3rem] border bg-emerald-950/10 border-emerald-500/20 flex flex-col h-[600px]">
+        <div className="p-6 rounded-[3rem] border bg-emerald-950/10 border-emerald-500/20 flex flex-col min-h-[300px] lg:h-[600px]">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-emerald-500/10">
             <h3 className="text-emerald-400 font-black uppercase text-sm italic flex items-center gap-2">
               <TrendingUp size={18} /> Deuda Activa
@@ -232,7 +232,7 @@ export function ClientesLibroMayor({
         </div>
 
         {/* COLUMNA 3: HISTORIAL LIQUIDADOS */}
-        <div className="p-6 rounded-[3rem] border bg-[#1a2537]/20 border-white/5 flex flex-col h-[600px]">
+        <div className="p-6 rounded-[3rem] border bg-[#1a2537]/20 border-white/5 flex flex-col min-h-[300px] lg:h-[600px]">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
             <h3 className="text-slate-400 font-black uppercase text-sm italic flex items-center gap-2">
               <CheckCircle2 size={18} /> Historial

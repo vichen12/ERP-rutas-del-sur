@@ -22,8 +22,8 @@ export function ClienteBackUp({ isOpen, onClose, onSendEmail, onDownloadPDF, isP
   }
 
   return (
-    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-[#141c28]/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-[#141c28] border border-white/10 w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden italic font-sans">
+    <div className="fixed inset-0 z-[400] flex items-start sm:items-center justify-center overflow-y-auto p-4 bg-[#141c28]/80 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden italic font-sans my-auto max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         
         {/* Efecto de luz ambiental */}
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-sky-500/10 blur-[50px] rounded-full pointer-events-none" />

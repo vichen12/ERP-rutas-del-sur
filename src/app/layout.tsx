@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <Navbar />
 
-          <main className="min-h-screen transition-all duration-300 relative z-10">
+          <main className="min-h-screen transition-all duration-300">
             {children}
           </main>
 

@@ -9,14 +9,15 @@ export function ClienteHeader({ selected, onBackup, onDelete, onEdit, onNuevaOp,
   const destinoFinal = selected.ruta_destino || 'SIN DESTINO DEFINIDO'
 
   return (
-    <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-[#141c28]/60 backdrop-blur-2xl p-8 lg:p-12 rounded-[3rem] border border-white/5 gap-8 relative overflow-hidden group italic shadow-2xl font-sans">
+    <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-[#141c28]/60 backdrop-blur-2xl p-5 sm:p-8 lg:p-12 rounded-[2rem] sm:rounded-[3rem] border border-white/5 gap-5 sm:gap-8 relative overflow-hidden group italic shadow-2xl font-sans">
       
       {/* Decoración de fondo */}
       <div className="absolute -right-20 -top-20 w-80 h-80 bg-sky-500/5 blur-[120px] rounded-full group-hover:bg-sky-500/10 transition-all duration-1000 pointer-events-none" />
 
       <div className="flex flex-col md:flex-row items-start md:items-center gap-8 relative z-10 w-full">
-        <div className="p-6 bg-gradient-to-br from-sky-500/20 to-sky-600/5 text-sky-500 rounded-[2rem] shrink-0 border border-sky-500/20 shadow-xl">
-          <Landmark size={42} strokeWidth={2} />
+        <div className="p-4 sm:p-6 bg-gradient-to-br from-sky-500/20 to-sky-600/5 text-sky-500 rounded-[1.5rem] sm:rounded-[2rem] shrink-0 border border-sky-500/20 shadow-xl">
+          <Landmark size={28} strokeWidth={2} className="sm:hidden" />
+          <Landmark size={42} strokeWidth={2} className="hidden sm:block" />
         </div>
 
         <div className="space-y-4 w-full">
@@ -26,7 +27,7 @@ export function ClienteHeader({ selected, onBackup, onDelete, onEdit, onNuevaOp,
                 <ShieldCheck size={12} strokeWidth={3} /> Perfil Cliente
               </span>
             </div>
-            <h2 className="text-4xl lg:text-7xl font-black text-white tracking-tighter uppercase leading-[0.85] py-2">
+            <h2 className="text-2xl sm:text-4xl lg:text-6xl font-black text-white tracking-tighter uppercase leading-[0.9] py-1 sm:py-2">
               {selected.razon_social}
             </h2>
           </div>

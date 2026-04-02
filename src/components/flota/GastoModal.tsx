@@ -18,8 +18,8 @@ export function GastoModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-start sm:items-center justify-center overflow-y-auto p-4 backdrop-blur-md bg-[#141c28]/80 animate-in fade-in duration-300 font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative overflow-hidden my-auto">
+    <div className="fixed inset-0 z-[300] flex items-start sm:items-center justify-center overflow-y-auto p-4 backdrop-blur-md bg-[#141c28]/80 animate-in fade-in duration-300 font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative overflow-hidden my-auto max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Glow Decorativo de fondo */}
         <div className="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/10 blur-[60px] rounded-full pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" />

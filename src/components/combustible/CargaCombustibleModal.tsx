@@ -43,14 +43,14 @@ export function CargaCombustibleModal({ isOpen, onClose, onSave, camiones, chofe
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-[#141c28]/80 backdrop-blur-sm p-4 font-sans italic">
-      <div className="bg-[#141c28] border border-amber-500/20 rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 my-auto">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-[#141c28]/80 backdrop-blur-sm p-4 font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] border border-amber-500/20 rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 my-auto max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-slate-400 hover:text-white hover:bg-rose-500 transition-all"><X size={18}/></button>
         
         <h3 className="text-2xl font-black text-white uppercase mb-6">Cargar <span className="text-amber-500">Remito Gasoil</span></h3>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Fecha</label>
               <input type="date" value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} required className="w-full bg-[#1a2537] border border-white/10 rounded-xl p-3 text-white outline-none" />
@@ -93,7 +93,7 @@ export function CargaCombustibleModal({ isOpen, onClose, onSave, camiones, chofe
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Litros Cargados</label>
               <input type="number" step="0.1" value={formData.litros} onChange={e => setFormData({...formData, litros: e.target.value})} required className="w-full bg-[#1a2537] border border-white/10 rounded-xl p-3 text-white outline-none font-bold text-lg tabular-nums" />

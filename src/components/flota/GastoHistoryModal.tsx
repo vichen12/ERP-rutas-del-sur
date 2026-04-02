@@ -38,8 +38,8 @@ export function GastoHistoryModal({ isOpen, onClose, gastos, camionPatente, onRe
   const totalFiltrado = filteredGastos.reduce((acc: number, curr: any) => acc + Number(curr.monto), 0)
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in duration-300 font-sans italic">
-      <div className="bg-[#141c28] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col max-h-[85vh] relative overflow-hidden">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#141c28]/95 backdrop-blur-md animate-in fade-in duration-300 font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl flex flex-col max-h-[85vh] relative overflow-hidden" onClick={e => e.stopPropagation()}>
         
         {/* Indicador de Línea Superior */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-cyan-500 to-sky-500" />

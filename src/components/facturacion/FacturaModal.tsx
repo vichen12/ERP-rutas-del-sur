@@ -33,8 +33,8 @@ export function FacturaModal({ isOpen, onClose, onSubmit, isEmitting, clientes, 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-full bg-sky-500" />
         <div className="flex justify-between items-start mb-8">
           <div><p className="text-[10px] font-black uppercase tracking-[0.4em] mb-1 text-sky-500">Nueva Factura Electrónica</p><h2 className="text-3xl font-black text-white uppercase tracking-tighter">Emitir Comprobante</h2></div>

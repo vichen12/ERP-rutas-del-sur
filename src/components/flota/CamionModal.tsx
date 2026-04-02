@@ -8,13 +8,13 @@ export function CamionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-sm p-4 overflow-y-auto italic">
-      
-      {/* CONTENEDOR PRINCIPAL: 
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-sm p-4 overflow-y-auto italic" onClick={onClose}>
+
+      {/* CONTENEDOR PRINCIPAL:
          - Quitamos el overflow del hijo para que el scroll sea natural del padre.
          - 'my-auto' permite que el modal se centre si es corto y scrollee si es largo.
       */}
-      <div className="bg-[#141c28] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300">
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative my-auto animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         
         {/* Decoración Superior */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-t-full" />
@@ -35,7 +35,7 @@ export function CamionModal({
         <form onSubmit={onSubmit} className="space-y-6">
           
           {/* GRUPO 1: IDENTIDAD */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Patente</label>
               <input 
@@ -58,7 +58,7 @@ export function CamionModal({
           </div>
 
           {/* GRUPO 2: KILOMETRAJE */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2 text-cyan-500">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
                 <Gauge size={10}/> KM Actual
@@ -84,7 +84,7 @@ export function CamionModal({
           </div>
 
           {/* GRUPO 3: DOCUMENTACIÓN */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest">Vto RTO</label>
               <input 
@@ -106,7 +106,7 @@ export function CamionModal({
           </div>
 
           {/* GRUPO 4: RECURSOS HUMANOS Y ESTADO (🔥 LO NUEVO) */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase ml-2 tracking-widest flex items-center gap-2">
                 <User size={10}/> Operador

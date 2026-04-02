@@ -48,8 +48,8 @@ export function PagarResumenModal({ isOpen, onClose, onConfirm, cargasSelecciona
   const diferencia = montoTeorico - montoIngresado;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c28]/80 backdrop-blur-sm p-4 font-sans italic">
-      <div className="bg-[#141c28] border border-emerald-500/20 rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-[#141c28]/80 backdrop-blur-sm p-4 font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] border border-emerald-500/20 rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto my-auto" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-slate-400 hover:text-white hover:bg-rose-500 transition-all"><X size={18}/></button>
         
         <h3 className="text-2xl font-black text-white uppercase mb-2">Liquidar <span className="text-emerald-500">Resumen YPF</span></h3>

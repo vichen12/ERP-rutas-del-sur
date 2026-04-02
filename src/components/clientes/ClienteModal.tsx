@@ -6,8 +6,8 @@ export function ClienteModal({ isOpen, onClose, onSubmit, isSubmitting, formData
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-start md:items-center justify-center pt-20 p-4 bg-[#141c28]/90 backdrop-blur-md overflow-y-auto font-sans italic">
-      <div className="bg-[#141c28] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-10 shadow-2xl relative mb-10 selection:bg-emerald-500/30">
+    <div className="fixed inset-0 z-[300] flex items-start md:items-center justify-center pt-20 p-4 bg-[#141c28]/90 backdrop-blur-md overflow-y-auto font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-10 shadow-2xl relative my-auto max-h-[90vh] overflow-y-auto selection:bg-emerald-500/30" onClick={e => e.stopPropagation()}>
         
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500" />
 

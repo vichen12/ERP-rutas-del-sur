@@ -196,8 +196,8 @@ export function ViajeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto bg-[#141c28]/90 backdrop-blur-xl pt-10 md:pt-20 p-4 font-sans italic">
-      <div className="bg-[#141c28] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-12 shadow-[0_0_80px_rgba(0,0,0,0.8)] relative mb-20 animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto bg-[#141c28]/90 backdrop-blur-xl pt-10 md:pt-20 p-4 font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-4xl rounded-[3rem] p-6 md:p-12 shadow-[0_0_80px_rgba(0,0,0,0.8)] relative my-auto animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         
         <div className={`absolute top-0 left-0 w-full h-2 rounded-t-full transition-all duration-500 ${
           step === 1 ? 'bg-cyan-500' : step === 2 ? 'bg-emerald-500' : 'bg-sky-500'

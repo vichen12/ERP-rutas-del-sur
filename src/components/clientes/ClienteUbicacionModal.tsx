@@ -269,8 +269,8 @@ export function ClienteUbicacionModal({
   const tienePin = form.lat !== null && form.lng !== null
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-[#141c28]/90 backdrop-blur-md overflow-y-auto font-sans italic">
-      <div className="bg-[#141c28] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl relative my-auto overflow-hidden">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-[#141c28]/90 backdrop-blur-md overflow-y-auto font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] border border-white/10 w-full max-w-2xl rounded-[3rem] shadow-2xl relative my-auto overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500 z-10" />
 

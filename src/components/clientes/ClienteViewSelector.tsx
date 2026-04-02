@@ -5,10 +5,10 @@ import Link from 'next/link'
 
 export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalAlertas = 0, selectedClienteId }: any) {
   return (
-    <div className="sticky top-0 z-[100] px-6 py-4 bg-[#141c28]/80 backdrop-blur-2xl border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] font-sans italic">
-      
-      {/* BRANDING */}
-      <div className="flex items-center gap-4">
+    <div className="sticky top-0 z-[100] px-3 sm:px-6 py-3 sm:py-4 bg-[#141c28]/80 backdrop-blur-2xl border-b border-white/5 flex flex-row justify-between items-center gap-3 shadow-[0_10px_40px_rgba(0,0,0,0.5)] font-sans italic">
+
+      {/* BRANDING — oculto en mobile */}
+      <div className="hidden sm:flex items-center gap-4 shrink-0">
         <div className="relative">
           <div className="absolute inset-0 bg-sky-500 blur-lg opacity-20 animate-pulse" />
           <div className="relative p-3 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-white/10 shadow-2xl">
@@ -19,87 +19,85 @@ export function ClienteViewSelector({ viewMode, setViewMode, hasSelected, totalA
           <h2 className="text-lg font-black text-white uppercase italic tracking-tighter leading-none">
             Consola de <span className="text-sky-500">Mando</span>
           </h2>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-[7px] font-black text-slate-600 uppercase tracking-[0.4em]">FletX</p>
-          </div>
+          <p className="text-[7px] font-black text-slate-600 uppercase tracking-[0.4em] mt-1">FletX</p>
         </div>
       </div>
 
       {/* SWITCHER DE VISTA */}
-      <div className="p-1.5 bg-[#141c28]/80 rounded-[1.5rem] border border-white/5 flex gap-1.5 shadow-inner overflow-x-auto no-scrollbar">
-        {/* Visión Global */}
-        <button
-          onClick={() => setViewMode('general')}
-          className={`cursor-pointer flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
-            viewMode === 'general'
-            ? 'bg-sky-600 text-white shadow-[0_0_20px_rgba(2,132,199,0.3)] scale-105 border border-sky-400/20'
-            : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-          }`}
-        >
-          <Users2 size={14} strokeWidth={2.5} />
-          Visión Global
-        </button>
-
-        {/* Perfil Individual */}
-        <button
-          onClick={() => hasSelected && setViewMode('individual')}
-          disabled={!hasSelected}
-          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
-            viewMode === 'individual'
-            ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-105 border border-emerald-400/20'
-            : hasSelected
-              ? 'cursor-pointer text-slate-500 hover:text-slate-300 hover:bg-white/5'
-              : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
-          }`}
-        >
-          <UserCircle2 size={14} strokeWidth={2.5} />
-          Perfil
-        </button>
-
-        {/* Ubicaciones */}
-        <button
-          onClick={() => hasSelected && setViewMode('ubicaciones')}
-          disabled={!hasSelected}
-          className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
-            viewMode === 'ubicaciones'
-            ? 'bg-violet-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] scale-105 border border-violet-400/20'
-            : hasSelected
-              ? 'cursor-pointer text-slate-500 hover:text-slate-300 hover:bg-white/5'
-              : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
-          }`}
-        >
-          <Map size={14} strokeWidth={2.5} />
-          Ubicaciones
-        </button>
-
-        {/* Cargar Viaje */}
-        {hasSelected && selectedClienteId ? (
-          <Link
-            href={`/viajes?cliente_id=${selectedClienteId}`}
-            className="cursor-pointer flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-white hover:border-amber-400"
+      <div className="flex-1 sm:flex-none overflow-x-auto no-scrollbar">
+        <div className="p-1 sm:p-1.5 bg-[#141c28]/80 rounded-[1.5rem] border border-white/5 flex gap-1 sm:gap-1.5 shadow-inner min-w-max">
+          {/* Visión Global */}
+          <button
+            onClick={() => setViewMode('general')}
+            className={`cursor-pointer flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
+              viewMode === 'general'
+              ? 'bg-sky-600 text-white shadow-[0_0_20px_rgba(2,132,199,0.3)] scale-105 border border-sky-400/20'
+              : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+            }`}
           >
-            <Route size={14} strokeWidth={2.5} />
-            Cargar Viaje
-          </Link>
-        ) : (
-          <button disabled className="flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap opacity-20 grayscale cursor-not-allowed text-slate-700">
-            <Route size={14} strokeWidth={2.5} />
-            Cargar Viaje
+            <Users2 size={14} strokeWidth={2.5} />
+            Visión Global
           </button>
-        )}
-      </div>
 
-      {/* CAMPANA + ACCESO SEGURO */}
-      <div className="hidden xl:flex items-center gap-3">
-        <div className="relative p-2 bg-white/5 rounded-xl border border-white/10">
-          <Bell 
-            size={20} 
-            className={totalAlertas > 0 ? "text-orange-500 animate-pulse" : "text-slate-500"} 
-          />
-          {totalAlertas > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_8px_orange]" />
+          {/* Perfil Individual */}
+          <button
+            onClick={() => hasSelected && setViewMode('individual')}
+            disabled={!hasSelected}
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
+              viewMode === 'individual'
+              ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-105 border border-emerald-400/20'
+              : hasSelected
+                ? 'cursor-pointer text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
+            }`}
+          >
+            <UserCircle2 size={14} strokeWidth={2.5} />
+            Perfil
+          </button>
+
+          {/* Ubicaciones */}
+          <button
+            onClick={() => hasSelected && setViewMode('ubicaciones')}
+            disabled={!hasSelected}
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap ${
+              viewMode === 'ubicaciones'
+              ? 'bg-violet-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] scale-105 border border-violet-400/20'
+              : hasSelected
+                ? 'cursor-pointer text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                : 'opacity-20 grayscale cursor-not-allowed text-slate-700'
+            }`}
+          >
+            <Map size={14} strokeWidth={2.5} />
+            Ubicaciones
+          </button>
+
+          {/* Cargar Viaje */}
+          {hasSelected && selectedClienteId ? (
+            <Link
+              href={`/viajes?cliente_id=${selectedClienteId}`}
+              className="cursor-pointer flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-white hover:border-amber-400"
+            >
+              <Route size={14} strokeWidth={2.5} />
+              Cargar Viaje
+            </Link>
+          ) : (
+            <button disabled className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-300 whitespace-nowrap opacity-20 grayscale cursor-not-allowed text-slate-700">
+              <Route size={14} strokeWidth={2.5} />
+              Cargar Viaje
+            </button>
           )}
         </div>
+      </div>
+
+      {/* CAMPANA */}
+      <div className="shrink-0 relative p-2 bg-white/5 rounded-xl border border-white/10">
+        <Bell
+          size={18}
+          className={totalAlertas > 0 ? "text-orange-500 animate-pulse" : "text-slate-500"}
+        />
+        {totalAlertas > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_8px_orange]" />
+        )}
       </div>
     </div>
   )

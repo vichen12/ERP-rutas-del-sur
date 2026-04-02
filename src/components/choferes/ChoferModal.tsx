@@ -58,9 +58,9 @@ export function ChoferModal({ isOpen, onClose, onSubmit, isSubmitting, editingId
   }
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-md bg-[#141c28]/80 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto font-sans italic">
-      
-      <div className="bg-[#141c28] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative overflow-hidden my-10">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 backdrop-blur-md bg-[#141c28]/80 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto font-sans italic" onClick={onClose}>
+
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[3rem] border border-white/10 p-8 md:p-10 shadow-2xl relative overflow-y-auto max-h-[90vh] my-auto" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 to-cyan-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]" />
         
         <div className="flex justify-between items-center mb-8">

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 import { toast } from 'sonner'
 import { useState, useEffect, useMemo } from 'react'
 import { getSupabase } from '@/lib/supabase'
+import { registrarCompra } from '@/lib/cajaService'
 import { StockItemModal } from '@/components/stock/StockItemModal'
 import { StockAjusteModal } from '@/components/stock/StockAjusteModal'
 import {
@@ -94,15 +95,19 @@ export default function DepositoPage() {
     setEditItem(null)
   }
 
-  async function handleAjuste(data: { tipo: string; cantidad: number; motivo: string; notas: string }) {
+  async function handleAjuste(data: {
+    tipo: string; cantidad: number; motivo: string; notas: string
+    impactaCaja?: boolean; monto?: number; tipo_cuenta?: 'caja' | 'banco'
+  }) {
     if (!ajusteItem) return
     const antes = ajusteItem.cantidad_actual ?? 0
     let despues: number
     if (data.tipo === 'entrada') despues = antes + data.cantidad
     else if (data.tipo === 'salida') despues = Math.max(0, antes - data.cantidad)
-    else despues = data.cantidad // ajuste = setear directo
+    else despues = data.cantidad
 
-    // Guarda movimiento
+    const fecha = new Date().toISOString().split('T')[0]
+
     await supabase.from('stock_movimientos').insert({
       stock_item_id: ajusteItem.id,
       tipo: data.tipo,
@@ -111,12 +116,24 @@ export default function DepositoPage() {
       cantidad_despues: despues,
       motivo: data.motivo,
       notas: data.notas || null,
-      fecha: new Date().toISOString().split('T')[0],
+      fecha,
     })
-    // Actualiza stock
     await supabase.from('stock_items').update({ cantidad_actual: despues }).eq('id', ajusteItem.id)
+
+    // Registrar egreso en caja si corresponde
+    if (data.tipo === 'entrada' && data.impactaCaja && data.monto && data.monto > 0) {
+      await registrarCompra({
+        monto: data.monto,
+        descripcion: `Depósito — ${ajusteItem.nombre} x${data.cantidad} ${ajusteItem.unidad}`,
+        tipo_cuenta: data.tipo_cuenta || 'caja',
+        fecha,
+      })
+      toast.success(`Egreso de $${data.monto.toLocaleString('es-AR')} registrado en ${data.tipo_cuenta || 'caja'}`)
+    }
+
     await fetchAll()
     setAjusteItem(null)
+    toast.success('Stock actualizado')
   }
 
   async function handleToggleActivo(item: any) {

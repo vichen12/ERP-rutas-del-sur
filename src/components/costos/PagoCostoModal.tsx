@@ -56,8 +56,8 @@ export function PagoCostoModal({ isOpen, onClose, onConfirm, costo, isProcessing
   if (!isOpen || !costo) return null
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center overflow-y-auto p-4 bg-[#141c28]/90 backdrop-blur-md animate-in fade-in duration-200 font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-lg rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative my-auto">
+    <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center overflow-y-auto p-4 bg-[#141c28]/90 backdrop-blur-md animate-in fade-in duration-200 font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] w-full max-w-lg rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative my-auto max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         
         <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
           <X size={20}/>

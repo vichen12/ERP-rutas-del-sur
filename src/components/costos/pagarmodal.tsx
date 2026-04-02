@@ -36,8 +36,8 @@ export function PagarModal({ isOpen, onClose, onConfirm, isSaving, item, variabl
   const esFormula = isNaN(Number(item.monto)) && item.monto?.trim() !== ''
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center overflow-y-auto bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-sm rounded-[2rem] border border-white/10 p-7 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 my-auto">
+    <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center overflow-y-auto bg-[#141c28]/90 backdrop-blur-md p-4 font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] w-full max-w-sm rounded-[2rem] border border-white/10 p-7 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 my-auto max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2rem] bg-emerald-500" />
 

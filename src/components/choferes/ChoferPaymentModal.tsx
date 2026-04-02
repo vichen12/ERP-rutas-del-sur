@@ -37,9 +37,9 @@ export function ChoferPaymentModal({ isOpen, onClose, onConfirm, totalSelecciona
 
   return (
     // CONTENEDOR PRINCIPAL RESPONSIVE
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-24 md:pt-32 p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto">
-      
-      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative mb-10">
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-24 md:pt-32 p-4 bg-[#141c28]/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto" onClick={onClose}>
+
+      <div className="bg-[#141c28] w-full max-w-md rounded-[2.5rem] border border-white/10 p-8 shadow-2xl relative mb-10 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
             <X size={20}/>
         </button>

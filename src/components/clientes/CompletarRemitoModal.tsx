@@ -72,9 +72,9 @@ export function CompletarRemitoModal({ isOpen, initialRemito, onClose, onSubmit,
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-[#141c28]/90 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto">
-      
-      <div className="bg-[#141c28] border border-orange-500/30 w-full max-w-md rounded-[3rem] p-8 md:p-10 shadow-[0_0_50px_rgba(249,115,22,0.15)] relative overflow-hidden my-auto">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-[#141c28]/90 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200 font-sans italic overflow-y-auto" onClick={onClose}>
+
+      <div className="bg-[#141c28] border border-orange-500/30 w-full max-w-md rounded-[3rem] p-8 md:p-10 shadow-[0_0_50px_rgba(249,115,22,0.15)] relative overflow-y-auto max-h-[90vh] my-auto" onClick={e => e.stopPropagation()}>
         
         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-600 to-amber-500" />

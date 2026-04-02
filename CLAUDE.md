@@ -1,8 +1,8 @@
-# CLAUDE.md — DallapeSystems ERP
+# CLAUDE.md — FletX
 
 ## Descripción del Proyecto
 
-ERP completo para empresa de transporte/logística argentina llamada **DallapeSystems**.
+ERP completo para empresa de transporte/logística argentina llamado **FletX**.
 Gestiona flota, choferes, viajes, clientes, caja, banco, combustible, costos, impuestos, tareas y facturación electrónica AFIP/ARCA.
 
 ---
@@ -4201,6 +4201,7 @@ UUIDs usados en seed:
 ### 🔴 1. Row Level Security (RLS)
 Ejecutar `scripts/4_rls_security.sql` en **Supabase → SQL Editor**.
 Esto habilita RLS en las 40+ tablas y crea la política `"Solo usuarios autenticados"` de forma idempotente.
+> ⚠️ El script NO debe incluir `CREATE FUNCTION auth.is_authenticated()` — Supabase no permite crear funciones en el schema `auth` (error 42501). Ya fue removido del script.
 
 ### 🔴 2. Variables de entorno
 Agregar en `.env.local` (y en Vercel → Settings → Environment Variables):
@@ -4250,4 +4251,33 @@ Patrón aplicado en todas las páginas:
 - `scripts/3_cheques_setup.sql`
 - `scripts/4_rls_security.sql`
 
-❯ dale hacelo pq realmente esta mal                                                        
+---
+
+## Mejoras aplicadas por Claude (2026-04-01)
+
+### Branding — Renombre a FletX
+- Nombre del producto: **FletX** (antes: DallapeSystems / Rutas del Sur)
+- Todos los archivos `.tsx`, `.ts`, `.css`, PDFs, emails y User-Agents actualizados
+- `src/app/layout.tsx` — title: `"FletX | Gestión Logística"`
+- `src/components/navbar/Navbar.tsx` — logo: `FletX`, sidebar: `"FletX · Sistema de Gestión"`
+- `src/app/dashboard/page.tsx` — header: `"FletX"`
+- `src/components/caja/CajaHeader.tsx` — `"Tesorería Central"` → `"Cuenta Bancaria"`, texto footer → `"FletX"`
+- `src/components/clientes/ClienteViewSelector.tsx` — eliminado badge `"Sincronizado V2.0"` y widget `"Acceso Encriptado"`
+- `src/components/clientes/ClienteHeader.tsx` — `"Perfil Maestro V2.0"` → `"Perfil Cliente"`
+
+### Landing & Login rediseñados
+- `src/app/page.tsx` — foto real de camión (Unsplash CDN), overlay oscuro dramático, tipografía hero enorme, sin íconos SVG de camión, lista de módulos, botón CTA con glow
+- `src/app/login/page.tsx` — layout dividido: panel izquierdo con foto + branding sobre imagen, panel derecho con formulario limpio; sin íconos de camión ni textos de versión
+
+### UI — Choferes
+- `src/components/choferes/ChoferCard.tsx` — `statusBorder` siempre neutro (`border-white/5`); eliminados bordes rojo/ámbar según estado de licencia
+- `src/app/choferes/page.tsx` — `HeaderStat` siempre `border-white/5`; el texto indicador usa ámbar en lugar de borde rojo cuando hay deuda
+
+### Facturación — Flujo remitos externos (ARCA web)
+- `src/app/facturacion/page.tsx` — sección **"Pendientes de Facturar"** ahora combina `remitos` table + `cuenta_corriente.remito` (antes solo mostraba remitos de la tabla, dejando vacío si el número estaba solo en CC)
+- `handleMarcarFacturado` — soporta dos casos: remito con `id` en DB (UPDATE) o remito solo en CC (INSERT nuevo con `facturado: true`)
+- `handleDesmarcarFacturado` — nuevo: revierte un "Ya Facturado" de vuelta a pendiente
+- Sección **"Facturados en ARCA"** — nueva sección colapsable que muestra historial de remitos marcados externamente, con filtros por búsqueda/cliente/fecha y botón desmarcar
+
+### Scripts SQL
+- `scripts/4_rls_security.sql` — removida `CREATE FUNCTION auth.is_authenticated()` que causaba `permission denied for schema auth` en Supabase                                                        

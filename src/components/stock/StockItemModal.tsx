@@ -73,9 +73,9 @@ export function StockItemModal({ open, onClose, onSave, item }: StockItemModalPr
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-xl bg-[#1a2537] border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-xl bg-[#1a2537] border border-white/10 rounded-[2rem] shadow-2xl max-h-[92vh] overflow-y-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#243248]/50">
@@ -97,10 +97,10 @@ export function StockItemModal({ open, onClose, onSave, item }: StockItemModalPr
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
 
           {/* Nombre + Codigo */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                 Nombre del Artículo *
@@ -159,7 +159,7 @@ export function StockItemModal({ open, onClose, onSave, item }: StockItemModalPr
             <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
               Stock y Unidades
             </label>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
                 <p className="text-[9px] text-slate-500 uppercase mb-1.5">Actual</p>
                 <input

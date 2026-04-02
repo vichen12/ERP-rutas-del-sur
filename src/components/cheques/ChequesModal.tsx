@@ -59,8 +59,8 @@ export function ChequesModal({ isOpen, onClose, onSubmit, isSaving, editingChequ
   const esRecibido = form.tipo === 'recibido'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm font-sans italic">
-      <div className="bg-[#1a2537] border border-white/10 rounded-[2rem] w-full max-w-lg shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm font-sans italic" onClick={onClose}>
+      <div className="bg-[#1a2537] border border-white/10 rounded-[2rem] w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ export function ChequesModal({ isOpen, onClose, onSubmit, isSaving, editingChequ
           )}
 
           {/* Fila: Nro Cheque + Banco */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
                 Nro. Cheque *
@@ -159,7 +159,7 @@ export function ChequesModal({ isOpen, onClose, onSubmit, isSaving, editingChequ
           </div>
 
           {/* Fila: Fechas */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">
                 Fecha Emisión

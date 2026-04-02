@@ -154,8 +154,8 @@ export function TraccarSetupModal({ isOpen, onClose, onSave, initialConfig }: Pr
   const pasos = proveedor === 'pressa' ? PASOS_PRESSA : PASOS_TRACCAR_DEMO
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-8 animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-[#141c28]/90 backdrop-blur-md p-4 overflow-y-auto font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] w-full max-w-2xl rounded-[3rem] border border-white/10 p-8 shadow-2xl relative my-8 animate-in fade-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
 
         {/* Barra top */}
         <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-full bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500" />

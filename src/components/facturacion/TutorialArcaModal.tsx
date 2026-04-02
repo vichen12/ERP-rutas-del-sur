@@ -72,8 +72,8 @@ export function TutorialArcaModal({ isOpen, onClose }: { isOpen: boolean; onClos
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[998] flex items-center justify-center bg-[#141c28]/95 backdrop-blur-md p-4 overflow-y-auto font-sans italic">
-      <div className="bg-[#141c28] w-full max-w-xl rounded-[2.5rem] border border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[998] flex items-center justify-center bg-[#141c28]/95 backdrop-blur-md p-4 overflow-y-auto font-sans italic" onClick={onClose}>
+      <div className="bg-[#141c28] w-full max-w-xl rounded-[2.5rem] border border-white/10 shadow-2xl relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2.5rem] bg-gradient-to-r from-sky-500 via-violet-500 to-emerald-500" />
 
         <div className="flex justify-between items-start p-7 pb-0">

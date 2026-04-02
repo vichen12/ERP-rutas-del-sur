@@ -22,8 +22,8 @@ export function ChequeAccionModal({ cheque, onClose, onConfirm, isSaving }: Prop
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm font-sans italic">
-      <div className="bg-[#1a2537] border border-white/10 rounded-[2rem] w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 z-[60] flex items-start sm:items-center justify-center overflow-y-auto p-4 bg-black/70 backdrop-blur-sm font-sans italic" onClick={onClose}>
+      <div className="bg-[#1a2537] border border-white/10 rounded-[2rem] w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto my-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div className="flex items-center gap-3">
             <div className={`p-2 bg-${color}-500/10 rounded-xl`}>
